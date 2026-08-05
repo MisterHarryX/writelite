@@ -1,0 +1,18 @@
+{
+  "formatVersion": 1,
+  "packId": "writelight-historical-sample",
+  "packVersion": "1.0.0-sample",
+  "displayName": "WriteLite Historical Dictionary Sample",
+  "editionLabel": "Исторический образец (не полное издание Даля)",
+  "license": "CC0-1.0",
+  "licenseNote": "Hand-authored sample entries in historical explanatory style for pipeline testing. NOT a copy of Dal's dictionary. Full Dal import requires confirmed public-domain edition via import_dal_dictionary.py.",
+  "source": "WriteLite authors (original sample)",
+  "sourceUrl": "local:resources/lexical/historical-sample.entries.jsonl",
+  "rightsEvidence": "Original CC0 material authored for WriteLite",
+  "retrievedAt": "2026-08-01T00:00:00Z",
+  "entryCount": 4,
+  "sha256": "72b8034a1ee1816e7cc8ffc16b8d476cc819e1f6a2ccb8dc9dc0c1fffa1417a8",
+  "publicDomainVerified": false,
+  "isHistorical": true,
+  "isDal": false
+}

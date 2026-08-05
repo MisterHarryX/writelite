@@ -1,0 +1,101 @@
+WriteLite — Third-Party Notices
+================================
+
+This file documents open-source components that may be bundled with WriteLite
+as internal runtime dependencies. It is a legal/technical notice for
+distributors and developers. It is not shown in the main application UI.
+
+WriteLite uses third-party components with open source licenses. Full license
+texts and copyright notices are retained in the packaged files listed below.
+WriteLite authors do not claim authorship of these third-party components.
+
+
+1) Language checking runtime (bundled under ThirdParty/LanguageEngine/6.4)
+--------------------------------------------------------------------------
+
+  Component name: LanguageTool
+  Version:        6.4
+  Homepage:       https://languagetool.org
+  Copyright:      Copyright (C) 2005-2024 the LanguageTool community and
+                  Daniel Naber (www.danielnaber.de), and other contributors
+                  as indicated in the upstream distribution.
+
+  Primary license:
+    GNU Lesser General Public License (LGPL), Version 2.1
+    (or later terms as stated by the upstream project).
+
+  Local license / notice files (relative to this application package):
+    - ThirdParty/LanguageEngine/6.4/COPYING.txt
+    - ThirdParty/LanguageEngine/6.4/README.md
+    - ThirdParty/LanguageEngine/6.4/third-party-licenses/
+    - ThirdParty/LanguageEngine/6.4/third-party-licenses/README.txt
+    - ThirdParty/LanguageEngine/6.4/third-party-licenses/LGPL-2.1.txt
+    - and other license texts in third-party-licenses/
+
+  Notes:
+    - The component is used as a local, offline internal dependency of
+      WriteLite (local process / localhost only when enabled by WriteLite).
+    - Bundled JAR files and language resources are copies of the upstream
+      distribution and were not modified by the WriteLite authors at the
+      time of packaging.
+    - Individual libraries and language resources used by this component
+      may be under different licenses (Apache-2.0, MIT, BSD, EPL, CPL, and
+      others). See third-party-licenses/README.txt and the license files in
+      third-party-licenses/ for details.
+    - Technical package and file names under ThirdParty/LanguageEngine are
+      retained as required for runtime compatibility. They are not intended
+      as product branding in the WriteLite user interface.
+
+
+2) Local AI — WriteLite-Qwen base models (optional shipped weights)
+-------------------------------------------------------------------
+
+  When a neural model pack is distributed under models/writelight-qwen/, it is
+  derived from the Qwen instruct family (fine-tuned for WriteLite GEC):
+
+  Component name: Qwen2.5 (0.5B Instruct) / optional Qwen3-0.6B
+  Product name:   WriteLite-Qwen-0.6B-GEC
+  Homepage:       https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct
+  License:        Apache License 2.0
+  Notes:
+    - Fine-tuned LoRA adapter / merged weights / GGUF may be packaged separately.
+    - Default app path works without these weights (rules + spell + LanguageTool + Lite engine).
+    - Retain Apache-2.0 notices when redistributing model files.
+    - Runtime prefers local GGUF + llama-server (loopback only) or developer local endpoint.
+
+  Optional Quality base:
+  Component name: Qwen ~1.5B–1.7B Instruct
+  License:        Apache License 2.0 (confirm exact card before shipping)
+
+
+
+3) Other WriteLite dependencies
+-------------------------------
+
+  Additional .NET packages used by WriteLite (if any) are declared in project
+  files and may carry their own licenses via NuGet package metadata.
+
+  Application icon and other original WriteLite assets are not covered by
+  the notices above.
+
+  WriteLite local Lite rules (embedded lite-rules.json) are original WriteLite
+  content, not third-party model weights.
+
+
+4) Source of the bundled LanguageTool runtime
+---------------------------------------------
+
+  Bundled snapshot corresponds to upstream LanguageTool distribution version
+  6.4, packaged under:
+
+    ThirdParty/LanguageEngine/6.4/
+
+  If you distribute WriteLite with this runtime, you must retain this file
+  and the referenced COPYING / third-party-licenses materials.
+OpenRussian Russian Dictionary Data
+Copyright OpenRussian contributors
+https://github.com/Badestrand/russian-dictionary
+Licensed under Creative Commons Attribution-ShareAlike 4.0 International.
+The WriteLite distribution includes a transformed lexical pack with Russian
+lemmas, inflections, and translations. Changes are distributed under the same
+license. The source revision is recorded in resources/lexical/sources.manifest.json.

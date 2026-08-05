@@ -1,0 +1,29 @@
+seed: 42
+# Local mirror preferred (downloaded under ai/models). Override with --model.
+model_name: models/Qwen2.5-0.5B-Instruct
+alt_model_name: Qwen/Qwen2.5-0.5B-Instruct
+model_version: WriteLite-Qwen-0.6B-GEC-1.0.0-dev
+max_seq_length: 512
+train_batch_size: 1
+eval_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 2.0e-4
+num_train_epochs: 1
+max_train_steps: 20
+warmup_ratio: 0.03
+fp16: false
+bf16: false
+logging_steps: 1
+save_steps: 50
+eval_steps: 10
+output_dir: outputs/qwen_smoke
+dataset_dir: data/chat
+early_stopping_patience: 3
+resume_from_checkpoint: null
+smoke: true
+lora_r: 8
+lora_alpha: 16
+lora_dropout: 0.05
+lora_target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+max_new_tokens: 128
+temperature: 0.0

@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>WriteLite</AssemblyName>
+    <RootNamespace>WriteLite</RootNamespace>
+    <ApplicationIcon>..\..\assets\WriteLite.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="..\..\assets\WriteLite.ico" Link="assets\WriteLite.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\resources\rules\**\*.json" Link="resources\rules\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\resources\lexical\**\*" Link="resources\lexical\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\resources\spelling\hunspell\**\*" Link="resources\spelling\hunspell\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+
+    <!-- Local offline language-engine runtime (internal ThirdParty bundle; not embedded as Resource) -->
+    <Content Include="ThirdParty\LanguageEngine\6.4\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="ThirdParty\THIRD_PARTY_NOTICES.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+
+    <!-- Runtime-only WriteLite-Qwen pack. Training checkpoints stay out of Release. -->
+    <Content Include="..\..\models\writelight-qwen\**\*"
+             Exclude="..\..\models\writelight-qwen\adapter\**\*;..\..\models\writelight-qwen\merged-hf\**\*"
+             Link="models\writelight-qwen\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest"
+             Condition="Exists('..\..\models\writelight-qwen')" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WriteLite.AI.Contracts\WriteLite.AI.Contracts.csproj" />
+    <ProjectReference Include="..\WriteLite.AI.Local\WriteLite.AI.Local.csproj" />
+    <ProjectReference Include="..\WriteLite.Language.Core\WriteLite.Language.Core.csproj" />
+    <ProjectReference Include="..\WriteLite.Language.Packs\WriteLite.Language.Packs.csproj" />
+    <ProjectReference Include="..\WriteLite.Language.Punctuation\WriteLite.Language.Punctuation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="WeCantSpell.Hunspell" Version="5.0.1" />
+  </ItemGroup>
+</Project>
+
+

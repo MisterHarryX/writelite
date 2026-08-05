@@ -1,0 +1,16 @@
+# WriteLite-Qwen training stack (developers only; end users do not need Python)
+torch>=2.2.0
+transformers>=4.51.0
+peft>=0.14.0
+accelerate>=1.0.0
+datasets>=3.0.0
+sentencepiece>=0.2.0
+protobuf>=4.25.0
+numpy>=1.26.0
+tqdm>=4.66.0
+pyyaml>=6.0.1
+evaluate>=0.4.2
+sacrebleu>=2.4.0
+safetensors>=0.4.0
+# optional GGUF export helpers (if used):
+# llama-cpp-python>=0.3.0

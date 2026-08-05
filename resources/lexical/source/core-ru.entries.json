@@ -1,0 +1,4171 @@
+[
+  {
+    "lemma": "администратор",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «администратор» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: администратор.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "адрес",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «адрес» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: адрес.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "алгоритм",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «алгоритм» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: алгоритм.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "анализ",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «анализ» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: анализ.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "английский",
+    "language": "ru",
+    "pos": "adj",
+    "inflections": [
+      "английская"
+    ],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Относящийся к английскому языку.",
+        "pos": "adj",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: английский.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "антоним",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «антоним» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: антоним.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "база",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «база» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: база.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "батарея",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «батарея» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: батарея.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "безопасность",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «безопасность» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: безопасность.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "библиотека",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «библиотека» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: библиотека.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "браузер",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «браузер» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: браузер.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "буфер",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «буфер» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: буфер.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "версия",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «версия» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: версия.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "ветка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «ветка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: ветка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "вкладка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «вкладка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: вкладка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "вставка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «вставка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: вставка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "выделение",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «выделение» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: выделение.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "гость",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «гость» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: гость.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "грамматика",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «грамматика» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: грамматика.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "данные",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «данные» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: данные.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "диагностика",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "диагностики"
+    ],
+    "synonyms": [
+      {
+        "value": "проверка",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Выявление неисправностей.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: диагностика.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "диалог",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «диалог» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: диалог.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "диск",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «диск» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: диск.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "домен",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «домен» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: домен.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "доступ",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «доступ» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: доступ.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "драйвер",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «драйвер» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: драйвер.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "друг",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "друга",
+      "друзья",
+      "друзей"
+    ],
+    "synonyms": [
+      {
+        "value": "приятель",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [
+      {
+        "value": "враг",
+        "relevance": 0.8
+      }
+    ],
+    "definitions": [
+      {
+        "text": "Близкий человек.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: друг.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "журналирование",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «журналирование» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: журналирование.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "зависимость",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «зависимость» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: зависимость.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "загрузка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «загрузка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: загрузка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "задача",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «задача» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: задача.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "задержка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «задержка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: задержка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "закрытие",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «закрытие» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: закрытие.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "запрос",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «запрос» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: запрос.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "здравствуйте",
+    "language": "ru",
+    "pos": "interj",
+    "inflections": [],
+    "synonyms": [
+      {
+        "value": "привет",
+        "relevance": 0.9
+      },
+      {
+        "value": "добрый день",
+        "relevance": 0.85
+      }
+    ],
+    "antonyms": [
+      {
+        "value": "до свидания",
+        "relevance": 0.8
+      }
+    ],
+    "definitions": [
+      {
+        "text": "Вежливое приветствие.",
+        "pos": "interj",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: здравствуйте.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "значение",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «значение» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: значение.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "иконка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «иконка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: иконка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "импорт",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «импорт» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: импорт.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "индекс",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «индекс» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: индекс.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "интеллект",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "интеллекта"
+    ],
+    "synonyms": [
+      {
+        "value": "ум",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Способность мыслить.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: интеллект.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "интерфейс",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "интерфейса"
+    ],
+    "synonyms": [
+      {
+        "value": "UI",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Способ взаимодействия человека и программы.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: интерфейс.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "исправить",
+    "language": "ru",
+    "pos": "verb",
+    "inflections": [
+      "исправлю",
+      "исправьте"
+    ],
+    "synonyms": [
+      {
+        "value": "поправить",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Устранить ошибку.",
+        "pos": "verb",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: исправить.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "исправление",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "исправления"
+    ],
+    "synonyms": [
+      {
+        "value": "правка",
+        "relevance": 0.9
+      },
+      {
+        "value": "коррекция",
+        "relevance": 0.85
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Устранение ошибки.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: исправление.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "источник",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «источник» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: источник.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "камера",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «камера» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: камера.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "каталог",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «каталог» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: каталог.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "качество",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «качество» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: качество.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "клавиатура",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «клавиатура» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: клавиатура.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "клиент",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «клиент» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: клиент.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "ключ",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «ключ» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: ключ.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "кнопка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «кнопка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: кнопка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "кодировка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «кодировка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: кодировка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "команда",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «команда» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: команда.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "коммит",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «коммит» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: коммит.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "компонент",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «компонент» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: компонент.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "компьютер",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "компьютера",
+      "компьютеру"
+    ],
+    "synonyms": [
+      {
+        "value": "ПК",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Устройство для обработки данных.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: компьютер.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "конфигурация",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «конфигурация» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: конфигурация.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "конфликт",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «конфликт» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: конфликт.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "копирование",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «копирование» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: копирование.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "красивый",
+    "language": "ru",
+    "pos": "adj",
+    "inflections": [
+      "красивая",
+      "красивое",
+      "красивые"
+    ],
+    "synonyms": [
+      {
+        "value": "прекрасный",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [
+      {
+        "value": "уродливый",
+        "relevance": 0.8
+      }
+    ],
+    "definitions": [
+      {
+        "text": "Приятный на вид.",
+        "pos": "adj",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: красивый.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "курсор",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «курсор» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: курсор.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "кэш",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «кэш» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: кэш.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "лицензия",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «лицензия» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: лицензия.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "локализация",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «локализация» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: локализация.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "локальный",
+    "language": "ru",
+    "pos": "adj",
+    "inflections": [
+      "локальная",
+      "локальное"
+    ],
+    "synonyms": [
+      {
+        "value": "местный",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [
+      {
+        "value": "глобальный",
+        "relevance": 0.8
+      }
+    ],
+    "definitions": [
+      {
+        "text": "Местный; offline-local.",
+        "pos": "adj",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: локальный.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "магазин",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "магазина",
+      "магазины"
+    ],
+    "synonyms": [
+      {
+        "value": "лавка",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Торговая точка.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: магазин.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "макет",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «макет» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: макет.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "масштаб",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «масштаб» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: масштаб.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "меню",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «меню» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: меню.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "метрика",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «метрика» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: метрика.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "микрофон",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «микрофон» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: микрофон.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "модель",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «модель» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: модель.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "модуль",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «модуль» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: модуль.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "монитор",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «монитор» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: монитор.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "морфология",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «морфология» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: морфология.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "мышь",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «мышь» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: мышь.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "надёжность",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «надёжность» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: надёжность.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "настройки",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "настроек"
+    ],
+    "synonyms": [
+      {
+        "value": "опции",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Параметры системы.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: настройки.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "облако",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «облако» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: облако.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "обновление",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «обновление» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: обновление.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "объяснить",
+    "language": "ru",
+    "pos": "verb",
+    "inflections": [
+      "объясню",
+      "объяснил",
+      "объясните"
+    ],
+    "synonyms": [
+      {
+        "value": "разъяснить",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Сделать понятным.",
+        "pos": "verb",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: объяснить.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "окно",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «окно» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: окно.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "онлайн",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «онлайн» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: онлайн.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "орфография",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «орфография» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: орфография.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "ответ",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «ответ» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: ответ.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "открытие",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «открытие» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: открытие.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "отладка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «отладка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: отладка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "отмена",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «отмена» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: отмена.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "отчёт",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «отчёт» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: отчёт.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "офлайн",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «офлайн» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: офлайн.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "очередь",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «очередь» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: очередь.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "ошибка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "ошибки",
+      "ошибку",
+      "ошибок"
+    ],
+    "synonyms": [
+      {
+        "value": "недочёт",
+        "relevance": 0.9
+      },
+      {
+        "value": "баг",
+        "relevance": 0.85
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Неправильность; сбой.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: ошибка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "пакет",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «пакет» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: пакет.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "память",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «память» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: память.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "панель",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «панель» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: панель.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "папка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «папка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: папка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "параметр",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «параметр» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: параметр.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "пароль",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «пароль» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: пароль.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "перевод",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «перевод» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: перевод.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "печать",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «печать» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: печать.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "повтор",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «повтор» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: повтор.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "поддержка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "поддержки"
+    ],
+    "synonyms": [
+      {
+        "value": "помощь",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Помощь; сопровождение.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: поддержка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "подсказка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «подсказка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: подсказка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "поиск",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «поиск» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: поиск.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "поле",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «поле» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: поле.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "пользователь",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "пользователя",
+      "пользователи"
+    ],
+    "synonyms": [
+      {
+        "value": "юзер",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Человек, использующий систему.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: пользователь.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "порт",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «порт» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: порт.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "поток",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «поток» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: поток.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "права",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «права» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: права.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "правило",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «правило» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: правило.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "предложение",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "предложения",
+      "предложению"
+    ],
+    "synonyms": [
+      {
+        "value": "фраза",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Единица речи; оферта.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: предложение.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "привет",
+    "language": "ru",
+    "pos": "interj",
+    "inflections": [
+      "привета",
+      "приветы"
+    ],
+    "synonyms": [
+      {
+        "value": "здравствуй",
+        "relevance": 0.9
+      },
+      {
+        "value": "здравствуйте",
+        "relevance": 0.85
+      }
+    ],
+    "antonyms": [
+      {
+        "value": "прощай",
+        "relevance": 0.8
+      }
+    ],
+    "definitions": [
+      {
+        "text": "Приветственное обращение при встрече.",
+        "pos": "interj",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: привет.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "приложение",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "приложения",
+      "приложению"
+    ],
+    "synonyms": [
+      {
+        "value": "программа",
+        "relevance": 0.9
+      },
+      {
+        "value": "сервис",
+        "relevance": 0.85
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Программный продукт; дополнение к документу.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: приложение.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "приоритет",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «приоритет» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: приоритет.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "проверка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "проверки"
+    ],
+    "synonyms": [
+      {
+        "value": "контроль",
+        "relevance": 0.9
+      },
+      {
+        "value": "тест",
+        "relevance": 0.85
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Контроль правильности.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: проверка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "программа",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "программы",
+      "программе"
+    ],
+    "synonyms": [
+      {
+        "value": "приложение",
+        "relevance": 0.9
+      },
+      {
+        "value": "софт",
+        "relevance": 0.85
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Последовательность инструкций; план.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: программа.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "проект",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «проект» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: проект.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "производительность",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «производительность» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: производительность.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "прокрутка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «прокрутка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: прокрутка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "протокол",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «протокол» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: протокол.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "профиль",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «профиль» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: профиль.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "процесс",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «процесс» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: процесс.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "процессор",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «процессор» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: процессор.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "пунктуация",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «пунктуация» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: пунктуация.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "путь",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «путь» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: путь.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "работает",
+    "language": "ru",
+    "pos": "verb",
+    "inflections": [
+      "работать",
+      "работал",
+      "работают"
+    ],
+    "synonyms": [
+      {
+        "value": "функционирует",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [
+      {
+        "value": "ломается",
+        "relevance": 0.8
+      }
+    ],
+    "definitions": [
+      {
+        "text": "Находится в исправном состоянии.",
+        "pos": "verb",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: работает.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "редактор",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «редактор» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: редактор.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "релиз",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «релиз» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: релиз.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "репозиторий",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «репозиторий» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: репозиторий.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "роль",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «роль» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: роль.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "русский",
+    "language": "ru",
+    "pos": "adj",
+    "inflections": [
+      "русская",
+      "русское"
+    ],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Относящийся к русскому языку.",
+        "pos": "adj",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: русский.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "сайт",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «сайт» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: сайт.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "сборка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «сборка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: сборка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "сервер",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «сервер» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: сервер.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "сертификат",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «сертификат» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: сертификат.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "сессия",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «сессия» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: сессия.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "сеть",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «сеть» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: сеть.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "символ",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «символ» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: символ.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "синоним",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «синоним» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: синоним.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "синхронизация",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «синхронизация» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: синхронизация.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "словарь",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "словаря",
+      "словари"
+    ],
+    "synonyms": [
+      {
+        "value": "лексикон",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Справочник слов и значений.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: словарь.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "слово",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "слова",
+      "слову"
+    ],
+    "synonyms": [
+      {
+        "value": "лексема",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Единица языка.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: слово.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "служба",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «служба» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: служба.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "событие",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «событие» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: событие.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "сообщение",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "сообщения",
+      "сообщению"
+    ],
+    "synonyms": [
+      {
+        "value": "письмо",
+        "relevance": 0.9
+      },
+      {
+        "value": "уведомление",
+        "relevance": 0.85
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Текст, передаваемый адресату.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: сообщение.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "сортировка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «сортировка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: сортировка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "сохранение",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «сохранение» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: сохранение.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "список",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «список» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: список.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "срок",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «срок» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: срок.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "ссылка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «ссылка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: ссылка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "страница",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «страница» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: страница.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "строка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «строка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: строка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "таблица",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «таблица» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: таблица.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "твой",
+    "language": "ru",
+    "pos": "pron",
+    "inflections": [
+      "твоя",
+      "твоё",
+      "твои"
+    ],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Принадлежащий тебе.",
+        "pos": "pron",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: твой.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "текст",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "текста",
+      "тексты"
+    ],
+    "synonyms": [
+      {
+        "value": "документ",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Последовательность слов.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: текст.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "тема",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «тема» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: тема.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "тест",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «тест» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: тест.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "токен",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «токен» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: токен.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "толкование",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «толкование» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: толкование.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "уведомление",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «уведомление» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: уведомление.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "удаление",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «удаление» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: удаление.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "удобство",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «удобство» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: удобство.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "установка",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «установка» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: установка.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "устройство",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «устройство» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: устройство.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "файл",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «файл» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: файл.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "фильтр",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «фильтр» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: фильтр.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "фокус",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «фокус» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: фокус.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "формат",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «формат» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: формат.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "хост",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «хост» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: хост.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "хотеть",
+    "language": "ru",
+    "pos": "verb",
+    "inflections": [
+      "хочу",
+      "хочет",
+      "хотел"
+    ],
+    "synonyms": [
+      {
+        "value": "желать",
+        "relevance": 0.9
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Испытывать желание.",
+        "pos": "verb",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: хотеть.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "цвет",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «цвет» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: цвет.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "человек",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [
+      "человека",
+      "человеку",
+      "люди",
+      "людей"
+    ],
+    "synonyms": [
+      {
+        "value": "личность",
+        "relevance": 0.9
+      },
+      {
+        "value": "индивид",
+        "relevance": 0.85
+      }
+    ],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Живое существо, обладающее разумом и речью.",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: человек.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "число",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «число» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: число.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "шаблон",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «шаблон» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: шаблон.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "шрифт",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «шрифт» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: шрифт.",
+        "senseId": "s1"
+      }
+    ]
+  },
+  {
+    "lemma": "экспорт",
+    "language": "ru",
+    "pos": "noun",
+    "inflections": [],
+    "synonyms": [],
+    "antonyms": [],
+    "definitions": [
+      {
+        "text": "Слово «экспорт» современной общей/технической лексики (CC0-слой WriteLite).",
+        "pos": "noun",
+        "senseId": "s1",
+        "sourceId": "writelight-cc0-tech"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Пример: экспорт.",
+        "senseId": "s1"
+      }
+    ]
+  }
+]

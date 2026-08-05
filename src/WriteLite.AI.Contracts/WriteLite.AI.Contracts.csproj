@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>WriteLite.AI.Contracts</RootNamespace>
+    <AssemblyName>WriteLite.AI.Contracts</AssemblyName>
+    <Description>Versioned AI analysis contracts for the local WriteLite provider.</Description>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,117 @@
+<UserControl x:Class="WriteLite.Views.Pages.SettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource WlBgBase}"
+             FontFamily="{DynamicResource WlFont}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,24">
+        <StackPanel MaxWidth="640">
+            <TextBlock Text="Настройки" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource WlText}" />
+            <TextBlock Text="Изменения применяются сразу и сохраняются локально."
+                       FontSize="13" Foreground="{DynamicResource WlTextSecondary}" Margin="0,6,0,20" />
+
+            <TextBlock Text="ОСНОВНЫЕ" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WlTextSecondary}" Margin="0,0,0,8" />
+            <Border Style="{DynamicResource WlCard}" Margin="0,0,0,16">
+                <StackPanel>
+                    <CheckBox x:Name="ChkChecking" Content="Проверка текста включена" Foreground="{DynamicResource WlText}" Margin="0,0,0,8" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkIndicator" Content="Показывать индикатор рядом с полем" Foreground="{DynamicResource WlText}" Margin="0,0,0,8" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkAutostart" Content="Запускать WriteLite вместе с Windows" Foreground="{DynamicResource WlText}" Margin="0,0,0,4" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <TextBlock x:Name="AutostartHint" FontSize="11" Foreground="{DynamicResource WlTextSecondary}" Margin="22,0,0,8" TextWrapping="Wrap" />
+                    <CheckBox x:Name="ChkOpenMain" Content="Открывать главное окно при запуске" Foreground="{DynamicResource WlText}" Margin="0,0,0,8" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkTrayClose" Content="Сворачивать в трей при закрытии" Foreground="{DynamicResource WlText}" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="ПРОВЕРКА" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WlTextSecondary}" Margin="0,0,0,8" />
+            <Border Style="{DynamicResource WlCard}" Margin="0,0,0,16">
+                <StackPanel>
+                    <CheckBox x:Name="ChkExtended" Content="Расширенная проверка" Foreground="{DynamicResource WlText}" Margin="0,0,0,8" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkOrtho" Content="Орфография" Foreground="{DynamicResource WlText}" Margin="0,0,0,6" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkPunct" Content="Пунктуация" Foreground="{DynamicResource WlText}" Margin="0,0,0,6" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkGrammar" Content="Грамматика" Foreground="{DynamicResource WlText}" Margin="0,0,0,6" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkStyle" Content="Стиль" Foreground="{DynamicResource WlText}" Margin="0,0,0,6" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkTypo" Content="Типографика" Foreground="{DynamicResource WlText}" Margin="0,0,0,6" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkRepeats" Content="Повторы" Foreground="{DynamicResource WlText}" Margin="0,0,0,8" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkSafeAll" Content="Безопасное исправление всех замечаний" Foreground="{DynamicResource WlText}" Margin="0,0,0,8" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <TextBlock Text="Язык проверки: Русский" Foreground="{DynamicResource WlTextSecondary}" FontSize="13" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="ПОВЕДЕНИЕ" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WlTextSecondary}" Margin="0,0,0,8" />
+            <Border Style="{DynamicResource WlCard}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Задержка анализа (мс)" Foreground="{DynamicResource WlText}" Margin="0,0,0,4" />
+                    <TextBox x:Name="TxtDelay" Width="120" HorizontalAlignment="Left" Margin="0,0,0,10"
+                             Background="{DynamicResource WlSurface}" Foreground="{DynamicResource WlText}"
+                             BorderBrush="{DynamicResource WlBorder}" Padding="8,6" LostFocus="Setting_Changed" />
+                    <TextBlock Text="Максимальная длина текста" Foreground="{DynamicResource WlText}" Margin="0,0,0,4" />
+                    <TextBox x:Name="TxtMaxLen" Width="120" HorizontalAlignment="Left" Margin="0,0,0,10"
+                             Background="{DynamicResource WlSurface}" Foreground="{DynamicResource WlText}"
+                             BorderBrush="{DynamicResource WlBorder}" Padding="8,6" LostFocus="Setting_Changed" />
+                    <CheckBox x:Name="ChkGreen" Content="Показывать зелёный индикатор без ошибок" Foreground="{DynamicResource WlText}" Margin="0,0,0,8" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkHidePanel" Content="Скрывать панель после успешного исправления" Foreground="{DynamicResource WlText}" Margin="0,0,0,8" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkOnlyEditing" Content="Показывать интерфейс WriteLite только во время ввода" Foreground="{DynamicResource WlText}" Margin="0,0,0,8" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkLexical" Content="Словарная карточка по двойному щелчку" Foreground="{DynamicResource WlText}" Margin="0,0,0,8" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkMinimizeDup" Content="Минимизировать визуальное дублирование с системной проверкой" Foreground="{DynamicResource WlText}" Margin="0,0,0,8" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <TextBlock Text="Скрывать интерфейс после паузы ввода (сек, 2–30)" Foreground="{DynamicResource WlText}" Margin="0,0,0,4" />
+                    <TextBox x:Name="TxtIdleGrace" Width="80" HorizontalAlignment="Left"
+                             Background="{DynamicResource WlSurface}" Foreground="{DynamicResource WlText}"
+                             BorderBrush="{DynamicResource WlBorder}" Padding="8,6" LostFocus="Setting_Changed" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="СИСТЕМНАЯ ПРОВЕРКА ОРФОГРАФИИ" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WlTextSecondary}" Margin="0,0,0,8" />
+            <Border Style="{DynamicResource WlCard}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource WlText}" FontSize="13" LineHeight="20" Margin="0,0,0,10"
+                               Text="WriteLite не отключает встроенную проверку Windows и браузеров: это небезопасно и не универсально. Подчёркивания WriteLite независимы от системных. Чтобы убрать двойные волны, отключите проверку в самом приложении:" />
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource WlTextSecondary}" FontSize="12" LineHeight="18" Margin="0,0,0,6"
+                               Text="• Microsoft Edge / Chrome: Параметры → Языки → Проверка правописания → выключить." />
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource WlTextSecondary}" FontSize="12" LineHeight="18" Margin="0,0,0,6"
+                               Text="• Microsoft Word: Файл → Параметры → Правописание → снять «Проверять орфографию в процессе набора»." />
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource WlTextSecondary}" FontSize="12" LineHeight="18" Margin="0,0,0,6"
+                               Text="• Блокнот (Windows 11): Параметры → Правописание → выключить." />
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource WlTextSecondary}" FontSize="12" LineHeight="18" Margin="0,0,0,6"
+                               Text="• Outlook: Файл → Параметры → Почта → Орфография и автозамена." />
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource WlTextSecondary}" FontSize="12" LineHeight="18"
+                               Text="Режим «минимизировать дублирование» делает линии WriteLite тоньше и мягче, но не скрывает системные пометки." />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="ЛОКАЛЬНЫЙ ИИ" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WlTextSecondary}" Margin="0,0,0,8" />
+            <Border Style="{DynamicResource WlCard}" Margin="0,0,0,16">
+                <StackPanel>
+                    <CheckBox x:Name="ChkLocalAi" Content="Включить локальный ИИ" Foreground="{DynamicResource WlText}" Margin="0,0,0,8" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                    <CheckBox x:Name="ChkPreferQwen" Content="Использовать Qwen, если сервер доступен" Foreground="{DynamicResource WlText}" Margin="0,0,0,10" Checked="Setting_Changed" Unchecked="Setting_Changed" />
+
+                    <TextBlock Text="Профиль" Foreground="{DynamicResource WlText}" Margin="0,0,0,4" />
+                    <ComboBox x:Name="CmbLocalAiProfile" Width="160" HorizontalAlignment="Left" Margin="0,0,0,10"
+                              Background="{DynamicResource WlSurface}" Foreground="{DynamicResource WlText}"
+                              BorderBrush="{DynamicResource WlBorder}" Padding="8,6" SelectionChanged="Setting_Changed">
+                        <ComboBoxItem Content="Lite" />
+                        <ComboBoxItem Content="Standard" />
+                        <ComboBoxItem Content="Quality" />
+                        <ComboBoxItem Content="Auto" />
+                    </ComboBox>
+
+                    <TextBlock Text="Endpoint Qwen" Foreground="{DynamicResource WlText}" Margin="0,0,0,4" />
+                    <TextBox x:Name="TxtQwenEndpoint" Margin="0,0,0,10"
+                             Background="{DynamicResource WlSurface}" Foreground="{DynamicResource WlText}"
+                             BorderBrush="{DynamicResource WlBorder}" Padding="8,6"
+                             ToolTip="http://127.0.0.1:8742"
+                             LostFocus="Setting_Changed" />
+
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,8">
+                        <Button Style="{DynamicResource WlGhostButton}" Content="Проверить подключение к Qwen" Click="ProbeQwen_Click" />
+                    </StackPanel>
+                    <TextBlock x:Name="LocalAiStatusHint" FontSize="11" Foreground="{DynamicResource WlTextSecondary}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="КОНФИДЕНЦИАЛЬНОСТЬ" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WlTextSecondary}" Margin="0,0,0,8" />
+            <Border Style="{DynamicResource WlCard}">
+                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource WlTextSecondary}" FontSize="13" LineHeight="20"
+                           Text="Проверка текста выполняется локально. WriteLite не отправляет текст во внешние ИИ-сервисы. Сведения о сторонних компонентах — в THIRD_PARTY_NOTICES." />
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

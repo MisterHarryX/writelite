@@ -1,0 +1,14 @@
+{
+  "seed": 42,
+  "target_size": 12000,
+  "counts": {
+    "train": 9551,
+    "validation": 1279,
+    "test": 1170,
+    "all": 12000
+  },
+  "model_version": "WriteLite-Qwen-0.6B-GEC-1.0.0-dev",
+  "format": "chat-messages-writelight-qwen",
+  "license": "Apache-2.0 (synthetic WriteLite seed)",
+  "note": "Offsets in issues are optional; production re-diffs correctedText in C#."
+}

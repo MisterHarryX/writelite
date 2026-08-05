@@ -1,0 +1,316 @@
+<Window x:Class="WriteLite.Views.SuggestionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:WriteLite.Controls"
+        Title="WriteLite"
+        Width="380"
+        Height="520"
+        MinWidth="360"
+        MinHeight="280"
+        MaxHeight="560"
+        WindowStyle="None"
+        ResizeMode="CanResizeWithGrip"
+        ShowInTaskbar="False"
+        Topmost="True"
+        Background="Transparent"
+        AllowsTransparency="True"
+        FontFamily="{DynamicResource WlFont}">
+    <Border Background="{DynamicResource WlBg}"
+            BorderBrush="{DynamicResource WlBorder}"
+            BorderThickness="1"
+            CornerRadius="14"
+            ClipToBounds="True">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="32" ShadowDepth="8" Direction="270" Opacity="0.65" Color="#000000" />
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0"
+                    Padding="14,12,10,10"
+                    BorderBrush="{DynamicResource WlBorder}"
+                    BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <controls:WriteLiteLogo LogoSize="30" VerticalAlignment="Center" />
+                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="WriteLite"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource WlText}" />
+                            <TextBlock x:Name="SummaryText"
+                                       Text="0 замечаний"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource WlTextSecondary}"
+                                       Margin="0,3,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="SettingsButton"
+                                Style="{DynamicResource WlIconButton}"
+                                ToolTip="Скоро"
+                                Click="SettingsButton_Click">
+                            <Viewbox Width="16" Height="16">
+                                <Path Stroke="{DynamicResource WlTextSecondary}"
+                                      StrokeThickness="1.6"
+                                      Fill="Transparent"
+                                      Data="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.2.64.8 1.1 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+                                      Stretch="Uniform" />
+                            </Viewbox>
+                        </Button>
+                        <Button Style="{DynamicResource WlIconButton}"
+                                Click="CloseButton_Click"
+                                ToolTip="Закрыть">
+                            <Viewbox Width="16" Height="16">
+                                <Path Stroke="{DynamicResource WlTextSecondary}"
+                                      StrokeThickness="2"
+                                      StrokeStartLineCap="Round"
+                                      Data="M6 6l12 12 M18 6L6 18"
+                                      Stretch="Uniform" />
+                            </Viewbox>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Tabs -->
+            <Border Grid.Row="1" BorderBrush="{DynamicResource WlBorder}" BorderThickness="0,0,0,1">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Disabled"
+                              Padding="6,0,14,0">
+                    <WrapPanel>
+                        <RadioButton x:Name="TabAll" Style="{DynamicResource WlTabButton}" Content="Все" IsChecked="True" GroupName="IssueTabs" Checked="Tab_Checked" />
+                        <RadioButton x:Name="TabOrthography" Style="{DynamicResource WlTabButton}" Content="Орфография" GroupName="IssueTabs" Checked="Tab_Checked" />
+                        <RadioButton x:Name="TabPunctuation" Style="{DynamicResource WlTabButton}" Content="Пунктуация" GroupName="IssueTabs" Checked="Tab_Checked" />
+                        <RadioButton x:Name="TabGrammar" Style="{DynamicResource WlTabButton}" Content="Грамматика" GroupName="IssueTabs" Checked="Tab_Checked" />
+                        <RadioButton x:Name="TabStyle" Style="{DynamicResource WlTabButton}" Content="Стиль" GroupName="IssueTabs" Checked="Tab_Checked" />
+                    </WrapPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Body -->
+            <Border Grid.Row="2" Background="{DynamicResource WlBgBase}">
+                <Grid>
+                    <ScrollViewer x:Name="IssuesScroller" VerticalScrollBarVisibility="Auto" Padding="12">
+                        <StackPanel>
+                            <Border x:Name="ReadonlyBanner"
+                                    Visibility="Collapsed"
+                                    Background="{DynamicResource WlInfoSoft}"
+                                    BorderBrush="{DynamicResource WlInfoBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="9"
+                                    Padding="12,10"
+                                    Margin="0,0,0,12">
+                                <TextBlock Text="Поле доступно только для анализа. Автоматическое исправление недоступно."
+                                           FontSize="12"
+                                           Foreground="{DynamicResource WlText}"
+                                           TextWrapping="Wrap"
+                                           LineHeight="18" />
+                            </Border>
+
+                            <Border x:Name="DictBanner"
+                                    Visibility="Collapsed"
+                                    Background="{DynamicResource WlWarningSoft}"
+                                    BorderBrush="{DynamicResource WlWarningBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="9"
+                                    Padding="12,10"
+                                    Margin="0,0,0,12">
+                                <TextBlock Text="Словарь ещё загружается. Точность проверки может быть ниже обычного."
+                                           FontSize="12"
+                                           Foreground="{DynamicResource WlText}"
+                                           TextWrapping="Wrap"
+                                           LineHeight="18" />
+                            </Border>
+
+                            <ItemsControl x:Name="IssuesList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <!-- ErrorCard -->
+                                        <Border Margin="0,0,0,8"
+                                                Background="{DynamicResource WlSurface}"
+                                                BorderBrush="{DynamicResource WlBorder}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                SnapsToDevicePixels="True">
+                                            <Border BorderThickness="3,0,0,0"
+                                                    BorderBrush="{Binding CategoryBrush}"
+                                                    Padding="13,11,13,11"
+                                                    Background="Transparent">
+                                                <StackPanel>
+                                                    <DockPanel LastChildFill="True" Margin="0,0,0,7">
+                                                        <Border DockPanel.Dock="Left"
+                                                                Background="{Binding CategoryBackground}"
+                                                                CornerRadius="999"
+                                                                Padding="7,2"
+                                                                Margin="0,0,7,0"
+                                                                VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding CategoryLabel}"
+                                                                       FontSize="10"
+                                                                       FontWeight="Bold"
+                                                                       Foreground="{Binding CategoryBrush}" />
+                                                        </Border>
+                                                        <TextBlock Text="{Binding BriefLabel}"
+                                                                   FontSize="12"
+                                                                   Foreground="{DynamicResource WlTextSecondary}"
+                                                                   TextWrapping="Wrap"
+                                                                   VerticalAlignment="Center" />
+                                                    </DockPanel>
+
+                                                    <WrapPanel Margin="0,0,0,7">
+                                                        <TextBlock Text="{Binding OriginalDisplay}"
+                                                                   FontFamily="{DynamicResource WlFontMono}"
+                                                                   FontSize="14"
+                                                                   Foreground="{DynamicResource WlTextSecondary}"
+                                                                   TextDecorations="Strikethrough"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,0,6,2" />
+                                                        <TextBlock Text="→"
+                                                                   FontSize="12"
+                                                                   Foreground="{DynamicResource WlTextSecondary}"
+                                                                   Margin="0,0,6,2"
+                                                                   VerticalAlignment="Center" />
+                                                        <Border Background="{DynamicResource WlBrandDim}"
+                                                                CornerRadius="4"
+                                                                Padding="5,1"
+                                                                Visibility="{Binding ReplacementVisibility}"
+                                                                Margin="0,0,0,2">
+                                                            <TextBlock Text="{Binding CorrectedDisplay}"
+                                                                       FontFamily="{DynamicResource WlFontMono}"
+                                                                       FontSize="14"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource WlText}"
+                                                                       TextWrapping="Wrap" />
+                                                        </Border>
+                                                    </WrapPanel>
+
+                                                    <TextBlock Text="{Binding Issue.Explanation}"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource WlTextSecondary}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               TextWrapping="NoWrap"
+                                                               Margin="0,0,0,10" />
+
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Button Style="{DynamicResource WlPrimaryButton}"
+                                                                Content="Исправить"
+                                                                HorizontalAlignment="Left"
+                                                                IsEnabled="{Binding CanApply}"
+                                                                Tag="{Binding Issue}"
+                                                                Click="ApplyIssueButton_Click" />
+                                                        <Button Style="{DynamicResource WlGhostButton}"
+                                                                Content="В словарь"
+                                                                Margin="8,0,0,0"
+                                                                Visibility="{Binding DictionaryVisibility}"
+                                                                Tag="{Binding Issue}"
+                                                                Click="AddToDictionary_Click" />
+                                                        <Button Style="{DynamicResource WlGhostButton}"
+                                                                Content="Игнорировать"
+                                                                Margin="8,0,0,0"
+                                                                Tag="{Binding Issue}"
+                                                                Click="IgnoreIssue_Click" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <StackPanel x:Name="EmptyState"
+                                Visibility="Collapsed"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Margin="24">
+                        <Border Width="44" Height="44"
+                                CornerRadius="22"
+                                Background="{DynamicResource WlSuccessSoft}"
+                                HorizontalAlignment="Center"
+                                Margin="0,0,0,14">
+                            <Viewbox Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Path Stroke="{DynamicResource WlSuccessText}"
+                                      StrokeThickness="3"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      Data="M5 13l4 4L19 7" />
+                            </Viewbox>
+                        </Border>
+                        <TextBlock Text="Ошибок не найдено"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource WlText}"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock Text="Текст выглядит безупречно."
+                                   FontSize="12"
+                                   Foreground="{DynamicResource WlTextSecondary}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,6,0,0" />
+                    </StackPanel>
+
+                    <StackPanel x:Name="AnalyzingState"
+                                Visibility="Collapsed"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Margin="24">
+                        <Viewbox Width="22" Height="22"
+                                 HorizontalAlignment="Center"
+                                 Margin="0,0,0,12"
+                                 RenderTransformOrigin="0.5,0.5">
+                            <Viewbox.RenderTransform>
+                                <RotateTransform x:Name="PanelSpinnerRotate" />
+                            </Viewbox.RenderTransform>
+                            <Path Stroke="{DynamicResource WlBrand}"
+                                  StrokeThickness="2.2"
+                                  StrokeStartLineCap="Round"
+                                  Fill="Transparent"
+                                  Data="M12 2a10 10 0 1 0 10 10" />
+                        </Viewbox>
+                        <TextBlock Text="Анализируем текст…"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource WlTextSecondary}"
+                                   HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Footer -->
+            <Border x:Name="FooterBar"
+                    Grid.Row="3"
+                    Padding="14,11"
+                    Background="{DynamicResource WlBg}"
+                    BorderBrush="{DynamicResource WlBorder}"
+                    BorderThickness="0,1,0,0">
+                <StackPanel>
+                    <Button x:Name="ApplyAllButton"
+                            Style="{DynamicResource WlFooterPrimaryButton}"
+                            HorizontalAlignment="Left"
+                            Content="Исправить все безопасные"
+                            Click="ApplyAllButton_Click" />
+                    <TextBlock x:Name="SafeCountText"
+                               FontSize="11"
+                               Foreground="{DynamicResource WlTextSecondary}"
+                               Margin="0,4,0,0" />
+                    <ProgressBar x:Name="ProgressIndicator"
+                                 Height="3"
+                                 Margin="0,8,0,0"
+                                 IsIndeterminate="True"
+                                 Visibility="Collapsed"
+                                 Foreground="{DynamicResource WlBrand}"
+                                 Background="{DynamicResource WlBorder}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

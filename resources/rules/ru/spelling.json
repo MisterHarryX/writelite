@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "packVersion": "ru-1.0.0",
+  "language": "ru",
+  "rules": [
+    {
+      "ruleId": "ru.spelling.voobschem", "language": "ru", "category": "JoinedOrSeparateSpelling", "issueCategory": "Orthography",
+      "title": "Нормативно: «в общем»", "shortMessage": "Сочетание «в общем» пишется раздельно.",
+      "detailedExplanation": "Устойчивое сочетание «в общем» пишется раздельно и с буквой «е».",
+      "badExamples": ["Вообщем, всё готово."], "goodExamples": ["В общем, всё готово."], "severity": "Error",
+      "suggestions": ["в общем"], "safeToApply": true, "source": "Авторское правило WriteLite; нормативная русская орфография.",
+      "implementation": { "engine": "regex", "pattern": "\\bвообщем\\b", "replacement": "в общем", "ignoreCase": true },
+      "tests": [
+        { "name": "wrong", "input": "Вообщем, всё готово.", "shouldMatch": true, "expectedSuggestion": "в общем" },
+        { "name": "correct", "input": "В общем, всё готово.", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.vryad-li", "language": "ru", "category": "JoinedOrSeparateSpelling", "issueCategory": "Orthography",
+      "title": "Нормативно: «вряд ли»", "shortMessage": "Частица «ли» пишется отдельно.",
+      "detailedExplanation": "Сочетание «вряд ли» пишется раздельно; в слове «вряд» используется буква «д».",
+      "badExamples": ["врятли получится"], "goodExamples": ["вряд ли получится"], "severity": "Error",
+      "suggestions": ["вряд ли"], "safeToApply": true, "source": "Авторское правило WriteLite; нормативная русская орфография.",
+      "implementation": { "engine": "regex", "pattern": "\\bврятли\\b", "replacement": "вряд ли", "ignoreCase": true },
+      "tests": [
+        { "name": "wrong", "input": "врятли получится", "shouldMatch": true, "expectedSuggestion": "вряд ли" },
+        { "name": "correct", "input": "вряд ли получится", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.potomu-chto", "language": "ru", "category": "JoinedOrSeparateSpelling", "issueCategory": "Orthography",
+      "title": "Нормативно: «потому что»", "shortMessage": "Союз пишется раздельно.",
+      "detailedExplanation": "Составной союз «потому что» состоит из двух слов.",
+      "badExamples": ["потомучто устал"], "goodExamples": ["потому что устал"], "severity": "Error",
+      "suggestions": ["потому что"], "safeToApply": true, "source": "Авторское правило WriteLite; нормативная русская орфография.",
+      "implementation": { "engine": "regex", "pattern": "\\bпотомучто\\b", "replacement": "потому что", "ignoreCase": true },
+      "tests": [
+        { "name": "wrong", "input": "потомучто устал", "shouldMatch": true, "expectedSuggestion": "потому что" },
+        { "name": "correct", "input": "потому что устал", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.kak-budto", "language": "ru", "category": "JoinedOrSeparateSpelling", "issueCategory": "Orthography",
+      "title": "Нормативно: «как будто»", "shortMessage": "Союз пишется раздельно.",
+      "detailedExplanation": "Сочетание «как будто» пишется в два слова.",
+      "badExamples": ["какбудто ничего не было"], "goodExamples": ["как будто ничего не было"], "severity": "Error",
+      "suggestions": ["как будто"], "safeToApply": true, "source": "Авторское правило WriteLite; нормативная русская орфография.",
+      "implementation": { "engine": "regex", "pattern": "\\bкакбудто\\b", "replacement": "как будто", "ignoreCase": true },
+      "tests": [
+        { "name": "wrong", "input": "какбудто ничего не было", "shouldMatch": true, "expectedSuggestion": "как будто" },
+        { "name": "correct", "input": "как будто ничего не было", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.nakonets-to", "language": "ru", "category": "JoinedOrSeparateSpelling", "issueCategory": "Orthography",
+      "title": "Нормативно: «наконец-то»", "shortMessage": "Частица «-то» пишется через дефис.",
+      "detailedExplanation": "Неопределённая частица «-то» присоединяется к слову дефисом.",
+      "badExamples": ["наконецто закончили"], "goodExamples": ["наконец-то закончили"], "severity": "Error",
+      "suggestions": ["наконец-то"], "safeToApply": true, "source": "Авторское правило WriteLite; нормативная русская орфография.",
+      "implementation": { "engine": "regex", "pattern": "\\bнаконецто\\b", "replacement": "наконец-то", "ignoreCase": true },
+      "tests": [
+        { "name": "wrong", "input": "наконецто закончили", "shouldMatch": true, "expectedSuggestion": "наконец-то" },
+        { "name": "correct", "input": "наконец-то закончили", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.iz-za", "language": "ru", "category": "JoinedOrSeparateSpelling", "issueCategory": "Orthography",
+      "title": "Нормативно: «из-за»", "shortMessage": "Предлог «из-за» пишется через дефис.",
+      "detailedExplanation": "Сложный предлог «из-за» пишется через дефис.",
+      "badExamples": ["изза дождя"], "goodExamples": ["из-за дождя"], "severity": "Error",
+      "suggestions": ["из-за"], "safeToApply": true, "source": "Авторское правило WriteLite; нормативная русская орфография.",
+      "implementation": { "engine": "regex", "pattern": "\\bизза\\b", "replacement": "из-за", "ignoreCase": true },
+      "tests": [
+        { "name": "wrong", "input": "изза дождя", "shouldMatch": true, "expectedSuggestion": "из-за" },
+        { "name": "correct", "input": "из-за дождя", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.v-techenie", "language": "ru", "category": "JoinedOrSeparateSpelling", "issueCategory": "Orthography",
+      "title": "Нормативно: «в течение»", "shortMessage": "Предлог времени пишется раздельно.",
+      "detailedExplanation": "Слитное «втечении» не является нормативным написанием. В значении времени используется «в течение».",
+      "badExamples": ["втечении часа"], "goodExamples": ["в течение часа", "в течении реки"], "severity": "Error",
+      "suggestions": ["в течение"], "safeToApply": true, "source": "Авторское правило WriteLite; нормативная русская орфография.",
+      "implementation": { "engine": "regex", "pattern": "\\bвтечении\\b", "replacement": "в течение", "ignoreCase": true },
+      "tests": [
+        { "name": "joined", "input": "втечении часа", "shouldMatch": true, "expectedSuggestion": "в течение" },
+        { "name": "separate", "input": "в течении реки", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.v-svyazi", "language": "ru", "category": "JoinedOrSeparateSpelling", "issueCategory": "Orthography",
+      "title": "Нормативно: «в связи»", "shortMessage": "Сочетание пишется раздельно.",
+      "detailedExplanation": "Предложное сочетание «в связи» пишется раздельно.",
+      "badExamples": ["всвязи с ремонтом"], "goodExamples": ["в связи с ремонтом"], "severity": "Error",
+      "suggestions": ["в связи"], "safeToApply": true, "source": "Авторское правило WriteLite; нормативная русская орфография.",
+      "implementation": { "engine": "regex", "pattern": "\\bвсвязи\\b", "replacement": "в связи", "ignoreCase": true },
+      "tests": [
+        { "name": "joined", "input": "всвязи с ремонтом", "shouldMatch": true, "expectedSuggestion": "в связи" },
+        { "name": "separate", "input": "в связи с ремонтом", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.v-vide", "language": "ru", "category": "JoinedOrSeparateSpelling", "issueCategory": "Orthography",
+      "title": "Нормативно: «в виде»", "shortMessage": "Сочетание пишется раздельно.",
+      "detailedExplanation": "Предлог «в виде» пишется раздельно.",
+      "badExamples": ["ввиде таблицы"], "goodExamples": ["в виде таблицы"], "severity": "Error",
+      "suggestions": ["в виде"], "safeToApply": true, "source": "Авторское правило WriteLite; нормативная русская орфография.",
+      "implementation": { "engine": "regex", "pattern": "\\bввиде\\b", "replacement": "в виде", "ignoreCase": true },
+      "tests": [
+        { "name": "joined", "input": "ввиде таблицы", "shouldMatch": true, "expectedSuggestion": "в виде" },
+        { "name": "separate", "input": "в виде таблицы", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.ne-byl", "language": "ru", "category": "NeWithPartsOfSpeech", "issueCategory": "Orthography",
+      "title": "«Не» с глаголом пишется раздельно", "shortMessage": "Формы «не был/была/было/были» пишутся раздельно.",
+      "detailedExplanation": "Отрицательная частица «не» с формами глагола «быть» пишется раздельно.",
+      "badExamples": ["Он небыл дома."], "goodExamples": ["Он не был дома."], "severity": "Error",
+      "suggestions": ["не был", "не была", "не было", "не были"], "safeToApply": true, "source": "Авторское правило WriteLite; нормативная русская орфография.",
+      "implementation": { "engine": "regex", "pattern": "\\b([Нн])е(был(?:а|о|и)?)\\b", "replacement": "$1е $2" },
+      "tests": [
+        { "name": "masculine", "input": "Он небыл дома.", "shouldMatch": true, "expectedSuggestion": "не был" },
+        { "name": "separate", "input": "Он не был дома.", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.typo", "language": "ru", "category": "Typo", "issueCategory": "Orthography",
+      "title": "Возможная орфографическая ошибка", "shortMessage": "Слово не найдено в русском словаре.",
+      "detailedExplanation": "Локальный русский словарь предложил похожее написание. Словарная близость не доказывает ошибку, поэтому замена требует подтверждения.",
+      "badExamples": ["пливет"], "goodExamples": ["привет"], "severity": "Warning",
+      "suggestions": ["Проверить предложенные словарём варианты."], "safeToApply": false, "source": "Русский Hunspell и авторский список высокоточных опечаток WriteLite.",
+      "implementation": { "engine": "spelling" },
+      "tests": [
+        { "name": "known-typo", "input": "пливет", "shouldMatch": true, "expectedSuggestion": "привет" },
+        { "name": "known-word", "input": "привет", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.unknown-soft", "language": "ru", "category": "UnknownWord", "issueCategory": "Orthography",
+      "title": "Возможно, неизвестное слово", "shortMessage": "Слово отсутствует в локальном словаре.",
+      "detailedExplanation": "Отсутствие слова в словаре не доказывает ошибку. Можно оставить слово без изменений или добавить его в пользовательский словарь.",
+      "badExamples": ["неизвестноеслово"], "goodExamples": ["привет"], "severity": "Suggestion",
+      "suggestions": ["Проверить слово вручную или добавить его в пользовательский словарь."], "safeToApply": false, "source": "Локальная диагностическая политика WriteLite.",
+      "implementation": { "engine": "spelling" },
+      "tests": [
+        { "name": "unknown", "input": "неизвестноеслово", "shouldMatch": true },
+        { "name": "known", "input": "привет", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.keyboard-layout", "language": "ru", "category": "Typo", "issueCategory": "Orthography",
+      "title": "Возможно, выбрана латинская раскладка", "shortMessage": "Латинские клавиши образуют известное русское слово.",
+      "detailedExplanation": "WriteLite преобразовал латинские клавиши в русскую раскладку и получил известное русское слово. Обычные латинские слова не проверяются.",
+      "badExamples": ["ghbdtn"], "goodExamples": ["привет", "hello"], "severity": "Warning",
+      "suggestions": ["привет"], "safeToApply": false, "source": "Авторская эвристика раскладки WriteLite.",
+      "implementation": { "engine": "spelling" },
+      "tests": [
+        { "name": "wrong-layout", "input": "ghbdtn", "shouldMatch": true, "expectedSuggestion": "привет" },
+        { "name": "ordinary-latin", "input": "hello", "shouldMatch": false }
+      ]
+    }
+  ]
+}

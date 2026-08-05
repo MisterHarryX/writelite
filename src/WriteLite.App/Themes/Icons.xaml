@@ -1,0 +1,6 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Geometry x:Key="WlIconMinimize">M3,8 L13,8</Geometry>
+    <Geometry x:Key="WlIconClose">M3,3 L13,13 M13,3 L3,13</Geometry>
+    <Geometry x:Key="WlIconStatus">M3,8 L7,12 L14,4</Geometry>
+</ResourceDictionary>

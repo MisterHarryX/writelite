@@ -1,0 +1,76 @@
+**/bin/
+**/obj/
+.vs/
+.idea/
+*.user
+*.suo
+**/logs/
+WriteLite.Cloud/node_modules/
+ai/.venv/
+ai/outputs/
+ai/data/processed/
+**/__pycache__/
+*.pyc
+models/writelight-gec/hf/
+
+# --- Build artifacts and large binaries (never commit) ---
+# artifacts/ holds ~18 GB of publish output, llama.cpp builds and release bundles.
+# All of it is reproducible from source; keep it out of history.
+artifacts/
+**/artifacts/
+
+# Model weights. Reproducible via ai/scripts/*; multi-GB each.
+*.gguf
+*.safetensors
+*.bin
+models/writelight-qwen/merged-hf/
+models/writelight-qwen-polish-staging/
+
+# Generated lexical pack (27 MB). Rebuild: python ai/scripts/build_open_lexical_pack.py
+resources/lexical/writelight-lexical-open.json
+
+# Duplicated dictionary inputs; canonical copies live in resources/
+tools/build-spelling/*.aff
+tools/build-spelling/*.dic
+tools/resources/
+
+# Local runtime state
+*.pid
+*.log
+**/TestResults/
+# Dependencies and build results
+**/node_modules/
+**/bin/
+**/obj/
+**/.vs/
+**/TestResults/
+**/dist/
+**/.next/
+
+# Backups and generated artifacts
+backups/
+artifacts/
+ai/.venv/
+ai/outputs/
+ai/data/processed/
+
+# AI models
+*.safetensors
+*.gguf
+*.onnx
+*.ckpt
+*.pth
+*.pt
+
+# Archives and temporary files
+*.zip
+*.7z
+*.rar
+*.tmp
+*.log
+
+# Secrets
+.env
+.env.*
+*.pfx
+*.key

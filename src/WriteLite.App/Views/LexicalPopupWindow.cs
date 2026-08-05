@@ -1,0 +1,760 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Effects;
+using System.Runtime.InteropServices;
+using WriteLite.Services;
+using WriteLite.Services.Lexical;
+using Button = System.Windows.Controls.Button;
+using TabControl = System.Windows.Controls.TabControl;
+using TabItem = System.Windows.Controls.TabItem;
+using HorizontalAlignment = System.Windows.HorizontalAlignment;
+using Orientation = System.Windows.Controls.Orientation;
+using Brushes = System.Windows.Media.Brushes;
+using FontFamily = System.Windows.Media.FontFamily;
+using Size = System.Windows.Size;
+using Cursors = System.Windows.Input.Cursors;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using MediaBrush = System.Windows.Media.Brush;
+using ScrollViewer = System.Windows.Controls.ScrollViewer;
+using ScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
+using DockPanel = System.Windows.Controls.DockPanel;
+using StackPanel = System.Windows.Controls.StackPanel;
+using Grid = System.Windows.Controls.Grid;
+using ColumnDefinition = System.Windows.Controls.ColumnDefinition;
+using Border = System.Windows.Controls.Border;
+using TextBlock = System.Windows.Controls.TextBlock;
+
+namespace WriteLite.Views;
+
+/// <summary>
+/// Reusable Russian dictionary card: morphology, synonyms, definitions and examples.
+/// Positioned via SmartPopupPlacementService; Escape closes; reusable instance.
+/// </summary>
+public sealed class LexicalPopupWindow : Window
+{
+    private static readonly MediaBrush CardBackground = ThemeResource.Brush("WlSurface", Brushes.Black);
+    private static readonly MediaBrush RaisedBackground = ThemeResource.Brush("WlRaised", Brushes.DarkSlateGray);
+    private static readonly MediaBrush CardBorderBrush = ThemeResource.Brush("WlBorder", Brushes.DimGray);
+    private static readonly MediaBrush TextBrush = ThemeResource.Brush("WlText", Brushes.White);
+    private static readonly MediaBrush MutedBrush = ThemeResource.Brush("WlTextSecondary", Brushes.LightGray);
+    private static readonly MediaBrush AccentBrush = ThemeResource.Brush("WlBrand", Brushes.Orange);
+
+    private readonly TextBlock _titleWord = new() { FontSize = 16, FontWeight = FontWeights.SemiBold, Foreground = TextBrush };
+    private readonly TextBlock _subtitle = new() { FontSize = 12, Foreground = MutedBrush, Margin = new Thickness(0, 2, 0, 8) };
+    private readonly TextBlock _status = new() { FontSize = 12, Foreground = MutedBrush, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0) };
+    private readonly TextBlock _source = new() { FontSize = 11, Foreground = MutedBrush, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 6, 0, 0) };
+    private readonly TabControl _tabs;
+    private readonly StackPanel _synonymsPanel = new();
+    private readonly StackPanel _definitionsPanel = new();
+    private readonly StackPanel _examplesPanel = new();
+    private readonly StackPanel _morphologyPanel = new();
+    private readonly StackPanel _rolePanel = new();
+    private readonly TabItem _wordTab;
+    private readonly TabItem _synonymsTab;
+    private readonly TabItem _definitionsTab;
+    private readonly TabItem _examplesTab;
+    private readonly TabItem _roleTab;
+
+    private LexicalLookupResult? _result;
+    private WordRange? _range;
+    private string? _fullText;
+    private string? _targetId;
+    private int _generationId;
+    private long _textVersion;
+    private long _requestId;
+    private bool _supportsWrite;
+    private Rect _pendingAnchor;
+    private bool _repositionPending;
+    public LexicalPopupWindow()
+    {
+        WindowStyle = WindowStyle.None;
+        AllowsTransparency = true;
+        Background = Brushes.Transparent;
+        ShowInTaskbar = false;
+        ShowActivated = false;
+        Topmost = true;
+        Width = 380;
+        MinHeight = 200;
+        MaxHeight = 480;
+        SizeToContent = SizeToContent.Height;
+        FontFamily = ThemeResource.Font("WlFont", "Segoe UI Variable Text, Segoe UI");
+        PreviewKeyDown += OnPreviewKeyDown;
+
+        var card = new Border
+        {
+            Background = CardBackground,
+            BorderBrush = CardBorderBrush,
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(12),
+            Padding = new Thickness(14, 12, 14, 12),
+            Effect = new DropShadowEffect { BlurRadius = 18, ShadowDepth = 4, Direction = 270, Opacity = .4, Color = Colors.Black }
+        };
+
+        var root = new DockPanel();
+        var header = new Grid { Margin = new Thickness(0, 0, 0, 6) };
+        header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        var brand = new Border
+        {
+            Width = 22, Height = 22, CornerRadius = new CornerRadius(7), Background = AccentBrush,
+            Child = new TextBlock
+            {
+                Text = "W", FontSize = 12, FontWeight = FontWeights.SemiBold, Foreground = Brushes.Black,
+                HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center
+            }
+        };
+        var titleRow = new StackPanel { Orientation = Orientation.Horizontal };
+        titleRow.Children.Add(brand);
+        titleRow.Children.Add(new TextBlock
+        {
+            Text = "Словарь", FontSize = 13, FontWeight = FontWeights.SemiBold, Foreground = TextBrush,
+            VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0)
+        });
+        var close = CreateGhostButton("\u00d7", 26, 26);
+        close.Click += (_, _) => Hide();
+        Grid.SetColumn(close, 1);
+        header.Children.Add(titleRow);
+        header.Children.Add(close);
+
+        var headBlock = new StackPanel();
+        headBlock.Children.Add(header);
+        headBlock.Children.Add(_titleWord);
+        headBlock.Children.Add(_subtitle);
+        DockPanel.SetDock(headBlock, Dock.Top);
+        root.Children.Add(headBlock);
+
+        DockPanel.SetDock(_source, Dock.Bottom);
+        root.Children.Add(_source);
+        DockPanel.SetDock(_status, Dock.Bottom);
+        root.Children.Add(_status);
+
+        _tabs = new TabControl
+        {
+            Background = Brushes.Transparent,
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(0)
+        };
+        _wordTab = CreateTab("Слово", _morphologyPanel);
+        _synonymsTab = CreateTab("Синонимы", _synonymsPanel);
+        _definitionsTab = CreateTab("Значения", _definitionsPanel);
+        _examplesTab = CreateTab("Примеры", _examplesPanel);
+        _roleTab = CreateTab("Роль", _rolePanel);
+        _tabs.Items.Add(_wordTab);
+        _tabs.Items.Add(_synonymsTab);
+        _tabs.Items.Add(_definitionsTab);
+        _tabs.Items.Add(_examplesTab);
+        _tabs.Items.Add(_roleTab);
+        root.Children.Add(_tabs);
+
+        card.Child = root;
+        Content = card;
+    }
+
+    public event EventHandler<LexicalReplaceRequestedEventArgs>? ReplaceRequested;
+    public event EventHandler? ClosedByUser;
+
+    public long CurrentRequestId => _requestId;
+
+    public void ShowLoading(
+        WordRange range,
+        Rect physicalAnchor,
+        long requestId,
+        string targetId,
+        int generationId,
+        long textVersion)
+    {
+        _range = range;
+        _requestId = requestId;
+        _targetId = targetId;
+        _generationId = generationId;
+        _textVersion = textVersion;
+        _titleWord.Text = range.Word;
+        _subtitle.Text = "Загрузка…";
+        _status.Text = "";
+        _source.Text = "";
+        ClearPanels();
+        _synonymsPanel.Children.Add(Muted("Ищем в локальном словаре…"));
+        SetTabVisibility(word: true, synonyms: true, definitions: false, examples: false, role: false);
+        _pendingAnchor = physicalAnchor;
+        EnsureVisible();
+        PositionForAnchor(_pendingAnchor, new Size(Width, 200));
+        ScheduleMeasuredReposition();
+    }
+
+    /// <summary>
+    /// A lexical card is only valid for the exact text generation that created
+    /// it.  The owner uses this to cancel a pending lookup as soon as focus or
+    /// text changes, instead of showing a result for an old field.
+    /// </summary>
+    public bool IsBoundTo(string? targetId, int generationId, long textVersion) =>
+        !string.IsNullOrWhiteSpace(targetId)
+        && string.Equals(_targetId, targetId, StringComparison.Ordinal)
+        && _generationId == generationId
+        && _textVersion == textVersion;
+
+    public void ShowResult(
+        LexicalLookupResult result,
+        WordRange range,
+        string fullText,
+        string targetId,
+        int generationId,
+        long textVersion,
+        bool supportsWrite,
+        Rect physicalAnchor,
+        long requestId)
+    {
+        if (requestId != 0 && _requestId != 0 && requestId < _requestId)
+        {
+            CompatibilityLogger.Technical("lexical-stale-ui-rejected", $"request={requestId}");
+            return;
+        }
+
+        _result = result;
+        _range = range;
+        _fullText = fullText;
+        _targetId = targetId;
+        _generationId = generationId;
+        _textVersion = textVersion;
+        _supportsWrite = supportsWrite;
+        _requestId = requestId;
+        _pendingAnchor = physicalAnchor;
+
+        _titleWord.Text = result.Word;
+        var pos = PosLabel(result.PartOfSpeech);
+        const string lang = "RU";
+        _subtitle.Text = string.IsNullOrEmpty(pos)
+            ? $"{lang} · {result.Lemma}"
+            : $"{lang} · {pos} · {result.Lemma}";
+
+        _status.Text = result.StatusMessage ?? "";
+        PopulateSource(result);
+        PopulateMorphology(result);
+        PopulateSynonyms(result);
+        PopulateDefinitions(result);
+        PopulateExamples(result);
+        PopulateRole(result);
+        SetTabVisibility(
+            word: true,
+            synonyms: result.Synonyms.Count > 0 || result.Antonyms is { Count: > 0 },
+            definitions: result.Definitions.Count > 0,
+            examples: result.Examples.Count > 0,
+            role: result.Syntax is not null);
+
+        EnsureVisible();
+        PositionForAnchor(_pendingAnchor, new Size(Width, Math.Max(MinHeight, 220)));
+        ScheduleMeasuredReposition();
+    }
+
+    public void ShowError(string message, long requestId)
+    {
+        if (requestId != 0 && _requestId != 0 && requestId < _requestId) return;
+        ClearPanels();
+        _status.Text = message;
+        _source.Text = "";
+        _synonymsPanel.Children.Add(Muted(message));
+        SetTabVisibility(word: false, synonyms: true, definitions: false, examples: false, role: false);
+        EnsureVisible();
+    }
+
+    public new void Hide()
+    {
+        if (!IsVisible)
+        {
+            return;
+        }
+
+        base.Hide();
+        ClosedByUser?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void PopulateMorphology(LexicalLookupResult result)
+    {
+        _morphologyPanel.Children.Clear();
+        _morphologyPanel.Children.Add(new TextBlock
+        {
+            Text = $"Слово: {result.Word}",
+            FontSize = 14,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = TextBrush
+        });
+        _morphologyPanel.Children.Add(new TextBlock
+        {
+            Text = $"Лемма: {result.Lemma}",
+            FontSize = 13,
+            Foreground = TextBrush,
+            Margin = new Thickness(0, 4, 0, 0)
+        });
+        if (!string.IsNullOrEmpty(result.SurfaceFormNote))
+            _morphologyPanel.Children.Add(Muted(result.SurfaceFormNote));
+
+        var pos = PosLabel(result.PartOfSpeech);
+        if (!string.IsNullOrEmpty(pos))
+            _morphologyPanel.Children.Add(new TextBlock { Text = $"Часть речи: {pos}", FontSize = 12, Foreground = MutedBrush, Margin = new Thickness(0, 6, 0, 0) });
+
+        if (result.Morphology is { } m)
+        {
+            foreach (var line in m.ToDisplayList())
+                _morphologyPanel.Children.Add(new TextBlock { Text = line, FontSize = 12, Foreground = TextBrush, Margin = new Thickness(0, 2, 0, 0) });
+        }
+    }
+
+    private void PopulateRole(LexicalLookupResult result)
+    {
+        _rolePanel.Children.Clear();
+        if (result.Syntax is null)
+        {
+            _rolePanel.Children.Add(Muted("Роль в предложении не определена."));
+            return;
+        }
+
+        var s = result.Syntax;
+        _rolePanel.Children.Add(new TextBlock
+        {
+            Text = RoleRu(s.Role),
+            FontSize = 14,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = AccentBrush
+        });
+        _rolePanel.Children.Add(new TextBlock
+        {
+            Text = s.Explanation,
+            FontSize = 13,
+            Foreground = TextBrush,
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 6, 0, 8)
+        });
+        if (!string.IsNullOrEmpty(s.HeadWord))
+            _rolePanel.Children.Add(Muted($"Связано с: {s.HeadWord}"));
+
+        if (result.Relations is { Count: > 0 })
+        {
+            _rolePanel.Children.Add(new TextBlock
+            {
+                Text = "Связи",
+                FontSize = 12,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = TextBrush,
+                Margin = new Thickness(0, 8, 0, 4)
+            });
+            foreach (var r in result.Relations.Take(6))
+                _rolePanel.Children.Add(Muted($"{r.RelationType}: {r.Value}" + (r.Label is null ? "" : $" ({r.Label})")));
+        }
+    }
+
+    private static string RoleRu(SyntacticRole role) => role switch
+    {
+        SyntacticRole.Subject => "Подлежащее",
+        SyntacticRole.Predicate => "Сказуемое",
+        SyntacticRole.Object => "Дополнение",
+        SyntacticRole.Attribute => "Определение",
+        SyntacticRole.Adverbial => "Обстоятельство",
+        SyntacticRole.PrepositionalObject => "Предложное дополнение",
+        SyntacticRole.ConjunctionRole => "Союз",
+        SyntacticRole.ParticleRole => "Служебное слово",
+        _ => "Роль не определена"
+    };
+
+    private void PopulateSynonyms(LexicalLookupResult result)
+    {
+        _synonymsPanel.Children.Clear();
+        if (result.Synonyms.Count == 0 && (result.Antonyms is null || result.Antonyms.Count == 0))
+        {
+            _synonymsPanel.Children.Add(Muted("Синонимы не найдены в локальном словаре."));
+            return;
+        }
+
+        foreach (var s in result.Synonyms)
+        {
+            var row = new Border
+            {
+                Background = RaisedBackground,
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(10, 8, 10, 8),
+                Margin = new Thickness(0, 0, 0, 6)
+            };
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            var text = new StackPanel();
+            text.Children.Add(new TextBlock { Text = s.Value, FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = TextBrush });
+            var meta = string.Join(" · ", new[] { PosLabel(s.PartOfSpeech), s.Label }.Where(x => !string.IsNullOrWhiteSpace(x)));
+            if (!string.IsNullOrEmpty(meta))
+                text.Children.Add(new TextBlock { Text = meta, FontSize = 11, Foreground = MutedBrush, Margin = new Thickness(0, 2, 0, 0) });
+            grid.Children.Add(text);
+            if (s.CanReplace && _supportsWrite)
+            {
+                var btn = CreateAccentButton("Заменить");
+                var capture = s;
+                btn.Click += (_, _) => RequestReplace(capture.Value);
+                Grid.SetColumn(btn, 1);
+                grid.Children.Add(btn);
+            }
+            else
+            {
+                var copy = CreateGhostButton("Копировать", double.NaN, 28);
+                var capture = s.Value;
+                copy.Click += (_, _) =>
+                {
+                    try { System.Windows.Clipboard.SetText(capture); } catch { /* ignore */ }
+                };
+                Grid.SetColumn(copy, 1);
+                grid.Children.Add(copy);
+            }
+
+            row.Child = grid;
+            _synonymsPanel.Children.Add(row);
+        }
+
+        if (result.Antonyms is { Count: > 0 })
+        {
+            _synonymsPanel.Children.Add(new TextBlock
+            {
+                Text = "Антонимы",
+                FontSize = 12,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = TextBrush,
+                Margin = new Thickness(0, 10, 0, 6)
+            });
+            foreach (var a in result.Antonyms)
+            {
+                var row = new Border
+                {
+                    Background = RaisedBackground,
+                    CornerRadius = new CornerRadius(10),
+                    Padding = new Thickness(10, 8, 10, 8),
+                    Margin = new Thickness(0, 0, 0, 6),
+                    Child = new TextBlock { Text = a.Value, FontSize = 14, Foreground = TextBrush }
+                };
+                _synonymsPanel.Children.Add(row);
+            }
+        }
+    }
+
+    private void PopulateDefinitions(LexicalLookupResult result)
+    {
+        _definitionsPanel.Children.Clear();
+        if (result.Definitions.Count == 0)
+        {
+            _definitionsPanel.Children.Add(Muted("Толкование не найдено."));
+            return;
+        }
+
+        var i = 1;
+        foreach (var d in result.Definitions)
+        {
+            var block = new StackPanel { Margin = new Thickness(0, 0, 0, 10) };
+            var head = $"{i}. {d.Definition}";
+            block.Children.Add(new TextBlock { Text = head, FontSize = 13, Foreground = TextBrush, TextWrapping = TextWrapping.Wrap });
+            var tags = new List<string?>();
+            if (d.IsHistorical) tags.Add("историч.");
+            if (!string.IsNullOrEmpty(d.EraLabel)) tags.Add(d.EraLabel);
+            tags.Add(PosLabel(d.PartOfSpeech));
+            tags.Add(d.UsageLabel);
+            if (!string.IsNullOrEmpty(d.SourceId) && d.SourceId is not "writelight-cc0")
+                tags.Add(d.SourceId);
+            var meta = string.Join(" · ", tags.Where(x => !string.IsNullOrWhiteSpace(x)));
+            if (!string.IsNullOrEmpty(meta))
+                block.Children.Add(new TextBlock { Text = meta, FontSize = 11, Foreground = MutedBrush, Margin = new Thickness(0, 2, 0, 0) });
+            _definitionsPanel.Children.Add(block);
+            i++;
+        }
+    }
+
+    private void PopulateExamples(LexicalLookupResult result)
+    {
+        _examplesPanel.Children.Clear();
+        if (result.Examples.Count == 0)
+        {
+            _examplesPanel.Children.Add(Muted("Примеры отсутствуют в локальном пакете."));
+            return;
+        }
+
+        foreach (var e in result.Examples)
+        {
+            var tb = new TextBlock
+            {
+                FontSize = 13,
+                Foreground = TextBrush,
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+            HighlightWord(tb, e.Text, e.HighlightWord ?? result.Word);
+            _examplesPanel.Children.Add(tb);
+        }
+    }
+
+    private void RequestReplace(string value)
+    {
+        if (_range is null || _fullText is null || _targetId is null) return;
+        ReplaceRequested?.Invoke(this, new LexicalReplaceRequestedEventArgs
+        {
+            TargetId = _targetId,
+            GenerationId = _generationId,
+            TextVersion = _textVersion,
+            FullText = _fullText,
+            Start = _range.Start,
+            Length = _range.Length,
+            OriginalWord = _range.Word,
+            Replacement = value,
+            SupportsDirectWrite = _supportsWrite,
+            RequestId = _requestId
+        });
+    }
+
+    private void EnsureVisible()
+    {
+        if (!IsVisible) Show();
+    }
+
+    private void ScheduleMeasuredReposition()
+    {
+        if (_repositionPending) return;
+        _repositionPending = true;
+        Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () =>
+        {
+            _repositionPending = false;
+            if (!IsVisible) return;
+            UpdateLayout();
+            PositionForAnchor(_pendingAnchor, new Size(ActualWidth > 0 ? ActualWidth : Width, ActualHeight > 0 ? ActualHeight : MinHeight));
+        });
+    }
+
+    private void PositionForAnchor(Rect physicalScreenAnchor, Size popupSize)
+    {
+        var dpi = VisualTreeHelper.GetDpi(this);
+        var anchor = SmartPopupPlacementService.Scale(physicalScreenAnchor, dpi.DpiScaleX, dpi.DpiScaleY);
+        var workArea = GetCurrentWorkArea(physicalScreenAnchor, dpi.DpiScaleX, dpi.DpiScaleY);
+        var placement = SmartPopupPlacementService.PlaceAnchoredPopup(
+            new SmartPlacementContext(workArea, AnchorBounds: anchor, FieldBounds: null),
+            popupSize);
+        Left = placement.Location.X;
+        Top = placement.Location.Y;
+    }
+
+    private static Rect GetCurrentWorkArea(Rect physicalAnchor, double dpiX, double dpiY)
+    {
+        var point = new NativePoint { X = (int)Math.Round(physicalAnchor.Left), Y = (int)Math.Round(physicalAnchor.Top) };
+        var monitor = MonitorFromPoint(point, 2);
+        var info = new MonitorInfo { Size = Marshal.SizeOf<MonitorInfo>() };
+        if (monitor != IntPtr.Zero && GetMonitorInfo(monitor, ref info))
+        {
+            var work = new Rect(info.Work.Left, info.Work.Top, info.Work.Right - info.Work.Left, info.Work.Bottom - info.Work.Top);
+            return SmartPopupPlacementService.Scale(work, dpiX, dpiY);
+        }
+
+        return SystemParameters.WorkArea;
+    }
+
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            Hide();
+            e.Handled = true;
+        }
+    }
+
+    private void ClearPanels()
+    {
+        _synonymsPanel.Children.Clear();
+        _definitionsPanel.Children.Clear();
+        _examplesPanel.Children.Clear();
+        _morphologyPanel.Children.Clear();
+        _rolePanel.Children.Clear();
+    }
+
+    private void SetTabVisibility(
+        bool word,
+        bool synonyms,
+        bool definitions,
+        bool examples,
+        bool role)
+    {
+        _wordTab.Visibility = word ? Visibility.Visible : Visibility.Collapsed;
+        _synonymsTab.Visibility = synonyms ? Visibility.Visible : Visibility.Collapsed;
+        _definitionsTab.Visibility = definitions ? Visibility.Visible : Visibility.Collapsed;
+        _examplesTab.Visibility = examples ? Visibility.Visible : Visibility.Collapsed;
+        _roleTab.Visibility = role ? Visibility.Visible : Visibility.Collapsed;
+
+        if (_tabs.SelectedItem is not TabItem selected || selected.Visibility != Visibility.Visible)
+        {
+            _tabs.SelectedItem = new[] { _wordTab, _synonymsTab, _definitionsTab, _examplesTab, _roleTab }
+                .First(tab => tab.Visibility == Visibility.Visible);
+        }
+    }
+
+    private void PopulateSource(LexicalLookupResult result)
+    {
+        _source.Inlines.Clear();
+        if (string.IsNullOrWhiteSpace(result.PackSource) && string.IsNullOrWhiteSpace(result.PackLicense))
+            return;
+
+        _source.Inlines.Add(new System.Windows.Documents.Run("Источник: "));
+        var source = result.PackSource ?? "локальный пакет WriteLite";
+        if (Uri.TryCreate(source, UriKind.Absolute, out var sourceUri)
+            && sourceUri.Scheme is "https" or "http")
+        {
+            var link = new System.Windows.Documents.Hyperlink(new System.Windows.Documents.Run(source))
+            {
+                NavigateUri = sourceUri,
+                Foreground = AccentBrush
+            };
+            link.RequestNavigate += (_, args) =>
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(args.Uri.AbsoluteUri)
+                    {
+                        UseShellExecute = true
+                    });
+                }
+                catch { /* browser is optional */ }
+            };
+            _source.Inlines.Add(link);
+        }
+        else
+        {
+            _source.Inlines.Add(new System.Windows.Documents.Run(source));
+        }
+
+        if (!string.IsNullOrWhiteSpace(result.PackLicense))
+            _source.Inlines.Add(new System.Windows.Documents.Run($" · лицензия: {result.PackLicense}"));
+    }
+
+    private static TabItem CreateTab(string header, StackPanel content)
+    {
+        var scroll = new ScrollViewer
+        {
+            Content = content,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            MaxHeight = 280,
+            Padding = new Thickness(0, 8, 0, 0)
+        };
+        return new TabItem
+        {
+            Header = header,
+            Content = scroll,
+            Foreground = TextBrush,
+            Background = Brushes.Transparent,
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(10, 6, 10, 6),
+            FontSize = 12
+        };
+    }
+
+    private static TextBlock Muted(string text) => new()
+    {
+        Text = text,
+        FontSize = 12,
+        Foreground = MutedBrush,
+        TextWrapping = TextWrapping.Wrap
+    };
+
+    private static void HighlightWord(TextBlock block, string text, string word)
+    {
+        if (string.IsNullOrEmpty(word) || string.IsNullOrEmpty(text))
+        {
+            block.Text = text;
+            return;
+        }
+
+        var idx = text.IndexOf(word, StringComparison.OrdinalIgnoreCase);
+        if (idx < 0)
+        {
+            block.Text = text;
+            return;
+        }
+
+        if (idx > 0) block.Inlines.Add(new System.Windows.Documents.Run(text[..idx]) { Foreground = TextBrush });
+        block.Inlines.Add(new System.Windows.Documents.Run(text.Substring(idx, word.Length))
+        {
+            Foreground = AccentBrush,
+            FontWeight = FontWeights.SemiBold
+        });
+        if (idx + word.Length < text.Length)
+            block.Inlines.Add(new System.Windows.Documents.Run(text[(idx + word.Length)..]) { Foreground = TextBrush });
+    }
+
+    private static string PosLabel(LexicalPartOfSpeech pos) => pos switch
+    {
+        LexicalPartOfSpeech.Noun => "сущ.",
+        LexicalPartOfSpeech.Verb => "гл.",
+        LexicalPartOfSpeech.Adjective => "прил.",
+        LexicalPartOfSpeech.Adverb => "нар.",
+        LexicalPartOfSpeech.Pronoun => "мест.",
+        LexicalPartOfSpeech.Preposition => "предл.",
+        LexicalPartOfSpeech.Conjunction => "союз",
+        LexicalPartOfSpeech.Particle => "част.",
+        LexicalPartOfSpeech.Interjection => "межд.",
+        LexicalPartOfSpeech.Numeral => "числ.",
+        _ => ""
+    };
+
+    private static Button CreateAccentButton(string text)
+    {
+        return new Button
+        {
+            Content = text,
+            Padding = new Thickness(10, 4, 10, 4),
+            Margin = new Thickness(8, 0, 0, 0),
+            Background = AccentBrush,
+            Foreground = Brushes.Black,
+            BorderThickness = new Thickness(0),
+            Cursor = Cursors.Hand,
+            FontSize = 12,
+            FontWeight = FontWeights.SemiBold
+        };
+    }
+
+    private static Button CreateGhostButton(string text, double width, double height)
+    {
+        return new Button
+        {
+            Content = text,
+            Width = width,
+            Height = height,
+            Background = Brushes.Transparent,
+            Foreground = MutedBrush,
+            BorderThickness = new Thickness(0),
+            Cursor = Cursors.Hand,
+            FontSize = 14
+        };
+    }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromPoint(NativePoint point, uint flags);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    private static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo monitorInfo);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativePoint { public int X; public int Y; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeRect { public int Left; public int Top; public int Right; public int Bottom; }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    private struct MonitorInfo
+    {
+        public int Size;
+        public NativeRect Monitor;
+        public NativeRect Work;
+        public uint Flags;
+    }
+}
+
+public sealed class LexicalReplaceRequestedEventArgs : EventArgs
+{
+    public required string TargetId { get; init; }
+    public required int GenerationId { get; init; }
+    public required long TextVersion { get; init; }
+    public required string FullText { get; init; }
+    public required int Start { get; init; }
+    public required int Length { get; init; }
+    public required string OriginalWord { get; init; }
+    public required string Replacement { get; init; }
+    public required bool SupportsDirectWrite { get; init; }
+    public long RequestId { get; init; }
+}

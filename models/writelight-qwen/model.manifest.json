@@ -1,0 +1,35 @@
+{
+  "modelVersion": "WriteLite-Qwen-0.6B-GEC-1.0.1",
+  "schemaVersion": 1,
+  "family": "WriteLite-Qwen",
+  "baseModel": "ai\\models\\Qwen2.5-0.5B-Instruct",
+  "profile": "Lite",
+  "runtime": "llama.cpp-gguf-or-hf-adapter",
+  "exportedAt": "2026-07-13T11:31:12.993333+00:00",
+  "paths": {
+    "adapter": "adapter",
+    "mergedHf": "merged-hf",
+    "gguf": "writelight-qwen-q4_k_m.gguf"
+  },
+  "inference": {
+    "temperature": 0.0,
+    "maxNewTokens": 96,
+    "thinking": false,
+    "systemPromptFixed": true,
+    "systemPromptRevision": 3,
+    "conservativeRewriteContract": true
+  },
+  "weightsSha256": "a25b3ab9c1b19fe01facd11978383d8035d1e22728dad000bba70b7a437aa390",
+  "trainingArtifactsBundledInRelease": false,
+  "runtimeProfile": {
+    "memoryBudgetMiB": 5120,
+    "contextTokens": 768,
+    "batchTokens": 256,
+    "microBatchTokens": 128,
+    "parallelSlots": 1,
+    "cpuOnly": true
+  },
+  "mergeOk": true,
+  "mergeError": null,
+  "license": "Apache-2.0 (Qwen base) + WriteLite fine-tune adapter"
+}

@@ -1,0 +1,20 @@
+{"id":"ru_spell_1","lang":"ru","category":"spelling","source":"Привет, как дила?","target":"Привет, как дела?","must_not_change":[]}
+{"id":"ru_punct_1","lang":"ru","category":"punctuation","source":"Когда он пришёл было поздно.","target":"Когда он пришёл, было поздно.","must_not_change":[]}
+{"id":"ru_grammar_1","lang":"ru","category":"grammar","source":"Она небыл дома.","target":"Она не была дома.","must_not_change":[]}
+{"id":"ru_clean_1","lang":"ru","category":"false_positive","source":"Сегодня хорошая погода.","target":"Сегодня хорошая погода.","must_not_change":[]}
+{"id":"en_spell_1","lang":"en","category":"spelling","source":"I recieve your message.","target":"I receive your message.","must_not_change":[]}
+{"id":"en_grammar_1","lang":"en","category":"grammar","source":"I has a book.","target":"I have a book.","must_not_change":[]}
+{"id":"en_clean_1","lang":"en","category":"false_positive","source":"The meeting starts at 10:00.","target":"The meeting starts at 10:00.","must_not_change":[]}
+{"id":"mixed_1","lang":"mixed","category":"mixed","source":"WriteLite помогает писать better text.","target":"WriteLite помогает писать better text.","must_not_change":["WriteLite"]}
+{"id":"url_1","lang":"en","category":"protected","source":"See https://example.com/docs for details.","target":"See https://example.com/docs for details.","must_not_change":["https://example.com/docs"]}
+{"id":"email_1","lang":"en","category":"protected","source":"Contact support@example.com today.","target":"Contact support@example.com today.","must_not_change":["support@example.com"]}
+{"id":"path_1","lang":"en","category":"protected","source":"Open C:\\Projects\\WriteLite\\README.md now.","target":"Open C:\\Projects\\WriteLite\\README.md now.","must_not_change":["C:\\Projects\\WriteLite\\README.md"]}
+{"id":"json_1","lang":"en","category":"protected","source":"Payload: {\"ok\": true, \"n\": 3}","target":"Payload: {\"ok\": true, \"n\": 3}","must_not_change":["{\"ok\": true, \"n\": 3}"]}
+{"id":"code_1","lang":"en","category":"protected","source":"Call TextFieldMonitor.Start() first.","target":"Call TextFieldMonitor.Start() first.","must_not_change":["TextFieldMonitor.Start()"]}
+{"id":"numbers_1","lang":"ru","category":"protected","source":"Версия 1.2.3 и дата 19.07.2026.","target":"Версия 1.2.3 и дата 19.07.2026.","must_not_change":["1.2.3","19.07.2026"]}
+{"id":"short_1","lang":"ru","category":"short","source":"Ок","target":"Ок","must_not_change":[]}
+{"id":"business_1","lang":"ru","category":"style","source":"Прошу предоставить документы до пятницы.","target":"Прошу предоставить документы до пятницы.","must_not_change":[]}
+{"id":"long_1","lang":"ru","category":"readability","source":"Мы обсудили план проекта и согласовали сроки и распределили задачи между командами и решили созвониться завтра.","target":"Мы обсудили план проекта и согласовали сроки и распределили задачи между командами и решили созвониться завтра.","must_not_change":[]}
+{"id":"repeat_1","lang":"ru","category":"repeats","source":"Это очень очень важно.","target":"Это очень важно.","must_not_change":[]}
+{"id":"en_punct_1","lang":"en","category":"punctuation","source":"However we continued.","target":"However, we continued.","must_not_change":[]}
+{"id":"cmd_1","lang":"en","category":"protected","source":"Run: dotnet test WriteLite.sln -c Release","target":"Run: dotnet test WriteLite.sln -c Release","must_not_change":["dotnet test WriteLite.sln -c Release"]}

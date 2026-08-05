@@ -1,0 +1,55 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Поле ввода в продуктовом стиле: скруглённая рамка как у кнопок и карточек.
+        Подсказка-плейсхолдер берётся из Tag, поэтому не требует отдельного контрола:
+        <TextBox Style="{DynamicResource WlTextInput}" Tag="Добавьте слово…" />
+    -->
+    <Style x:Key="WlTextInput" TargetType="TextBox">
+        <Setter Property="Background" Value="{DynamicResource WlRaised}" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource WlBrand}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="12,9" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource WlBrandDim}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+                        <Grid>
+                            <TextBlock x:Name="Placeholder"
+                                       Text="{TemplateBinding Tag}"
+                                       Foreground="{DynamicResource WlTextMuted}"
+                                       FontSize="{TemplateBinding FontSize}"
+                                       Margin="{TemplateBinding Padding}"
+                                       VerticalAlignment="Center"
+                                       IsHitTestVisible="False"
+                                       Visibility="Collapsed" />
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"
+                                          BorderThickness="0"
+                                          Background="Transparent" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="Placeholder" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="BorderBrush" Value="{DynamicResource WlBrand}" /></Trigger>
+            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.55" /></Trigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

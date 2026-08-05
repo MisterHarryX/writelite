@@ -1,0 +1,7 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+    <Duration x:Key="WlMotionFast">0:0:0.10</Duration>
+    <Duration x:Key="WlMotionNormal">0:0:0.16</Duration>
+    <sys:Boolean x:Key="WlReducedMotion">False</sys:Boolean>
+</ResourceDictionary>

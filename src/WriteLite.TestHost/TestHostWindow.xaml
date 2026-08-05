@@ -1,0 +1,57 @@
+<Window x:Class="WriteLite.TestHost.TestHostWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
+        Title="WriteLite UIA Test Host"
+        Width="880" Height="720" MinWidth="720" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        AutomationProperties.AutomationId="WriteLiteTestHostWindow">
+    <Grid Background="#F4F5F7" Margin="20">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Margin="0,0,0,14">
+            <TextBlock Text="WriteLite UI Automation Test Host" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Text="Editable, read-only, password, WPF and WinForms controls for cross-process validation." Foreground="#596171" Margin="0,5,0,0" />
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="WPF TextBox" FontWeight="SemiBold" />
+                    <TextBox x:Name="WpfInput" AutomationProperties.AutomationId="WpfInput" Text="Привет как тваи дела" Margin="0,6,0,14" Padding="8" />
+                    <TextBlock Text="WPF multiline / scroll" FontWeight="SemiBold" />
+                    <TextBox x:Name="MultilineInput" AutomationProperties.AutomationId="MultilineInput"
+                             Text="Первая строка&#x0a;Модель глупая нужю до&#x0a;Third English line" AcceptsReturn="True"
+                             TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Height="110" Margin="0,6,0,14" Padding="8" />
+                    <TextBlock Text="RichTextBox" FontWeight="SemiBold" />
+                    <RichTextBox x:Name="RichInput" AutomationProperties.AutomationId="RichInput" Height="100" Margin="0,6,0,14" Padding="8">
+                        <FlowDocument><Paragraph>Это оптимальный вариант решения.</Paragraph></FlowDocument>
+                    </RichTextBox>
+                    <TextBlock Text="Mixed RU / EN" FontWeight="SemiBold" />
+                    <TextBox x:Name="MixedInput" AutomationProperties.AutomationId="MixedInput"
+                             Text="WriteLite проверяет русский English и mixed текст." Margin="0,6,0,14" Padding="8" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="WinForms TextBox" FontWeight="SemiBold" />
+                    <Border BorderBrush="#AAB0BA" BorderThickness="1" Margin="0,6,0,14" Height="34">
+                        <wfi:WindowsFormsHost x:Name="WinFormsHost" AutomationProperties.AutomationId="WinFormsHost" />
+                    </Border>
+                    <TextBlock Text="Read-only" FontWeight="SemiBold" />
+                    <TextBox x:Name="ReadOnlyInput" AutomationProperties.AutomationId="ReadOnlyInput"
+                             Text="Этот текст предназначен только для чтения" IsReadOnly="True" Margin="0,6,0,14" Padding="8" />
+                    <TextBlock Text="Password" FontWeight="SemiBold" />
+                    <PasswordBox x:Name="PasswordInput" AutomationProperties.AutomationId="PasswordInput"
+                                 Password="secret-value" Margin="0,6,0,14" Padding="8" />
+                    <TextBlock Text="Long text / scroll" FontWeight="SemiBold" />
+                    <TextBox x:Name="LongInput" AutomationProperties.AutomationId="LongInput" AcceptsReturn="True" TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto" Height="170" Margin="0,6,0,14" Padding="8" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button x:Name="ChangeTextButton" AutomationProperties.AutomationId="ChangeTextButton" Content="Сменить текст"
+                    Padding="14,7" Margin="0,0,8,0" Click="ChangeText_Click" />
+            <Button x:Name="CloseHostButton" AutomationProperties.AutomationId="CloseHostButton" Content="Закрыть host"
+                    Padding="14,7" Click="CloseHost_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

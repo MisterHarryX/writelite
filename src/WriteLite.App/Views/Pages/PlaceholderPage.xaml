@@ -1,0 +1,35 @@
+<UserControl x:Class="WriteLite.Views.Pages.PlaceholderPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource WlBgBase}"
+             FontFamily="{DynamicResource WlFont}">
+    <Grid Margin="32,28">
+        <Border Style="{DynamicResource WlCard}"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                MaxWidth="560"
+                Padding="24,22">
+            <StackPanel>
+                <TextBlock x:Name="TitleText"
+                           Text="Раздел"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource WlText}" />
+                <TextBlock x:Name="DescriptionText"
+                           Text=""
+                           FontSize="13"
+                           Foreground="{DynamicResource WlTextSecondary}"
+                           TextWrapping="Wrap"
+                           Margin="0,10,0,0"
+                           LineHeight="20" />
+                <Button x:Name="ActionButton"
+                        Style="{DynamicResource WlGhostButton}"
+                        Content="Открыть"
+                        HorizontalAlignment="Left"
+                        Margin="0,18,0,0"
+                        Visibility="Collapsed"
+                        Click="ActionButton_Click" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

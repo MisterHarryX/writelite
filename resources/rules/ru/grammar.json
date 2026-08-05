@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "packVersion": "ru-1.0.0",
+  "language": "ru",
+  "rules": [
+    {
+      "ruleId": "ru.style.repeated-word",
+      "language": "ru",
+      "category": "RepeatedWord",
+      "issueCategory": "Style",
+      "title": "Повтор слова",
+      "shortMessage": "Одно слово повторено дважды подряд.",
+      "detailedExplanation": "Точное повторение соседнего слова может быть опечаткой. Правило не применяется автоматически, потому что повтор иногда используется намеренно.",
+      "badExamples": ["Это это важно."],
+      "goodExamples": ["Это важно."],
+      "severity": "Warning",
+      "suggestions": ["Удалить один повтор после проверки смысла."],
+      "safeToApply": false,
+      "source": "Авторское правило WriteLite.",
+      "implementation": { "engine": "builtin" },
+      "tests": [
+        { "name": "adjacent-repeat", "input": "Это это важно.", "shouldMatch": true, "expectedSuggestion": "Это" },
+        { "name": "ordinary-text", "input": "Это действительно важно.", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.chtoby-solid",
+      "language": "ru",
+      "category": "JoinedOrSeparateSpelling",
+      "issueCategory": "Grammar",
+      "title": "«Чтобы» в значении цели пишется слитно",
+      "shortMessage": "В придаточной части цели нужен союз «чтобы».",
+      "detailedExplanation": "В придаточной части цели союз «чтобы» пишется слитно. Вопросительное сочетание «что бы» правило не изменяет.",
+      "badExamples": ["Он пришёл, что бы помочь."],
+      "goodExamples": ["Он пришёл, чтобы помочь.", "Что бы выбрать?"],
+      "severity": "Error",
+      "suggestions": ["чтобы"],
+      "safeToApply": true,
+      "source": "Авторское контекстное правило WriteLite; нормативное написание союза «чтобы».",
+      "implementation": { "engine": "builtin" },
+      "tests": [
+        { "name": "purpose-clause", "input": "Он пришёл, что бы помочь.", "shouldMatch": true, "expectedSuggestion": "чтобы" },
+        { "name": "free-choice", "input": "Что бы выбрать?", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.reflexive-finite",
+      "language": "ru",
+      "category": "TsyaTisya",
+      "issueCategory": "Grammar",
+      "title": "Форма на «-тся»",
+      "shortMessage": "В личной форме глагола пишется «-тся».",
+      "detailedExplanation": "Если к глаголу задаётся вопрос «что делает?», мягкий знак перед «ся» не пишется. Правило срабатывает только в ограниченных высокоточных контекстах.",
+      "badExamples": ["Проблема становиться важнее."],
+      "goodExamples": ["Проблема становится важнее.", "Проблема может становиться важнее."],
+      "severity": "Error",
+      "suggestions": ["Использовать личную форму на «-тся»."],
+      "safeToApply": true,
+      "source": "Авторское контекстное правило WriteLite; правило написания -тся/-ться.",
+      "implementation": { "engine": "builtin" },
+      "tests": [
+        { "name": "finite-form", "input": "Проблема становиться важнее.", "shouldMatch": true, "expectedSuggestion": "становится" },
+        { "name": "infinitive", "input": "Проблема может становиться важнее.", "shouldMatch": false }
+      ]
+    },
+    {
+      "ruleId": "ru.readability.long-sentence",
+      "language": "ru",
+      "category": "LongSentence",
+      "issueCategory": "Readability",
+      "title": "Перегруженное предложение",
+      "shortMessage": "Предложение может быть трудно читать.",
+      "detailedExplanation": "Длинное предложение стоит перечитать и при необходимости разделить. Это рекомендация, а не доказанная ошибка.",
+      "badExamples": ["Очень длинное предложение с несколькими придаточными частями и множеством уточнений."],
+      "goodExamples": ["Короткое предложение."],
+      "severity": "Warning",
+      "suggestions": ["Проверить структуру и при необходимости разделить предложение."],
+      "safeToApply": false,
+      "source": "Авторская эвристика WriteLite.",
+      "implementation": { "engine": "builtin" },
+      "tests": [
+        { "name": "long", "input": "Предложение из более чем тридцати слов с несколькими частями должно быть отмечено как требующее ручной проверки структуры.", "shouldMatch": true },
+        { "name": "short", "input": "Короткое предложение.", "shouldMatch": false }
+      ]
+    }
+  ]
+}

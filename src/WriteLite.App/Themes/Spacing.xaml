@@ -1,0 +1,19 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+    <Thickness x:Key="WlSpaceXs">4</Thickness>
+    <Thickness x:Key="WlSpaceSm">8</Thickness>
+    <Thickness x:Key="WlSpaceMd">12</Thickness>
+    <Thickness x:Key="WlSpaceLg">16</Thickness>
+    <Thickness x:Key="WlSpaceXl">24</Thickness>
+    <Thickness x:Key="WlPagePadding">32,28</Thickness>
+    <CornerRadius x:Key="WlRadius">12</CornerRadius>
+    <CornerRadius x:Key="WlRadiusSm">10</CornerRadius>
+    <CornerRadius x:Key="WlRadiusXs">8</CornerRadius>
+    <CornerRadius x:Key="WlRadiusLg">18</CornerRadius>
+    <CornerRadius x:Key="WlRadiusPill">999</CornerRadius>
+    <sys:Double x:Key="WlIndicatorSize">30</sys:Double>
+    <sys:Double x:Key="WlPanelWidth">380</sys:Double>
+    <sys:Double x:Key="WlPanelMaxHeight">560</sys:Double>
+    <sys:Double x:Key="WlPenMenuWidth">210</sys:Double>
+</ResourceDictionary>

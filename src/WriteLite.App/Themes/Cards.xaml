@@ -1,0 +1,14 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DropShadowEffect x:Key="WlShadowPanel" BlurRadius="28" ShadowDepth="8" Direction="270" Opacity="0.56" Color="#000000" />
+    <DropShadowEffect x:Key="WlShadowSm" BlurRadius="10" ShadowDepth="2" Direction="270" Opacity="0.36" Color="#000000" />
+    <DropShadowEffect x:Key="WlShadowBrand" BlurRadius="16" ShadowDepth="1" Direction="270" Opacity="0.30" Color="#FF7A00" />
+    <DropShadowEffect x:Key="WlShadowSuccess" BlurRadius="10" ShadowDepth="1" Direction="270" Opacity="0.25" Color="#42C77A" />
+    <Style x:Key="WlPremiumCard" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource WlSurface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="Padding" Value="20" />
+    </Style>
+</ResourceDictionary>

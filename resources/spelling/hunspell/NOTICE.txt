@@ -1,0 +1,9 @@
+WriteLite ships LibreOffice Hunspell dictionaries for offline orthography.
+
+- en_US.* — from LibreOffice/dictionaries (SCOWL-derived; see LibreOffice license notes)
+- ru_RU.* — from LibreOffice/dictionaries (LGPL/MPL; see LibreOffice ru_RU README)
+
+Engine: WeCantSpell.Hunspell (MIT)
+
+These files are used only for local spelling. They are not explanatory dictionaries
+and are separate from WriteLite lexical definition packs.

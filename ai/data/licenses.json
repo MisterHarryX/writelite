@@ -1,0 +1,57 @@
+{
+  "datasets": [
+    {
+      "name": "writelight-synthetic-seed",
+      "version": "1.0.0",
+      "source": "ai/data/seed (generated in-repo)",
+      "license": "Apache-2.0",
+      "commercial_use": true,
+      "modification": true,
+      "redistribution": true,
+      "attribution_required": false,
+      "decision": "include"
+    },
+    {
+      "name": "C4 / mC4 (optional external)",
+      "version": "n/a",
+      "source": "https://huggingface.co/datasets/mc4",
+      "license": "ODC-BY",
+      "commercial_use": true,
+      "modification": true,
+      "redistribution": true,
+      "attribution_required": true,
+      "decision": "optional-with-attribution"
+    },
+    {
+      "name": "lang-8 / JFLEG (optional English GEC)",
+      "version": "n/a",
+      "source": "research corpora — check per-corpus terms",
+      "license": "research-varies",
+      "commercial_use": false,
+      "modification": true,
+      "redistribution": false,
+      "attribution_required": true,
+      "decision": "exclude-from-commercial-default"
+    }
+  ],
+  "models": [
+    {
+      "name": "google/mt5-small",
+      "license": "Apache-2.0",
+      "commercial_use": true,
+      "modification": true,
+      "redistribute_weights": true,
+      "attribution_required": true,
+      "decision": "primary"
+    },
+    {
+      "name": "Qwen/Qwen2.5-0.5B-Instruct",
+      "license": "Apache-2.0",
+      "commercial_use": true,
+      "modification": true,
+      "redistribute_weights": true,
+      "attribution_required": true,
+      "decision": "backup"
+    }
+  ]
+}

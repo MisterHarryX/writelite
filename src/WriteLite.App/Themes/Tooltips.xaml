@@ -1,0 +1,11 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style x:Key="WlSiteToolTip" TargetType="ToolTip">
+        <Setter Property="Background" Value="{DynamicResource WlTooltipBg}" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="9,6" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+</ResourceDictionary>

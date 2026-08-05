@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-01",
+  "sources": [
+    {
+      "sourceName": "OpenRussian Russian Dictionary Data",
+      "author": "OpenRussian contributors",
+      "rightsHolder": "OpenRussian contributors",
+      "version": "git commit 50e210c4803237779cb562bc1abcea529066031c",
+      "sourceUrl": "https://github.com/Badestrand/russian-dictionary/tree/50e210c4803237779cb562bc1abcea529066031c",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://github.com/Badestrand/russian-dictionary/blob/50e210c4803237779cb562bc1abcea529066031c/LICENSE",
+      "retrievalDate": "2026-08-01",
+      "purpose": "Русские леммы, части речи и словоформы для локального морфологического поиска.",
+      "sourceArtifacts": [
+        {
+          "name": "nouns.csv",
+          "url": "https://raw.githubusercontent.com/Badestrand/russian-dictionary/50e210c4803237779cb562bc1abcea529066031c/nouns.csv",
+          "bytes": 8378501,
+          "sha256": "c388f9e6dde51932832be8d7e9afdbe9f0acee72fcf70677f0fe25ea61293c84"
+        },
+        {
+          "name": "verbs.csv",
+          "url": "https://raw.githubusercontent.com/Badestrand/russian-dictionary/50e210c4803237779cb562bc1abcea529066031c/verbs.csv",
+          "bytes": 5650332,
+          "sha256": "8659de6799b949fb35f080b08088fb7d347ed300490954ebb380a31642646e1d"
+        },
+        {
+          "name": "adjectives.csv",
+          "url": "https://raw.githubusercontent.com/Badestrand/russian-dictionary/50e210c4803237779cb562bc1abcea529066031c/adjectives.csv",
+          "bytes": 8343334,
+          "sha256": "89ab5d10dcd2f21f6b485de704aef372f32251468e3aa96f18b21e259f26b80a"
+        },
+        {
+          "name": "others.csv",
+          "url": "https://raw.githubusercontent.com/Badestrand/russian-dictionary/50e210c4803237779cb562bc1abcea529066031c/others.csv",
+          "bytes": 344444,
+          "sha256": "9f22a16b17fc9a564298112168b667fced11aafb254ccebf5b7544fc37cdaa92"
+        }
+      ],
+      "transformations": [
+        "Проверка SHA-256 до разбора",
+        "Удаление служебных апострофов и комбинируемого ударения из индексных форм",
+        "Нормализация пробелов",
+        "Дедупликация лемм и словоформ с учётом е/ё",
+        "Исключение всех нерусских статей и переводных полей",
+        "Слияние с отдельным CC0-ядром WriteLite"
+      ],
+      "attributionRequirements": "Указать OpenRussian contributors, URL источника и CC BY-SA 4.0; производный пакет распространять на совместимых условиях.",
+      "commercialUse": "allowed",
+      "modification": "allowed under CC-BY-SA-4.0",
+      "redistribution": "allowed under CC-BY-SA-4.0",
+      "inDefaultRelease": true
+    },
+    {
+      "sourceName": "WriteLite Russian Explanatory Core",
+      "author": "WriteLite authors",
+      "rightsHolder": "WriteLite authors",
+      "version": "4.0.0-ru-cc0",
+      "sourceUrl": "local:resources/lexical/source/core-ru.entries.json",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievalDate": "2026-08-01",
+      "purpose": "Ограниченный локальный толковый слой: русские определения, примеры, синонимы и антонимы.",
+      "sourceSha256": "00150c579fa3ae2edd90eade0a95fce77d8fc44a4a4771024103a3310aeea39a",
+      "transformations": [
+        "Проверка схемы и обязательного языка ru",
+        "Дедупликация лемм с учётом е/ё",
+        "Детерминированная сортировка и компактная JSON-сериализация"
+      ],
+      "attributionRequirements": "none",
+      "commercialUse": "allowed",
+      "modification": "allowed",
+      "redistribution": "allowed",
+      "inDefaultRelease": true,
+      "notes": "Оригинальный ограниченный корпус WriteLite; не академический словарь и не словарь Ожегова."
+    },
+    {
+      "sourceName": "WriteLite Historical Sample",
+      "author": "WriteLite authors",
+      "rightsHolder": "WriteLite authors",
+      "version": "1.0.0-sample",
+      "sourceUrl": "local:resources/lexical/historical-sample.entries.jsonl",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievalDate": "2026-08-01",
+      "purpose": "Тестовый исторический слой, явно помечаемый в карточке.",
+      "sourceSha256": "72b8034a1ee1816e7cc8ffc16b8d476cc819e1f6a2ccb8dc9dc0c1fffa1417a8",
+      "manifestSha256": "c69090b966f4ccccd05c5c70fef5c7137bcac464f1129eda49a7d158021fe2be",
+      "transformations": ["none"],
+      "attributionRequirements": "none",
+      "commercialUse": "allowed",
+      "modification": "allowed",
+      "redistribution": "allowed",
+      "inDefaultRelease": true,
+      "notes": "Оригинальные примеры WriteLite; не текст словаря Даля."
+    },
+    {
+      "sourceName": "Dal historical editions",
+      "author": "В. И. Даль",
+      "version": "user-provided edition only",
+      "sourceUrl": "local import via ai/scripts/import_dal_dictionary.py",
+      "license": "Public Domain only after edition-level verification",
+      "retrievalDate": null,
+      "purpose": "Необязательный пользовательский исторический пакет.",
+      "sourceSha256": null,
+      "transformations": ["Импорт только после проверки издания, прав и SHA-256"],
+      "attributionRequirements": "Метаданные конкретного издания обязательны.",
+      "commercialUse": "blocked until edition verification",
+      "modification": "blocked until edition verification",
+      "redistribution": "not included by WriteLite",
+      "inDefaultRelease": false
+    },
+    {
+      "sourceName": "Ozhegov Dictionary",
+      "author": "С. И. Ожегов / правообладатели конкретного издания",
+      "version": "not bundled",
+      "sourceUrl": null,
+      "license": "No redistributable license verified",
+      "retrievalDate": null,
+      "purpose": "Не включён; возможен только пользовательский лицензированный пакет.",
+      "sourceSha256": null,
+      "transformations": [],
+      "attributionRequirements": "По договору с правообладателем.",
+      "commercialUse": "blocked",
+      "modification": "blocked",
+      "redistribution": "blocked",
+      "inDefaultRelease": false
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "resources/lexical/writelight-lexical-core.json",
+      "purpose": "Быстрый загрузочный толковый пакет",
+      "entries": 176,
+      "sha256": "13cc4c19e6ea7c42476f1f9e42414dd339bea9e40d85763855e004798899c64c"
+    },
+    {
+      "path": "resources/lexical/writelight-lexical-open.json",
+      "purpose": "Основной русский морфологический и справочный пакет",
+      "entries": 58441,
+      "sha256": "d7a84cf9abb98ac2aa6871c216a63087c5043adbd1a1e75fd10938fdf797ea84"
+    },
+    {
+      "path": "resources/lexical/morphology-index.json",
+      "purpose": "Детерминированный индекс лемм и словоформ",
+      "entries": 58441,
+      "sha256": "192336fc96d508dd8ab87b66fc503486306d511da8586ee8183c9eb269fb6d49"
+    }
+  ]
+}

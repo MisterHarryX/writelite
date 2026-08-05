@@ -1,0 +1,112 @@
+<Window x:Class="WriteLite.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:WriteLite.Controls"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="WriteLite"
+        Width="1240"
+        Height="760"
+        MinWidth="980"
+        MinHeight="540"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        Background="{DynamicResource WlBgBase}"
+        FontFamily="{DynamicResource WlFont}"
+        ShowInTaskbar="True">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="48" ResizeBorderThickness="6" CornerRadius="12" GlassFrameThickness="0" />
+    </shell:WindowChrome.WindowChrome>
+
+    <Border Background="{DynamicResource WlBgBase}"
+            BorderBrush="{DynamicResource WlBorder}"
+            BorderThickness="1"
+            CornerRadius="12">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="48" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="210" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Row="0" Grid.ColumnSpan="2"
+                    Background="{DynamicResource WlBg}"
+                    BorderBrush="{DynamicResource WlBorder}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="12,12,0,0"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid Margin="14,0,8,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <controls:WriteLiteLogo LogoSize="26" />
+                        <TextBlock Text="WriteLite" Foreground="{DynamicResource WlText}"
+                                   FontFamily="{DynamicResource WlFontDisplay}" FontSize="14"
+                                   FontWeight="SemiBold" Margin="10,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Background="{DynamicResource WlSuccessSoft}"
+                            BorderBrush="{DynamicResource WlSuccessBorder}" BorderThickness="1"
+                            CornerRadius="999" Padding="10,4">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="6" Height="6" Fill="{DynamicResource WlSuccess}" Margin="0,0,7,0" />
+                            <TextBlock Text="Работает локально" Foreground="{DynamicResource WlSuccessText}" FontSize="11" />
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Button Style="{DynamicResource WlWindowButton}" ToolTip="Свернуть" Click="Minimize_Click">
+                            <Path Data="{DynamicResource WlIconMinimize}" Stroke="{DynamicResource WlTextSecondary}" StrokeThickness="1.4" />
+                        </Button>
+                        <Button Style="{DynamicResource WlWindowButton}" ToolTip="Закрыть в трей" Click="Close_Click">
+                            <Path Data="{DynamicResource WlIconClose}" Stroke="{DynamicResource WlTextSecondary}" StrokeThickness="1.4" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Grid.Column="0" Style="{DynamicResource WlNavigationRail}">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+                        <Border Height="1" Background="{DynamicResource WlBorder}" Margin="6,0,6,10" />
+                        <Button Style="{DynamicResource WlNavButton}" Content="Завершить WriteLite" Click="Exit_Click"
+                                Foreground="{DynamicResource WlTextSecondary}" />
+                        <TextBlock Text="Локальная beta · конфиденциально" FontSize="10"
+                                   Foreground="{DynamicResource WlTextMuted}" Margin="12,10,0,2" />
+                    </StackPanel>
+
+                    <ScrollViewer Style="{DynamicResource WlScrollViewer}">
+                        <StackPanel>
+                            <TextBlock Text="РАБОЧЕЕ ПРОСТРАНСТВО" Style="{DynamicResource WlSectionLabel}" Margin="12,8,0,8" />
+                            <Button x:Name="NavHome" Style="{DynamicResource WlNavButton}" Tag="Active" Content="Главная" Click="Nav_Click" />
+                            <Button x:Name="NavPanel" Style="{DynamicResource WlNavButton}" Content="Проверка текста" Click="Nav_Click" />
+                            <Button x:Name="NavDictionary" Style="{DynamicResource WlNavButton}" Content="Словари" Click="Nav_Click" />
+                            <Button x:Name="NavLocalAi" Style="{DynamicResource WlNavButton}" Content="Локальный AI" Click="Nav_Click" />
+                            <Button x:Name="NavApps" Style="{DynamicResource WlNavButton}" Content="Поддерживаемые приложения" Click="Nav_Click" />
+
+                            <TextBlock Text="УПРАВЛЕНИЕ" Style="{DynamicResource WlSectionLabel}" Margin="12,20,0,8" />
+                            <Button x:Name="NavIndicator" Style="{DynamicResource WlNavButton}" Content="Исключения" Click="Nav_Click" />
+                            <Button x:Name="NavSettings" Style="{DynamicResource WlNavButton}" Content="Настройки" Click="Nav_Click" />
+                            <Button x:Name="NavDiagnostics" Style="{DynamicResource WlNavButton}" Content="Диагностика" Click="Nav_Click" />
+                            <Button x:Name="NavAbout" Style="{DynamicResource WlNavButton}" Content="О программе" Click="Nav_Click" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <Grid Grid.Row="1" Grid.Column="1" Background="{DynamicResource WlBgBase}">
+                <Ellipse Width="420" Height="420" Fill="{DynamicResource WlBrandSoft}"
+                         HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-250,-210,0"
+                         IsHitTestVisible="False" />
+                <ContentControl x:Name="PageHost" KeyboardNavigation.TabNavigation="Cycle" />
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
