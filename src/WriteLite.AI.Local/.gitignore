@@ -1,0 +1,7 @@
+
+# Locally cached NuGet packages (restore normally comes from nuget.org)
+ai/.nupkgs/
+# Generated lexical intermediates
+ai/data/lexical/opencorpora-forms.tsv
+ai/data/lexical/opencorpora-forms.tsv.stats.json
+ai/data/frequency/

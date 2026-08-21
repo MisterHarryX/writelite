@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "packVersion": "ru-1.0.0",
+  "packVersion": "ru-1.6.0",
   "language": "ru",
   "rules": [
     {
@@ -11,16 +11,33 @@
       "title": "Повтор слова",
       "shortMessage": "Одно слово повторено дважды подряд.",
       "detailedExplanation": "Точное повторение соседнего слова может быть опечаткой. Правило не применяется автоматически, потому что повтор иногда используется намеренно.",
-      "badExamples": ["Это это важно."],
-      "goodExamples": ["Это важно."],
+      "badExamples": [
+        "Это это важно."
+      ],
+      "goodExamples": [
+        "Это важно."
+      ],
       "severity": "Warning",
-      "suggestions": ["Удалить один повтор после проверки смысла."],
+      "suggestions": [
+        "Удалить один повтор после проверки смысла."
+      ],
       "safeToApply": false,
       "source": "Авторское правило WriteLite.",
-      "implementation": { "engine": "builtin" },
+      "implementation": {
+        "engine": "builtin"
+      },
       "tests": [
-        { "name": "adjacent-repeat", "input": "Это это важно.", "shouldMatch": true, "expectedSuggestion": "Это" },
-        { "name": "ordinary-text", "input": "Это действительно важно.", "shouldMatch": false }
+        {
+          "name": "adjacent-repeat",
+          "input": "Это это важно.",
+          "shouldMatch": true,
+          "expectedSuggestion": "Это"
+        },
+        {
+          "name": "ordinary-text",
+          "input": "Это действительно важно.",
+          "shouldMatch": false
+        }
       ]
     },
     {
@@ -31,16 +48,34 @@
       "title": "«Чтобы» в значении цели пишется слитно",
       "shortMessage": "В придаточной части цели нужен союз «чтобы».",
       "detailedExplanation": "В придаточной части цели союз «чтобы» пишется слитно. Вопросительное сочетание «что бы» правило не изменяет.",
-      "badExamples": ["Он пришёл, что бы помочь."],
-      "goodExamples": ["Он пришёл, чтобы помочь.", "Что бы выбрать?"],
+      "badExamples": [
+        "Он пришёл, что бы помочь."
+      ],
+      "goodExamples": [
+        "Он пришёл, чтобы помочь.",
+        "Что бы выбрать?"
+      ],
       "severity": "Error",
-      "suggestions": ["чтобы"],
+      "suggestions": [
+        "чтобы"
+      ],
       "safeToApply": true,
       "source": "Авторское контекстное правило WriteLite; нормативное написание союза «чтобы».",
-      "implementation": { "engine": "builtin" },
+      "implementation": {
+        "engine": "builtin"
+      },
       "tests": [
-        { "name": "purpose-clause", "input": "Он пришёл, что бы помочь.", "shouldMatch": true, "expectedSuggestion": "чтобы" },
-        { "name": "free-choice", "input": "Что бы выбрать?", "shouldMatch": false }
+        {
+          "name": "purpose-clause",
+          "input": "Он пришёл, что бы помочь.",
+          "shouldMatch": true,
+          "expectedSuggestion": "чтобы"
+        },
+        {
+          "name": "free-choice",
+          "input": "Что бы выбрать?",
+          "shouldMatch": false
+        }
       ]
     },
     {
@@ -51,16 +86,79 @@
       "title": "Форма на «-тся»",
       "shortMessage": "В личной форме глагола пишется «-тся».",
       "detailedExplanation": "Если к глаголу задаётся вопрос «что делает?», мягкий знак перед «ся» не пишется. Правило срабатывает только в ограниченных высокоточных контекстах.",
-      "badExamples": ["Проблема становиться важнее."],
-      "goodExamples": ["Проблема становится важнее.", "Проблема может становиться важнее."],
+      "badExamples": [
+        "Проблема становиться важнее."
+      ],
+      "goodExamples": [
+        "Проблема становится важнее.",
+        "Проблема может становиться важнее."
+      ],
       "severity": "Error",
-      "suggestions": ["Использовать личную форму на «-тся»."],
+      "suggestions": [
+        "Использовать личную форму на «-тся»."
+      ],
       "safeToApply": true,
       "source": "Авторское контекстное правило WriteLite; правило написания -тся/-ться.",
-      "implementation": { "engine": "builtin" },
+      "implementation": {
+        "engine": "builtin"
+      },
       "tests": [
-        { "name": "finite-form", "input": "Проблема становиться важнее.", "shouldMatch": true, "expectedSuggestion": "становится" },
-        { "name": "infinitive", "input": "Проблема может становиться важнее.", "shouldMatch": false }
+        {
+          "name": "finite-form",
+          "input": "Проблема становиться важнее.",
+          "shouldMatch": true,
+          "expectedSuggestion": "становится"
+        },
+        {
+          "name": "infinitive",
+          "input": "Проблема может становиться важнее.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.reflexive-infinitive",
+      "language": "ru",
+      "category": "TsyaTisya",
+      "issueCategory": "Grammar",
+      "title": "Форма на «-ться»",
+      "shortMessage": "После модального глагола требуется инфинитив на «-ться».",
+      "detailedExplanation": "Модальные и фазовые глаголы («хочет», «должен», «может», «нужно», «решил») управляют инфинитивом, к которому задаётся вопрос «что делать?» — перед «ся» пишется мягкий знак. Правило срабатывает только тогда, когда управляющее слово стоит непосредственно перед глаголом: между ними не должно быть ни запятой, ни другого слова.",
+      "badExamples": [
+        "Он хочет учится каждый день.",
+        "Не нужно злится из-за мелочей."
+      ],
+      "goodExamples": [
+        "Он хочет учиться каждый день.",
+        "Он учится в университете.",
+        "Он должен, кажется, уйти сегодня."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Использовать инфинитив на «-ться»."
+      ],
+      "safeToApply": true,
+      "source": "Авторское контекстное правило WriteLite; правило написания -тся/-ться.",
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "modal-governor",
+          "input": "Он хочет учится каждый день.",
+          "shouldMatch": true,
+          "expectedSuggestion": "учиться"
+        },
+        {
+          "name": "non-adjacent-governor",
+          "input": "Он должен, кажется, уйти сегодня.",
+          "shouldMatch": false
+        },
+        {
+          "name": "correct-finite",
+          "input": "Он учится в университете.",
+          "shouldMatch": false
+        }
       ]
     },
     {
@@ -71,16 +169,580 @@
       "title": "Перегруженное предложение",
       "shortMessage": "Предложение может быть трудно читать.",
       "detailedExplanation": "Длинное предложение стоит перечитать и при необходимости разделить. Это рекомендация, а не доказанная ошибка.",
-      "badExamples": ["Очень длинное предложение с несколькими придаточными частями и множеством уточнений."],
-      "goodExamples": ["Короткое предложение."],
+      "badExamples": [
+        "Очень длинное предложение с несколькими придаточными частями и множеством уточнений."
+      ],
+      "goodExamples": [
+        "Короткое предложение."
+      ],
       "severity": "Warning",
-      "suggestions": ["Проверить структуру и при необходимости разделить предложение."],
+      "suggestions": [
+        "Проверить структуру и при необходимости разделить предложение."
+      ],
       "safeToApply": false,
       "source": "Авторская эвристика WriteLite.",
-      "implementation": { "engine": "builtin" },
+      "implementation": {
+        "engine": "builtin"
+      },
       "tests": [
-        { "name": "long", "input": "Предложение из более чем тридцати слов с несколькими частями должно быть отмечено как требующее ручной проверки структуры.", "shouldMatch": true },
-        { "name": "short", "input": "Короткое предложение.", "shouldMatch": false }
+        {
+          "name": "long",
+          "input": "Предложение из более чем тридцати слов с несколькими частями должно быть отмечено как требующее ручной проверки структуры.",
+          "shouldMatch": true
+        },
+        {
+          "name": "short",
+          "input": "Короткое предложение.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.lozhit",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Grammar",
+      "title": "Глагол «ложить» без приставки не является литературной нормой",
+      "shortMessage": "Литературная форма — «класть».",
+      "detailedExplanation": "Бесприставочный глагол «ложить» находится за пределами литературной нормы; нормативная форма — «класть». Приставочные глаголы («положить», «сложить») нормативны.",
+      "badExamples": [
+        "Не надо ложить сюда вещи."
+      ],
+      "goodExamples": [
+        "Не надо класть сюда вещи.",
+        "Надо положить сюда вещи."
+      ],
+      "severity": "Warning",
+      "suggestions": [
+        "класть"
+      ],
+      "safeToApply": false,
+      "source": "Авторское правило WriteLite: нормативная лексическая сочетаемость.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bложить\\b",
+        "replacement": "класть",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "bare-verb",
+          "input": "Не надо ложить сюда вещи.",
+          "shouldMatch": true,
+          "expectedSuggestion": "класть"
+        },
+        {
+          "name": "prefixed-verb",
+          "input": "Надо положить сюда вещи.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.bolee-luchshe",
+      "language": "ru",
+      "category": "AgreementError",
+      "issueCategory": "Grammar",
+      "title": "Двойная степень сравнения: «более лучше»",
+      "shortMessage": "«Более» и форма сравнительной степени вместе избыточны.",
+      "detailedExplanation": "Сравнительная степень образуется либо словом «более» с исходной формой, либо суффиксом. Сочетание «более лучше» содержит степень сравнения дважды.",
+      "badExamples": [
+        "Так стало более лучше."
+      ],
+      "goodExamples": [
+        "Так стало лучше.",
+        "Так стало более удобно."
+      ],
+      "severity": "Warning",
+      "suggestions": [
+        "лучше"
+      ],
+      "safeToApply": false,
+      "source": "Авторское правило WriteLite: нормативная лексическая сочетаемость.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bболее\\s+лучше\\b",
+        "replacement": "лучше",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "double-comparative",
+          "input": "Так стало более лучше.",
+          "shouldMatch": true,
+          "expectedSuggestion": "лучше"
+        },
+        {
+          "name": "plain-comparative",
+          "input": "Так стало лучше.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.samyy-nailuchshiy",
+      "language": "ru",
+      "category": "AgreementError",
+      "issueCategory": "Grammar",
+      "title": "Двойная превосходная степень: «самый наилучший»",
+      "shortMessage": "«Самый» и «наилучший» вместе избыточны.",
+      "detailedExplanation": "Форма «наилучший» уже является превосходной степенью, поэтому слово «самый» перед ней избыточно.",
+      "badExamples": [
+        "Это самый наилучший вариант."
+      ],
+      "goodExamples": [
+        "Это наилучший вариант.",
+        "Это самый лучший вариант."
+      ],
+      "severity": "Warning",
+      "suggestions": [
+        "наилучший"
+      ],
+      "safeToApply": false,
+      "source": "Авторское правило WriteLite: нормативная лексическая сочетаемость.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bсамый\\s+наилучший\\b",
+        "replacement": "наилучший",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "double-superlative",
+          "input": "Это самый наилучший вариант.",
+          "shouldMatch": true,
+          "expectedSuggestion": "наилучший"
+        },
+        {
+          "name": "single-superlative",
+          "input": "Это наилучший вариант.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.igrat-znachenie",
+      "language": "ru",
+      "category": "AgreementError",
+      "issueCategory": "Grammar",
+      "title": "Смешение оборотов «играть роль» и «иметь значение»",
+      "shortMessage": "Норма: «играть роль» или «иметь значение».",
+      "detailedExplanation": "Устойчивые сочетания — «играть роль» и «иметь значение». Оборот «играть значение» возникает от их смешения.",
+      "badExamples": [
+        "Это играет большое значение."
+      ],
+      "goodExamples": [
+        "Это имеет большое значение.",
+        "Это играет большую роль."
+      ],
+      "severity": "Warning",
+      "suggestions": [
+        "иметь значение"
+      ],
+      "safeToApply": false,
+      "source": "Авторское правило WriteLite: нормативная лексическая сочетаемость.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bигра(ет|ют|л|ла|ли|ть)\\s+(большое\\s+|важное\\s+)?значение\\b",
+        "replacement": "иметь значение",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "mixed-idiom",
+          "input": "Это играет большое значение.",
+          "shouldMatch": true
+        },
+        {
+          "name": "correct-idiom",
+          "input": "Это имеет большое значение.",
+          "shouldMatch": false
+        },
+        {
+          "name": "correct-role",
+          "input": "Это играет большую роль.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.oplatit-za",
+      "language": "ru",
+      "category": "AgreementError",
+      "issueCategory": "Grammar",
+      "title": "«Оплатить» управляет винительным падежом без предлога",
+      "shortMessage": "Норма: «оплатить проезд», а не «оплатить за проезд».",
+      "detailedExplanation": "Глагол «оплатить» переходный и не требует предлога «за». С предлогом употребляется «заплатить за».",
+      "badExamples": [
+        "Нужно оплатить за проезд."
+      ],
+      "goodExamples": [
+        "Нужно оплатить проезд.",
+        "Нужно заплатить за проезд."
+      ],
+      "severity": "Warning",
+      "suggestions": [
+        "Убрать предлог «за» или заменить глагол на «заплатить»."
+      ],
+      "safeToApply": false,
+      "source": "Авторское правило WriteLite: нормативная лексическая сочетаемость.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bоплат(ить|ил|ила|или|ите|им)\\s+за\\b",
+        "replacement": "оплатить",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "extra-preposition",
+          "input": "Нужно оплатить за проезд.",
+          "shouldMatch": true
+        },
+        {
+          "name": "correct-transitive",
+          "input": "Нужно оплатить проезд.",
+          "shouldMatch": false
+        },
+        {
+          "name": "correct-other-verb",
+          "input": "Нужно заплатить за проезд.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.case-government-dative",
+      "language": "ru",
+      "category": "EndingError",
+      "issueCategory": "Grammar",
+      "title": "Ошибка в управлении падежом",
+      "shortMessage": "Этот предлог требует дательного падежа.",
+      "detailedExplanation": "Предлоги «вопреки», «согласно», «благодаря», «наперекор», «навстречу», «подобно», «вслед» управляют дательным падежом: вопреки чему? согласно чему? Форма родительного падежа («согласно приказа») — распространённая ошибка, возникающая по аналогии с сочетаниями «в течение», «в результате».",
+      "badExamples": [
+        "Вопреки новых целей мы продолжаем работу.",
+        "Согласно приказа отдел закрыт."
+      ],
+      "goodExamples": [
+        "Вопреки новым целям мы продолжаем работу.",
+        "Согласно приказу отдел закрыт."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Поставьте зависимое слово в дательный падеж."
+      ],
+      "source": "Розенталь Д. Э. Управление в русском языке (предлоги, требующие дательного падежа).",
+      "safeToApply": true,
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "vopreki-phrase",
+          "input": "Вопреки новых целей мы продолжаем работу.",
+          "shouldMatch": true
+        },
+        {
+          "name": "soglasno-noun",
+          "input": "Согласно приказа отдел закрыт.",
+          "shouldMatch": true
+        },
+        {
+          "name": "already-dative",
+          "input": "Согласно приказу отдел закрыт.",
+          "shouldMatch": false
+        },
+        {
+          "name": "homonymous-dative",
+          "input": "Согласно инструкции отдел закрыт.",
+          "shouldMatch": false
+        },
+        {
+          "name": "gerund-reading",
+          "input": "Благодаря друга за помощь, он ушёл.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.realword-effective",
+      "language": "ru",
+      "category": "AgreementError",
+      "issueCategory": "Grammar",
+      "title": "Паронимы «эффектный» и «эффективный»",
+      "shortMessage": "Метод, способ или подход, который даёт результат, называют эффективным.",
+      "detailedExplanation": "«Эффектный» означает производящий впечатление, а «эффективный» — дающий нужный результат. С методом, способом, подходом, решением или средством здесь нужно «эффективный» в той же форме.",
+      "badExamples": [
+        "Это эффектный способ снизить расходы."
+      ],
+      "goodExamples": [
+        "Это эффективный способ снизить расходы.",
+        "Это был эффектный выход на сцену."
+      ],
+      "severity": "Warning",
+      "suggestions": [
+        "Заменить «эффектный» на согласованную форму «эффективный»."
+      ],
+      "safeToApply": false,
+      "source": "Авторское контекстное правило WriteLite для устойчивой сочетаемости паронимов.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bэффектн(?<ending>ый|ая|ое|ые|ого|ой|ому|ым|ом|ую|ых|ыми)\\s+(?<noun>метод(?:а|у|ом|е|ы|ов|ам|ами|ах)?|способ(?:а|у|ом|е|ы|ов|ам|ами|ах)?|подход(?:а|у|ом|е|ы|ов|ам|ами|ах)?|решени(?:е|я|ю|ем|и|й|ям|ями|ях)|средств(?:о|а|у|ом|е|ами|ах)?)\\b",
+        "replacement": "эффективн${ending} ${noun}",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "effective-method",
+          "input": "Это эффектный метод проверки.",
+          "shouldMatch": true,
+          "expectedSuggestion": "эффективный метод"
+        },
+        {
+          "name": "effective-solutions",
+          "input": "Мы ищем эффектные решения задачи.",
+          "shouldMatch": true,
+          "expectedSuggestion": "эффективные решения"
+        },
+        {
+          "name": "impressive-performance",
+          "input": "Это был эффектный выход на сцену.",
+          "shouldMatch": false
+        },
+        {
+          "name": "impressive-design",
+          "input": "Она выбрала эффектный дизайн.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.realword-campaign",
+      "language": "ru",
+      "category": "AgreementError",
+      "issueCategory": "Grammar",
+      "title": "Паронимы «компания» и «кампания»",
+      "shortMessage": "Организованная рекламная, избирательная или предвыборная деятельность — это кампания.",
+      "detailedExplanation": "«Компания» — фирма или группа людей. Организованная рекламная, маркетинговая, избирательная, предвыборная или посевная деятельность называется «кампанией».",
+      "badExamples": [
+        "Началась предвыборная компания."
+      ],
+      "goodExamples": [
+        "Началась предвыборная кампания.",
+        "Наша компания выпустила обновление."
+      ],
+      "severity": "Warning",
+      "suggestions": [
+        "Заменить «компания» на соответствующую форму «кампания»."
+      ],
+      "safeToApply": false,
+      "source": "Авторское контекстное правило WriteLite для однозначных модификаторов слова «кампания».",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\b(?<modifier>(?:предвыборн|избирательн|рекламн|маркетингов|посевн)(?:ая|ой|ую|ые|ых|ыми))\\s+компани(?<ending>я|и|ю|ей|ям|ями|ях)\\b",
+        "replacement": "${modifier} кампани${ending}",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "election-campaign",
+          "input": "Началась предвыборная компания.",
+          "shouldMatch": true,
+          "expectedSuggestion": "предвыборная кампания"
+        },
+        {
+          "name": "advertising-campaign",
+          "input": "Бюджет рекламной компании вырос.",
+          "shouldMatch": true,
+          "expectedSuggestion": "рекламной кампании"
+        },
+        {
+          "name": "ordinary-company",
+          "input": "Наша компания выпустила обновление.",
+          "shouldMatch": false
+        },
+        {
+          "name": "company-name",
+          "input": "Компания «Реклама» выпустила отчёт.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.realword-wear",
+      "language": "ru",
+      "category": "AgreementError",
+      "issueCategory": "Grammar",
+      "title": "Паронимы «одеть» и «надеть»",
+      "shortMessage": "Предмет одежды надевают; одевают человека или другое живое существо.",
+      "detailedExplanation": "Глагол «одеть» относится к тому, кого одевают: одеть ребёнка. Пальто, очки, шапку и другие предметы одежды надевают.",
+      "badExamples": [
+        "Нужно одеть пальто."
+      ],
+      "goodExamples": [
+        "Нужно надеть пальто.",
+        "Нужно одеть ребёнка."
+      ],
+      "severity": "Warning",
+      "suggestions": [
+        "Заменить форму «одеть» на соответствующую форму «надеть»."
+      ],
+      "safeToApply": false,
+      "source": "Авторское контекстное правило WriteLite: глагол проверяется только перед закрытым классом предметов одежды.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bоде(?<ending>ть|л|ла|ли|нь|ну|нешь|нет|нем|нете|нут)\\s+(?<object>пальто|очки|шапку|шапки|куртку|куртки|рубашку|рубашки|перчатки|ботинки|туфли|платье|костюм)\\b",
+        "replacement": "наде${ending} ${object}",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "wear-glasses",
+          "input": "Мне нужно одеть очки.",
+          "shouldMatch": true,
+          "expectedSuggestion": "надеть очки"
+        },
+        {
+          "name": "wear-coat-past",
+          "input": "Он одел пальто и вышел.",
+          "shouldMatch": true,
+          "expectedSuggestion": "надел пальто"
+        },
+        {
+          "name": "dress-child",
+          "input": "Нужно одеть ребёнка перед прогулкой.",
+          "shouldMatch": false
+        },
+        {
+          "name": "dress-doll",
+          "input": "Девочка решила одеть куклу.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.agreement",
+      "language": "ru",
+      "category": "AgreementError",
+      "issueCategory": "Grammar",
+      "title": "Нарушено согласование",
+      "shortMessage": "Слова в словосочетании не согласованы.",
+      "detailedExplanation": "Определение согласуется с существительным в роде, числе и падеже; сказуемое — с подлежащим в числе, а в прошедшем времени и в роде; существительное после предлога или числительного ставится в том падеже, которого требует управляющее слово. Правило опирается на морфологический разбор: если для формы нельзя определить набор допустимых грамматических значений, замечание не выдаётся.",
+      "badExamples": [
+        "Мама приготовила вкусную обед для всей семьи.",
+        "Все студенты сдал экзамен успешно.",
+        "Он вернулся из Германия неделю назад.",
+        "Я хожу в бассейн два раз в неделю."
+      ],
+      "goodExamples": [
+        "Мама приготовила вкусный обед для всей семьи.",
+        "Все студенты сдали экзамен успешно.",
+        "Он вернулся из Германии неделю назад.",
+        "Я хожу в бассейн два раза в неделю."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Поставьте зависимое слово в тот же род, число и падеж.",
+        "Согласуйте сказуемое с подлежащим в числе и роде.",
+        "Поставьте существительное в падеж, которого требует предлог или числительное."
+      ],
+      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке: согласование определений и сказуемого, управление предлогов, счётные конструкции.",
+      "safeToApply": true,
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "adjective-gender",
+          "input": "Мама приготовила вкусную обед для всей семьи.",
+          "shouldMatch": true,
+          "expectedSuggestion": "вкусный"
+        },
+        {
+          "name": "subject-predicate-number",
+          "input": "Все студенты сдал экзамен успешно.",
+          "shouldMatch": true,
+          "expectedSuggestion": "сдали"
+        },
+        {
+          "name": "preposition-government",
+          "input": "Он вернулся из Германия неделю назад.",
+          "shouldMatch": true,
+          "expectedSuggestion": "Германии"
+        },
+        {
+          "name": "numeral-government",
+          "input": "Я хожу в бассейн два раз в неделю.",
+          "shouldMatch": true,
+          "expectedSuggestion": "раза"
+        },
+        {
+          "name": "correct-agreement",
+          "input": "Мама приготовила вкусный обед для всей семьи.",
+          "shouldMatch": false
+        },
+        {
+          "name": "correct-homonymous-instrumental",
+          "input": "Вопреки новым правилам мы продолжаем работу.",
+          "shouldMatch": false
+        },
+        {
+          "name": "correct-indefinite-personal",
+          "input": "Стол купили вчера в соседнем магазине.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.grammar.double-comparative",
+      "language": "ru",
+      "category": "AgreementError",
+      "issueCategory": "Grammar",
+      "title": "Двойная степень сравнения",
+      "shortMessage": "Нельзя соединять «более» и суффикс сравнительной степени.",
+      "detailedExplanation": "Сравнительная степень прилагательного и наречия образуется одним из двух способов: аналитически — «более удобный» — или синтетически, суффиксом «-ее», «-ше»: «удобнее». Соединять оба способа нельзя: «более удобнее» — грубая грамматическая ошибка. Правило удаляет только лишнее слово «более» или «менее» и не меняет остальную часть предложения.",
+      "badExamples": [
+        "Интерфейс стал более удобнее в этой версии.",
+        "Проверка стала более тщательнее.",
+        "Это более лучше, чем было."
+      ],
+      "goodExamples": [
+        "Интерфейс стал удобнее в этой версии.",
+        "Проверка стала тщательнее.",
+        "Это лучше, чем было."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Уберите слово «более»: суффикс уже выражает сравнительную степень."
+      ],
+      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 158: степени сравнения прилагательных.",
+      "safeToApply": true,
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "double-synthetic",
+          "input": "Интерфейс стал более удобнее в этой версии.",
+          "shouldMatch": true,
+          "expectedSuggestion": "удобнее"
+        },
+        {
+          "name": "suppletive",
+          "input": "Это более лучше, чем было.",
+          "shouldMatch": true,
+          "expectedSuggestion": "лучше"
+        },
+        {
+          "name": "analytic-correct",
+          "input": "Это более удобное решение для нас.",
+          "shouldMatch": false
+        },
+        {
+          "name": "superlative-adjective",
+          "input": "Это более лучшее решение для нас.",
+          "shouldMatch": true,
+          "expectedSuggestion": "лучшее"
+        }
       ]
     }
   ]

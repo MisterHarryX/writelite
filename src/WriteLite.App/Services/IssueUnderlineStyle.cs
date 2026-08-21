@@ -16,16 +16,21 @@ public sealed record IssueUnderlineStyle(
 /// </summary>
 public static class IssueUnderlineTheme
 {
-    // Soft coral-red — orthography
-    public static readonly Color Orthography = Color.FromArgb(0xFF, 0xE8, 0x6A, 0x6F);
-    // Amber — grammar
-    public static readonly Color Grammar = Color.FromArgb(0xFF, 0xE0, 0xA8, 0x3C);
-    // Orange — punctuation
-    public static readonly Color Punctuation = Color.FromArgb(0xFF, 0xE8, 0x96, 0x45);
-    // Muted blue — style / readability
-    public static readonly Color Style = Color.FromArgb(0xFF, 0x6B, 0x9B, 0xD4);
+    // One warm family, taken from the wavy marks on writelite-web.vercel.app.
+    // Categories are told apart by warmth, not by hue jumps: a blue or green
+    // underline would read as another product's spellchecker, and a rainbow of
+    // error colours is exactly what the WriteLite visual language avoids.
 
-    public const double DefaultThickness = 1.15;
+    // Brand orange — orthography, the most common and most certain correction
+    public static readonly Color Orthography = Color.FromArgb(0xFF, 0xEC, 0x6C, 0x08);
+    // Amber — grammar
+    public static readonly Color Grammar = Color.FromArgb(0xFF, 0xE0, 0xA6, 0x4B);
+    // Warm sand — punctuation
+    public static readonly Color Punctuation = Color.FromArgb(0xFF, 0xE8, 0x96, 0x45);
+    // Muted ochre — style / readability, the quietest of the four
+    public static readonly Color Style = Color.FromArgb(0xFF, 0xA4, 0x84, 0x47);
+
+    public const double DefaultThickness = 1.25;
     public const double DefaultWaveHeight = 1.35;
     public const double DefaultOpacity = 0.88;
     public const double SuggestionOpacity = 0.62;

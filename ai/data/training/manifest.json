@@ -1,0 +1,44 @@
+{
+  "generatedUtc": "2026-08-14T16:19:48.1177320Z",
+  "purpose": "Training data for the WriteLite language engine. Phase 6 trains punctuation_decision from this export; candidate_ranking is exported for diagnosis and is not trained on.",
+  "sources": [
+    "ai/data/errors/rerank_train.jsonl",
+    "ai/data/errors/rerank_validation.jsonl",
+    "ai/data/errors/rerank_test.jsonl"
+  ],
+  "goldenPolicy": "The golden benchmark is evaluation-only. Every example is checked against golden ids and against normalised content fingerprints of every golden source and target sentence.",
+  "goldenItemsGuarded": 841,
+  "goldenFingerprintsGuarded": 1283,
+  "blockedAsGolden": 0,
+  "candidateRankingExamples": 8568,
+  "candidateGenerationFailures": 4807,
+  "candidateGenerationFailureRate": 0.561,
+  "punctuationExamples": 30547,
+  "punctuationCommaExamples": 15045,
+  "punctuationNoChangeExamples": 15502,
+  "punctuationBySplit": {
+    "test": {
+      "total": 2118,
+      "comma": 1042,
+      "noChange": 1076,
+      "sentences": 508
+    },
+    "train": {
+      "total": 26227,
+      "comma": 12912,
+      "noChange": 13315,
+      "sentences": 6135
+    },
+    "validation": {
+      "total": 2202,
+      "comma": 1091,
+      "noChange": 1111,
+      "sentences": 491
+    }
+  },
+  "candidateRankingBySplit": {
+    "test": 620,
+    "train": 7341,
+    "validation": 607
+  }
+}

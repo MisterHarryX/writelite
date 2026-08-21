@@ -297,11 +297,7 @@ public sealed class InlineErrorOverlayWindow : Window
                 if (issue.Length == 0)
                 {
                     // Quiet insertion caret marker — short vertical tick, not a full-field line.
-                    var x = rect.Left + 2;
-                    drawingContext.DrawLine(
-                        pen,
-                        new Point(x, rect.Bottom - 7),
-                        new Point(x, rect.Bottom - 1));
+                    drawingContext.DrawGeometry(null, pen, IssueWaveGeometry.BuildInsertionTick(rect));
                     continue;
                 }
 
@@ -309,22 +305,7 @@ public sealed class InlineErrorOverlayWindow : Window
                 // lines are only added when UIA returned a non-empty range rectangle.
                 if (rect.Width < 1 || rect.Height < 1) continue;
 
-                var y = Math.Max(1, rect.Bottom - 1.25);
-                var step = IssueUnderlineTheme.WaveStep;
-                var wave = style.WaveHeight;
-                var geometry = new StreamGeometry();
-                using (var context = geometry.Open())
-                {
-                    context.BeginFigure(new Point(rect.Left, y), false, false);
-                    for (var x = rect.Left; x < rect.Right; x += step)
-                    {
-                        context.LineTo(new Point(Math.Min(x + step / 2, rect.Right), y + wave), true, false);
-                        context.LineTo(new Point(Math.Min(x + step, rect.Right), y), true, false);
-                    }
-                }
-
-                geometry.Freeze();
-                drawingContext.DrawGeometry(null, pen, geometry);
+                drawingContext.DrawGeometry(null, pen, IssueWaveGeometry.BuildWave(rect, style.WaveHeight));
             }
         }
     }

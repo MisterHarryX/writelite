@@ -1,0 +1,12 @@
+{
+  "version": "reranker-001",
+  "baseModel": "cointegrated/rubert-tiny2",
+  "baseModelLicense": "MIT",
+  "maxLength": 64,
+  "lowercase": false,
+  "positiveLabelIndex": 1,
+  "labels": {
+    "0": "corrupted",
+    "1": "correct"
+  }
+}

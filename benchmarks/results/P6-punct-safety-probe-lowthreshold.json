@@ -1,0 +1,109 @@
+{
+  "RunUtc": "2026-08-14T17:12:05.7720957Z",
+  "Model": "PUNC-B",
+  "Threshold": 0.2,
+  "TotalBoundaries": 265,
+  "TotalProposals": 27,
+  "OverallRate": 0.1019,
+  "PerCategory": [
+    {
+      "Category": "short",
+      "Sentences": 8,
+      "Boundaries": 18,
+      "Proposals": 0,
+      "Rate": 0
+    },
+    {
+      "Category": "informal",
+      "Sentences": 8,
+      "Boundaries": 24,
+      "Proposals": 2,
+      "Rate": 0.0833
+    },
+    {
+      "Category": "technical",
+      "Sentences": 7,
+      "Boundaries": 37,
+      "Proposals": 7,
+      "Rate": 0.1892
+    },
+    {
+      "Category": "mixed script",
+      "Sentences": 5,
+      "Boundaries": 25,
+      "Proposals": 3,
+      "Rate": 0.12
+    },
+    {
+      "Category": "abbreviations",
+      "Sentences": 5,
+      "Boundaries": 15,
+      "Proposals": 2,
+      "Rate": 0.1333
+    },
+    {
+      "Category": "names",
+      "Sentences": 5,
+      "Boundaries": 24,
+      "Proposals": 3,
+      "Rate": 0.125
+    },
+    {
+      "Category": "quotes",
+      "Sentences": 4,
+      "Boundaries": 13,
+      "Proposals": 2,
+      "Rate": 0.1538
+    },
+    {
+      "Category": "enumeration",
+      "Sentences": 4,
+      "Boundaries": 21,
+      "Proposals": 2,
+      "Rate": 0.0952
+    },
+    {
+      "Category": "already correct",
+      "Sentences": 8,
+      "Boundaries": 37,
+      "Proposals": 2,
+      "Rate": 0.0541
+    },
+    {
+      "Category": "no comma needed",
+      "Sentences": 8,
+      "Boundaries": 51,
+      "Proposals": 4,
+      "Rate": 0.0784
+    }
+  ],
+  "Offenders": [
+    "[informal] Ну ладно, тогда до встречи.  ==>  «Ну» + ',' (p=0,976)",
+    "[informal] Мне кажется, ты прав.  ==>  «Мне» + ',' (p=0,363)",
+    "[technical] Запусти npm run build и проверь результат.  ==>  «Запусти» + ',' (p=0,406)",
+    "[technical] Запусти npm run build и проверь результат.  ==>  «npm» + ',' (p=0,991)",
+    "[technical] Запусти npm run build и проверь результат.  ==>  «run» + ',' (p=0,942)",
+    "[technical] Ошибка возникает в методе GetUserById при пустом идентификаторе.  ==>  «GetUserById» + ',' (p=0,866)",
+    "[technical] Скопируй файл config.json в папку resources.  ==>  «json» + ',' (p=0,263)",
+    "[technical] Открой GitHub и создай новую ветку.  ==>  «GitHub» + ',' (p=0,234)",
+    "[technical] Обнови зависимости через pip install -r requirements.txt.  ==>  «pip» + ',' (p=0,977)",
+    "[mixed script] Подключи VPN перед началом работы.  ==>  «VPN» + ',' (p=0,537)",
+    "[mixed script] Скачай Visual Studio Code с официального сайта.  ==>  «Studio» + ',' (p=0,617)",
+    "[mixed script] Скачай Visual Studio Code с официального сайта.  ==>  «Code» + ',' (p=0,373)",
+    "[abbreviations] Книги, тетради и т. п. лежали на полке.  ==>  «тетради» + ',' (p=0,295)",
+    "[abbreviations] В работе участвовали проф. Иванов и доц. Петров.  ==>  «Иванов» + ',' (p=0,267)",
+    "[names] Александр Сергеевич Пушкин родился в Москве.  ==>  «Пушкин» + ',' (p=0,239)",
+    "[names] Иван Петров и Сергей Сидоров подписали документ.  ==>  «Петров» + ',' (p=0,796)",
+    "[names] Иван Петров и Сергей Сидоров подписали документ.  ==>  «Сидоров» + ',' (p=0,268)",
+    "[quotes] Он сказал: «Я приду завтра утром».  ==>  «приду» + ',' (p=0,882)",
+    "[quotes] Он сказал: «Я приду завтра утром».  ==>  «завтра» + ',' (p=0,275)",
+    "[enumeration] Нужно купить хлеб, молоко, сыр и масло.  ==>  «сыр» + ',' (p=0,522)",
+    "[enumeration] Он быстро, уверенно и точно ответил на вопрос.  ==>  «уверенно» + ',' (p=0,280)",
+    "[already correct] Я думаю, что завтра будет хорошая погода.  ==>  «хорошая» + ',' (p=0,413)",
+    "[already correct] Прочитав письмо, он молча вышел из комнаты.  ==>  «молча» + ',' (p=0,302)",
+    "[no comma needed] Вчера вечером мы гуляли по набережной.  ==>  «Вчера» + ',' (p=0,438)",
+    "[no comma needed] Вчера вечером мы гуляли по набережной.  ==>  «вечером» + ',' (p=0,610)",
+    "[no comma needed] Наша команда работает над проектом уже несколько месяцев.  ==>  «проектом» + ',' (p=0,793)",
+    "[no comma needed] Он внимательно прочитал документ и поставил свою подпись.  ==>  «документ» + ',' (p=0,948)"
+  ]
+}

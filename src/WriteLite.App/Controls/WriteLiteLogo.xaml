@@ -1,41 +1,35 @@
 <UserControl x:Class="WriteLite.Controls.WriteLiteLogo"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Name="Root">
-    <!-- UI Spec §1: black square, ~27% radius, W + quill + brand tip -->
+             x:Name="Root"
+             Focusable="False">
+    <!--
+        Header mark, matching the website: a small rounded square on the card
+        surface with a hairline border, a warm-white W and a single orange nib dot.
+        The tile is 5–6 px rounded rather than the previous 27 % — a heavily rounded
+        squircle was the loudest thing in the old title bar.
+    -->
     <Border x:Name="LogoFrame"
-            Background="#0B0B0C"
-            BorderBrush="#303035"
+            Background="{DynamicResource WlSurface}"
+            BorderBrush="{DynamicResource WlLineStrong}"
             BorderThickness="1"
+            CornerRadius="5"
             SnapsToDevicePixels="True">
-        <Grid>
-            <Viewbox Stretch="Uniform" Margin="3">
-                <Canvas Width="22" Height="22">
-                    <TextBlock Canvas.Left="1"
-                               Canvas.Top="2"
-                               Text="W"
-                               FontFamily="Segoe UI"
-                               FontSize="16"
-                               FontWeight="ExtraBold"
-                               Foreground="White" />
-                    <Line X1="19" Y1="4" X2="13" Y2="16"
-                          Stroke="White"
-                          StrokeThickness="1.2"
-                          StrokeStartLineCap="Round"
-                          StrokeEndLineCap="Round"
-                          Opacity="0.7" />
-                    <Path Data="M16,9 Q18,7 19,4 Q16,6 13,14"
-                          Stroke="White"
-                          StrokeThickness="0.8"
-                          Fill="Transparent"
-                          Opacity="0.5" />
-                    <Ellipse Canvas.Left="17.5"
-                             Canvas.Top="1.5"
-                             Width="4"
-                             Height="4"
-                             Fill="#FF7A1A" />
-                </Canvas>
-            </Viewbox>
-        </Grid>
+        <Viewbox Stretch="Uniform" Margin="4">
+            <Canvas Width="24" Height="24">
+                <!-- W -->
+                <Path Data="M3.2,5.4 L7.4,18.6 L12,9.4 L16.6,18.6 L20.8,5.4"
+                      Stroke="{DynamicResource WlText}"
+                      StrokeThickness="2.1"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      StrokeLineJoin="Round"
+                      Fill="Transparent" />
+                <!-- Nib -->
+                <Ellipse Canvas.Left="18.4" Canvas.Top="2.2"
+                         Width="4.4" Height="4.4"
+                         Fill="{DynamicResource WlBrand}" />
+            </Canvas>
+        </Viewbox>
     </Border>
 </UserControl>

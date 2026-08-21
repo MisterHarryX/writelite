@@ -1,0 +1,148 @@
+<Window x:Class="WriteLite.Views.StudyCardEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:WriteLite.Controls"
+        Title="Карточка"
+        Width="580"
+        Height="560"
+        MinWidth="440"
+        MinHeight="420"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        Background="Transparent"
+        AllowsTransparency="False"
+        ShowInTaskbar="False"
+        FontFamily="{DynamicResource WlFont}"
+        TextOptions.TextFormattingMode="Ideal"
+        UseLayoutRounding="True"
+        AutomationProperties.Name="Карточка из текста">
+    <Border Background="{DynamicResource WlBgBase}"
+            BorderBrush="{DynamicResource WlLineStrong}"
+            BorderThickness="1"
+            CornerRadius="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="46" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="{DynamicResource WlBg}"
+                    BorderBrush="{DynamicResource WlLine}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="9,9,0,0"
+                    MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid Margin="18,0,14,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Path Style="{DynamicResource WlIconSm}"
+                              Data="{DynamicResource WlIconCards}"
+                              Stroke="{DynamicResource WlBrand}"
+                              VerticalAlignment="Center" />
+                        <TextBlock Style="{DynamicResource WlMonoLabel}"
+                                   controls:Type.Tracked="КАРТОЧКА"
+                                   Margin="10,0,0,0"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- The draft's state lives here rather than over the fields: the
+                         reader can keep typing the card by hand while the model works,
+                         and a spinner in the way of that would be the opposite of the
+                         point. Cancel appears only while there is something to cancel. -->
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+                        <TextBlock x:Name="StatusText"
+                                   Style="{DynamicResource WlMonoLabel}"
+                                   Foreground="{DynamicResource WlTextMuted}"
+                                   VerticalAlignment="Center" />
+                        <Button x:Name="CancelDraftButton"
+                                Style="{DynamicResource WlTextButton}"
+                                Content="Отменить"
+                                Margin="10,0,0,0"
+                                Visibility="Collapsed"
+                                Click="CancelDraft_Click"
+                                AutomationProperties.Name="Отменить составление карточки" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border x:Name="QuoteBlock" Grid.Row="1" Style="{DynamicResource WlQuoteBlock}" Margin="24,20,24,0">
+                <ScrollViewer MaxHeight="96" VerticalScrollBarVisibility="Auto">
+                    <TextBlock x:Name="QuoteText" Style="{DynamicResource WlQuoteText}" />
+                </ScrollViewer>
+            </Border>
+
+            <StackPanel Grid.Row="2" Margin="24,18,24,0">
+                <Grid>
+                    <TextBlock Style="{DynamicResource WlMonoLabel}"
+                               controls:Type.Tracked="ЛИЦЕВАЯ СТОРОНА"
+                               Foreground="{DynamicResource WlTextMuted}"
+                               VerticalAlignment="Center" />
+                    <Button x:Name="AiButton"
+                            Style="{DynamicResource WlTextButton}"
+                            HorizontalAlignment="Right"
+                            Margin="0,-6,-6,0"
+                            Click="Ai_Click"
+                            Visibility="Collapsed"
+                            AutomationProperties.Name="Создать карточку с помощью WriteLite AI">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconAi}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  VerticalAlignment="Center" />
+                            <TextBlock Text="Составить с помощью WriteLite AI" Margin="7,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <TextBox x:Name="FrontBox"
+                         Style="{DynamicResource WlTextInput}"
+                         Margin="0,8,0,0"
+                         Height="76"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalContentAlignment="Top"
+                         Tag="Вопрос, понятие или цитата"
+                         AutomationProperties.Name="Лицевая сторона карточки" />
+
+                <TextBlock Style="{DynamicResource WlMonoLabel}"
+                           controls:Type.Tracked="ОБРАТНАЯ СТОРОНА"
+                           Foreground="{DynamicResource WlTextMuted}"
+                           Margin="0,18,0,0" />
+
+                <TextBox x:Name="BackBox"
+                         Style="{DynamicResource WlTextInput}"
+                         Margin="0,8,0,0"
+                         Height="110"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalContentAlignment="Top"
+                         Tag="Объяснение, ответ или контекст"
+                         AutomationProperties.Name="Обратная сторона карточки" />
+            </StackPanel>
+
+            <Border Grid.Row="3"
+                    Background="{DynamicResource WlBg}"
+                    BorderBrush="{DynamicResource WlLine}"
+                    BorderThickness="0,1,0,0"
+                    CornerRadius="0,0,9,9"
+                    Padding="20,12">
+                <Grid>
+                    <TextBlock x:Name="LocalNote"
+                               Style="{DynamicResource WlMonoLabel}"
+                               Foreground="{DynamicResource WlTextMuted}"
+                               VerticalAlignment="Center"
+                               controls:Type.Tracked="ЛОКАЛЬНАЯ МОДЕЛЬ · БЕЗ ИНТЕРНЕТА"
+                               Visibility="Collapsed" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Style="{DynamicResource WlSecondaryButton}" Content="Отмена" IsCancel="True" Click="Cancel_Click" />
+                        <Button Style="{DynamicResource WlPrimaryButton}" Content="Сохранить"
+                                Margin="10,0,0,0" IsDefault="True" Click="Save_Click" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

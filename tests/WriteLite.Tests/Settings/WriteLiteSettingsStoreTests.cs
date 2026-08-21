@@ -1,4 +1,4 @@
-using WriteLite.Services.Settings;
+﻿using WriteLite.Services.Settings;
 
 namespace WriteLite.Tests.Settings;
 
@@ -280,7 +280,8 @@ public sealed class WriteLiteSettingsStoreTests
         var store = new WriteLiteSettingsStore(path);
         store.Save(new WriteLiteAppSettings());
         var json = File.ReadAllText(path);
-        StringAssert.Contains(json, """"SchemaVersion": 3"""");
+        // Schema 4 renames the local-AI keys to WriteAI.
+        StringAssert.Contains(json, """"SchemaVersion": 4"""");
     }
 
     private static string TempPath()

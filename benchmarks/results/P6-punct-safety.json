@@ -1,0 +1,81 @@
+{
+  "RunUtc": "2026-08-15T10:15:46.9025613Z",
+  "Model": "PUNC-B",
+  "Threshold": 0.996,
+  "TotalBoundaries": 265,
+  "TotalProposals": 0,
+  "OverallRate": 0,
+  "PerCategory": [
+    {
+      "Category": "short",
+      "Sentences": 8,
+      "Boundaries": 18,
+      "Proposals": 0,
+      "Rate": 0
+    },
+    {
+      "Category": "informal",
+      "Sentences": 8,
+      "Boundaries": 24,
+      "Proposals": 0,
+      "Rate": 0
+    },
+    {
+      "Category": "technical",
+      "Sentences": 7,
+      "Boundaries": 37,
+      "Proposals": 0,
+      "Rate": 0
+    },
+    {
+      "Category": "mixed script",
+      "Sentences": 5,
+      "Boundaries": 25,
+      "Proposals": 0,
+      "Rate": 0
+    },
+    {
+      "Category": "abbreviations",
+      "Sentences": 5,
+      "Boundaries": 15,
+      "Proposals": 0,
+      "Rate": 0
+    },
+    {
+      "Category": "names",
+      "Sentences": 5,
+      "Boundaries": 24,
+      "Proposals": 0,
+      "Rate": 0
+    },
+    {
+      "Category": "quotes",
+      "Sentences": 4,
+      "Boundaries": 13,
+      "Proposals": 0,
+      "Rate": 0
+    },
+    {
+      "Category": "enumeration",
+      "Sentences": 4,
+      "Boundaries": 21,
+      "Proposals": 0,
+      "Rate": 0
+    },
+    {
+      "Category": "already correct",
+      "Sentences": 8,
+      "Boundaries": 37,
+      "Proposals": 0,
+      "Rate": 0
+    },
+    {
+      "Category": "no comma needed",
+      "Sentences": 8,
+      "Boundaries": 51,
+      "Proposals": 0,
+      "Rate": 0
+    }
+  ],
+  "Offenders": []
+}

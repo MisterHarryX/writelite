@@ -92,41 +92,12 @@ public sealed class IssueDeduplicationService
     }
 }
 
-/// <summary>Keeps the highest-priority issue for overlapping inline ranges.</summary>
-public sealed class IssueOverlapResolver
-{
-    public IReadOnlyList<TextIssue> Resolve(IEnumerable<TextIssue> issues)
-    {
-        var accepted = new List<TextIssue>();
-        foreach (var candidate in issues.OrderByDescending(Priority).ThenBy(i => i.Start).ThenByDescending(i => i.Length))
-        {
-            if (accepted.Any(existing => Overlaps(existing, candidate))) continue;
-            accepted.Add(candidate);
-        }
-
-        return accepted.OrderBy(i => i.Start).ThenBy(i => i.Length).ToList();
-    }
-
-    private static double Priority(TextIssue issue) =>
-        IssueDeduplicationService.SourcePriority(issue) * 100
-        + IssueDeduplicationService.CategoryPriority(issue.Category) * 10
-        + issue.Confidence;
-
-    private static bool Overlaps(TextIssue left, TextIssue right)
-    {
-        if (left.Length == 0 || right.Length == 0)
-            return left.Start == right.Start;
-        return left.Start < right.Start + right.Length && right.Start < left.Start + left.Length;
-    }
-}
-
 /// <summary>Single strict path used before issue rendering.</summary>
 public sealed class IssueRenderingPipeline
 {
     private readonly IssueProtectedRangeFilter _rangeFilter = new();
     private readonly IssueConfidencePolicy _confidence;
     private readonly IssueDeduplicationService _deduplication = new();
-    private readonly IssueOverlapResolver _overlap = new();
 
     public IssueRenderingPipeline(IssueConfidencePolicy? confidence = null) =>
         _confidence = confidence ?? new IssueConfidencePolicy();
@@ -140,7 +111,10 @@ public sealed class IssueRenderingPipeline
                 || (!CorrectionCandidateValidityPolicy.IsIdenticalCorrection(issue.Original, issue.Replacement)
                     && CorrectionCandidateValidityPolicy.WouldChangeText(
                         text, issue.Start, issue.Length, issue.Replacement)));
-        return _overlap.Resolve(_deduplication.Deduplicate(exact));
+        // Overlap is not duplication. Preserve distinct findings here so the badge,
+        // cards and inline layer expose the same user-visible set. Apply All resolves
+        // conflicting edits separately via WriteLiteIssueMerger.SelectSafeForApplyAll.
+        return _deduplication.Deduplicate(exact);
     }
 
     /// <summary>

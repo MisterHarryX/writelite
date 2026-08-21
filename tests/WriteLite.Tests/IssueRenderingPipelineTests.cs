@@ -57,7 +57,7 @@ public sealed class IssueRenderingPipelineTests
     }
 
     [TestMethod]
-    public void HigherPriorityExactIssue_BlocksOverlappingStyleLine()
+    public void OverlappingDistinctIssues_RemainVisible()
     {
         const string text = "нужный Вещев";
         var spelling = Issue(7, 5, "Вещев", "вещей", IssueCategory.Orthography, "spell", .95);
@@ -65,8 +65,8 @@ public sealed class IssueRenderingPipelineTests
 
         var filtered = new IssueRenderingPipeline().Filter(text, [style, spelling]);
 
-        Assert.HasCount(1, filtered);
-        Assert.AreEqual(spelling, filtered[0]);
+        Assert.HasCount(2, filtered);
+        CollectionAssert.AreEquivalent(new[] { spelling, style }, filtered.ToArray());
     }
 
     [TestMethod]

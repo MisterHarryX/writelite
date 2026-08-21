@@ -1,0 +1,102 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Floating indicator that sits next to the focused field in other Windows
+        applications.
+
+        It has to stay legible over an unknown background, so it keeps a real
+        surface and a neutral shadow. The previous orange glow around both buttons
+        was dropped: a coloured DropShadowEffect on an always-on-top window is both
+        the most expensive thing the app drew and the least on-brand.
+
+        Only one of the two carries the accent — the count. The pen stays a quiet
+        dark chip so the pair reads as "status + menu", not as two buttons shouting.
+    -->
+
+    <DropShadowEffect x:Key="WlIndicatorShadow" BlurRadius="12" ShadowDepth="2" Direction="270" Opacity="0.5" Color="#000000" />
+
+    <Style x:Key="WlPenButton" TargetType="Button">
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Background" Value="{DynamicResource WlSurface}" />
+        <Setter Property="Foreground" Value="{DynamicResource WlBrand}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd"
+                            Width="28" Height="28"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{DynamicResource WlLineStrong}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Effect="{DynamicResource WlIndicatorShadow}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource WlSurfaceHi}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource WlLineAccent}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.9" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="WlBadgeButton" TargetType="Button">
+        <Setter Property="MinWidth" Value="28" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="{DynamicResource WlBrand}" />
+        <Setter Property="Foreground" Value="{DynamicResource WlOnBrand}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFontMono}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8"
+                            MinWidth="28"
+                            Height="28"
+                            Padding="{TemplateBinding Padding}"
+                            Effect="{DynamicResource WlIndicatorShadow}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource WlBrandHover}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource WlBrandPressed}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- "No issues" state: the badge drops the accent and shows a check instead. -->
+    <Style x:Key="WlBadgeButtonQuiet" TargetType="Button" BasedOn="{StaticResource WlBadgeButton}">
+        <Setter Property="Background" Value="{DynamicResource WlSurface}" />
+        <Setter Property="Foreground" Value="{DynamicResource WlSuccess}" />
+    </Style>
+</ResourceDictionary>

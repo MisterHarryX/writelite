@@ -75,6 +75,43 @@ public sealed class LexicalPackCatalogService
         return packs.OrderByDescending(p => p.IsBuiltIn).ThenBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
     }
 
+    /// <summary>
+    /// Only the dictionaries the user installed themselves.
+    /// </summary>
+    /// <remarks>
+    /// The normal interface shows this, never <see cref="Snapshot"/>. WriteLite's own
+    /// packs — the morphological data, the explanatory dictionary, the language engine,
+    /// the historical sample — are application infrastructure: the user did not choose
+    /// them, cannot meaningfully evaluate them, and gains nothing from a list of file
+    /// sizes and licence identifiers they are not allowed to act on. Every action the
+    /// old catalogue offered on a built-in pack was refused by the service anyway, so
+    /// the screen could only ever produce an error dialog.
+    ///
+    /// It is also far cheaper. <see cref="Snapshot"/> fully parses the 55 MB open pack
+    /// and walks the entire language-engine tree to render rows nobody can use; this
+    /// reads one directory.
+    ///
+    /// <see cref="Snapshot"/> remains for diagnostics, where the full picture is the
+    /// point.
+    /// </remarks>
+    public IReadOnlyList<LexicalPackDescriptor> UserPacks()
+    {
+        if (!Directory.Exists(_userRoot))
+        {
+            return [];
+        }
+
+        var packs = new List<LexicalPackDescriptor>();
+        foreach (var path in Directory.EnumerateFiles(_userRoot, "*.json", SearchOption.TopDirectoryOnly))
+        {
+            AddDocumentPack(packs, path, builtIn: false);
+        }
+
+        return packs
+            .OrderBy(pack => pack.Name, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+    }
+
     public async Task<LexicalPackDescriptor> ImportAsync(string sourcePath, CancellationToken cancellationToken = default)
     {
         var source = Path.GetFullPath(sourcePath);

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>WriteLite.Documents</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    PrivateAssets="compile" on every one of these is deliberate. It keeps the
+    runtime assemblies flowing to whatever references this project while hiding
+    their reference assemblies from its compilation, which does two things:
+
+      · the format libraries stay an implementation detail — no other project in
+        the solution can reach past WriteLite.Documents and talk to OpenXml or
+        PDFsharp directly, which is the encapsulation the architecture asks for;
+
+      · it resolves a real name collision. The OpenXml SDK's root namespace is
+        literally "DocumentFormat", which shadows WriteLite's own DocumentFormat
+        enum for every consumer that sees both.
+  -->
+  <ItemGroup>
+    <!-- DOCX. MIT, maintained by Microsoft; the canonical OPC/WordprocessingML
+         reader-writer for .NET. Hand-rolling the part/relationship graph was the
+         alternative and is where corrupt output comes from. -->
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" PrivateAssets="compile" />
+
+    <!-- PDF text extraction. Apache-2.0, pure managed, no native binaries. Gives
+         glyph-level positions, which is what paragraph reconstruction needs. -->
+    <PackageReference Include="PdfPig" Version="0.1.15" PrivateAssets="compile" />
+
+    <!-- PDF generation. MIT, pure managed. Only the core drawing surface is used;
+         layout is WriteLite's own so line breaking, indents and page breaks follow
+         the internal document model rather than a second document model. -->
+    <PackageReference Include="PDFsharp" Version="6.2.4" PrivateAssets="compile" />
+  </ItemGroup>
+</Project>

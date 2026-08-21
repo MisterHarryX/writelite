@@ -141,44 +141,118 @@ public sealed class TextFieldMonitor : IDisposable
     private static TimeSpan Clamp(TimeSpan value, double minimumMs, double maximumMs)
         => TimeSpan.FromMilliseconds(Math.Clamp(value.TotalMilliseconds, minimumMs, maximumMs));
 
+    /// <summary>
+    /// Begins monitoring. Returns as soon as WriteLite's own state is set up; the UI
+    /// Automation subscription completes in the background.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Why the focus subscription is not awaited.</b>
+    /// <c>Automation.AddAutomationFocusChangedEventHandler</c> is a synchronous cross-process
+    /// COM call: it reaches into whatever currently has focus to attach a listener, and it
+    /// returns when that application's automation provider answers. When the provider is
+    /// wedged — a hung Electron window, a modal native dialog, an app mid-crash — it does not
+    /// answer, and this call blocks for as long as the COM timeout allows.</para>
+    ///
+    /// <para>Called on the dispatcher during startup, as it was, that is a foreign process
+    /// holding WriteLite's window closed. §36 of the Phase 7 brief asks for this to be fixed
+    /// in the architecture rather than explained away as a test-environment artefact, and the
+    /// fix is that the shell no longer waits for it: the timers, the foreground hook and the
+    /// started flag are all local work and happen immediately, and the one call that talks to
+    /// another process is moved off the dispatcher and bounded.</para>
+    ///
+    /// <para>Failure is isolated rather than fatal. Without the focus subscription WriteLite
+    /// still tracks the active field through <see cref="SubscribeForegroundEvents"/> and the
+    /// poll timer — it notices focus changes a fraction of a second later instead of
+    /// immediately. That is a degraded monitor, not a broken editor.</para>
+    /// </remarks>
     public void Start()
     {
         if (_started) return;
 
         _monitorCancellation = new CancellationTokenSource();
-        _focusHandler = OnAutomationFocusChanged;
-        try
-        {
-            Automation.AddAutomationFocusChangedEventHandler(_focusHandler);
-        }
-        catch (Exception exception)
-        {
-            CompatibilityLogger.AccessError("subscribe-focus-events", null, exception);
-            _focusHandler = null;
-        }
 
+        // Local state first, so the shell is usable whatever the automation tree is doing.
         _pollTimer.Start();
         _idleTimer.Start();
         SubscribeForegroundEvents();
         _started = true;
         CompatibilityLogger.State("monitor-started");
+
+        SubscribeFocusEventsInBackground();
         RefreshNow();
+    }
+
+    /// <summary>How long to wait for the focus subscription before giving up on this attempt.</summary>
+    /// <remarks>
+    /// Five seconds is far longer than the call takes against a healthy provider — it is
+    /// single-digit milliseconds — and short enough that a wedged one is recorded rather than
+    /// waited on indefinitely. Nothing is blocked meanwhile; the timeout exists so the log
+    /// says which application was responsible.
+    /// </remarks>
+    private static readonly TimeSpan FocusSubscriptionTimeout = TimeSpan.FromSeconds(5);
+
+    private void SubscribeFocusEventsInBackground()
+    {
+        var handler = new AutomationFocusChangedEventHandler(OnAutomationFocusChanged);
+
+        _ = Task.Run(() =>
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            try
+            {
+                var subscription = Task.Run(() => Automation.AddAutomationFocusChangedEventHandler(handler));
+                if (!subscription.Wait(FocusSubscriptionTimeout))
+                {
+                    // The call is still outstanding inside a COM apartment and cannot be
+                    // cancelled. It is left to finish on its own; what matters is that
+                    // nothing is waiting for it.
+                    CompatibilityLogger.State(
+                        $"focus-subscription-slow elapsedMs={sw.ElapsedMilliseconds}");
+                    return;
+                }
+
+                if (!_started)
+                {
+                    // Stopped while the subscription was in flight. Undo it here rather than
+                    // leaving a handler attached that Stop has already stopped looking for.
+                    Automation.RemoveAutomationFocusChangedEventHandler(handler);
+                    return;
+                }
+
+                _focusHandler = handler;
+                CompatibilityLogger.State(
+                    $"focus-subscription-ready elapsedMs={sw.ElapsedMilliseconds}");
+            }
+            catch (Exception exception)
+            {
+                CompatibilityLogger.AccessError("subscribe-focus-events", null, exception);
+            }
+        });
     }
 
     public void Stop()
     {
         if (!_started) return;
 
-        if (_focusHandler is not null)
+        // Unsubscribing is the same cross-process COM call as subscribing and blocks in the
+        // same circumstances — on the way out that would be a hang closing to tray rather than
+        // a hang starting up. Off the dispatcher for the same reason, and not waited on: the
+        // process is either continuing without a monitor or exiting, and neither needs the
+        // acknowledgement.
+        var handler = _focusHandler;
+        if (handler is not null)
         {
-            try
+            _ = Task.Run(() =>
             {
-                Automation.RemoveAutomationFocusChangedEventHandler(_focusHandler);
-            }
-            catch (Exception exception)
-            {
-                CompatibilityLogger.AccessError("unsubscribe-focus-events", null, exception);
-            }
+                try
+                {
+                    Automation.RemoveAutomationFocusChangedEventHandler(handler);
+                }
+                catch (Exception exception)
+                {
+                    CompatibilityLogger.AccessError("unsubscribe-focus-events", null, exception);
+                }
+            });
         }
 
         _pollTimer.Stop();
@@ -422,9 +496,18 @@ public sealed class TextFieldMonitor : IDisposable
                DateTimeOffset.Now < _suppressedUntil;
     }
 
+    /// <summary>
+    /// The control the keyboard is typing into.
+    /// </summary>
+    /// <remarks>
+    /// Not simply <c>AutomationElement.FocusedElement</c>: a provider can claim focus it does
+    /// not have, and on a machine with several messengers running one routinely does — see
+    /// <see cref="FocusedControlResolver"/>. Following the claim makes WriteLite analyse a
+    /// field the user is not typing in, and decorate nothing they can see.
+    /// </remarks>
     private Task<AutomationElement?> GetFocusedElementAsync(CancellationToken cancellationToken)
         => RunBoundedUiaAsync(
-            () => (AutomationElement?)AutomationElement.FocusedElement,
+            () => FocusedControlResolver.Resolve().Element,
             TimeSpan.FromMilliseconds(700),
             cancellationToken);
 
@@ -576,7 +659,8 @@ public sealed class TextFieldMonitor : IDisposable
         if (analysis is null || analysis.IsStale) return;
         if (!_targetManager.BelongsToCurrent(generationId, snapshotTarget!)) return;
 
-        var fastIssues = DirtyIssueAnalysis.Merge(snapshotText, _lastFastIssues, analysis.Issues, dirtyPlan);
+        var fastIssues = _issueMerger.Merge(
+            DirtyIssueAnalysis.Merge(snapshotText, _lastFastIssues, analysis.Issues, dirtyPlan)).Issues;
         _lastFastText = snapshotText;
         _lastFastIssues = fastIssues;
 

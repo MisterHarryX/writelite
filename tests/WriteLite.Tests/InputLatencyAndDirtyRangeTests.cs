@@ -59,6 +59,7 @@ public sealed class InputLatencyAndDirtyRangeTests
         Assert.AreEqual(32, snapshot.Count);
         Assert.AreEqual(84, snapshot.P50Milliseconds);
         Assert.AreEqual(99, snapshot.P95Milliseconds);
+        Assert.AreEqual(100, snapshot.P99Milliseconds);
         Assert.AreEqual(100, snapshot.MaxMilliseconds);
     }
 
@@ -73,7 +74,7 @@ public sealed class InputLatencyAndDirtyRangeTests
             InputSignalScheduler.Signal(ref current, ref version, metrics, (_, _) => { });
         }
         var snapshot = metrics.Snapshot();
-        Console.WriteLine($"input-signal samples={snapshot.Count} p50={snapshot.P50Milliseconds:F4} p95={snapshot.P95Milliseconds:F4} max={snapshot.MaxMilliseconds:F4}");
+        Console.WriteLine($"input-signal samples={snapshot.Count} p50={snapshot.P50Milliseconds:F4} p95={snapshot.P95Milliseconds:F4} p99={snapshot.P99Milliseconds:F4} max={snapshot.MaxMilliseconds:F4}");
         Assert.IsLessThan(8d, snapshot.P95Milliseconds);
         Assert.AreEqual(500, version);
         current?.Dispose();

@@ -31,6 +31,15 @@ public static class ApplicationExceptionPolicy
             return ApplicationFailureDisposition.Recoverable;
         }
 
+        // A control's hover transition is running at the exact moment the user clicks
+        // "Завершить WriteLite" — the pointer is on the button. If the dispatcher tears
+        // down the animation clocks first, the clock throws on its next tick. Nothing is
+        // wrong with the application at that point: it is already leaving.
+        if (shutdownRequested && exception is System.Windows.Media.Animation.AnimationException)
+        {
+            return ApplicationFailureDisposition.Recoverable;
+        }
+
         if (exception is OutOfMemoryException or AccessViolationException or StackOverflowException)
         {
             return ApplicationFailureDisposition.Fatal;

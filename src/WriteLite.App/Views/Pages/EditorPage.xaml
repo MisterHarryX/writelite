@@ -1,175 +1,805 @@
 <UserControl x:Class="WriteLite.Views.Pages.EditorPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WriteLite.Controls"
              Background="{DynamicResource WlBgBase}"
              FontFamily="{DynamicResource WlFont}"
+             SizeChanged="Page_SizeChanged"
+             AllowDrop="True"
+             DragOver="Page_DragOver"
+             Drop="Page_Drop"
              AutomationProperties.Name="Редактор WriteLite">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="64" />
+            <RowDefinition Height="40" />
+            <RowDefinition Height="38" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="48" />
+            <RowDefinition Height="30" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="360" />
+            <ColumnDefinition x:Name="PanelColumn" Width="360" />
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Row="0" Grid.ColumnSpan="2" Background="{DynamicResource WlBg}"
-                BorderBrush="{DynamicResource WlBorder}" BorderThickness="0,0,0,1">
-            <Grid Margin="22,0">
+        <!-- ═══ Document bar ════════════════════════════════════════════════ -->
+        <!-- Title, state and the file menu. Everything about *which* document is
+             open lives here; everything about how it looks lives one row below. -->
+        <Border Grid.Row="0" Grid.ColumnSpan="2"
+                Background="{DynamicResource WlBgBase}"
+                BorderBrush="{DynamicResource WlLine}"
+                BorderThickness="0,0,0,1">
+            <Grid Margin="20,0,14,0">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Редактор" Foreground="{DynamicResource WlText}" FontSize="20" FontWeight="SemiBold" />
-                    <TextBlock Text="Локальная проверка без переключения в другое приложение"
-                               Foreground="{DynamicResource WlTextMuted}" FontSize="11" Margin="0,3,0,0" />
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="FileMenuButton"
+                            Content="Файл"
+                            Style="{DynamicResource WlToolbarButton}"
+                            Click="FileMenu_Click"
+                            AutomationProperties.Name="Меню файла">
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="FileMenu" Style="{DynamicResource WlContextMenu}">
+                                <MenuItem Header="Создать" InputGestureText="Ctrl+N"
+                                          Style="{DynamicResource WlMenuItem}" Click="New_Click" />
+                                <MenuItem Header="Открыть…" InputGestureText="Ctrl+O"
+                                          Style="{DynamicResource WlMenuItem}" Click="Open_Click" />
+                                <MenuItem x:Name="RecentMenu" Header="Недавние"
+                                          Style="{DynamicResource WlMenuItem}" />
+                                <Separator Style="{DynamicResource WlMenuSeparator}" />
+                                <MenuItem Header="Сохранить" InputGestureText="Ctrl+S"
+                                          Style="{DynamicResource WlMenuItem}" Click="Save_Click" />
+                                <MenuItem Header="Сохранить как…" InputGestureText="Ctrl+Shift+S"
+                                          Style="{DynamicResource WlMenuItem}" Click="SaveAs_Click" />
+                                <MenuItem x:Name="ExportMenu" Header="Экспорт"
+                                          Style="{DynamicResource WlMenuItem}">
+                                    <MenuItem Header="DOCX" Tag="Docx"
+                                              Style="{DynamicResource WlMenuItem}" Click="Export_Click" />
+                                    <MenuItem Header="ODT" Tag="Odt"
+                                              Style="{DynamicResource WlMenuItem}" Click="Export_Click" />
+                                    <MenuItem Header="TXT" Tag="Txt"
+                                              Style="{DynamicResource WlMenuItem}" Click="Export_Click" />
+                                    <MenuItem Header="PDF" Tag="Pdf"
+                                              Style="{DynamicResource WlMenuItem}" Click="Export_Click" />
+                                </MenuItem>
+                                <Separator Style="{DynamicResource WlMenuSeparator}" />
+                                <MenuItem Header="Конвертировать документ…"
+                                          Style="{DynamicResource WlMenuItem}" Click="Convert_Click" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+
+                    <Border Style="{DynamicResource WlToolbarRule}" Margin="10,0" />
+
+                    <TextBlock x:Name="DocumentTitleText"
+                               Style="{DynamicResource WlBody}"
+                               Text="Без названия"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               MaxWidth="280" />
+
+                    <!-- The unsaved mark. A dot, not the word "изменено": it sits
+                         beside the name the way it does in every editor people
+                         already use, and it costs six pixels of chrome. -->
+                    <Ellipse x:Name="DirtyDot"
+                             Width="5" Height="5"
+                             Fill="{DynamicResource WlBrand}"
+                             Margin="8,0,0,0"
+                             VerticalAlignment="Center"
+                             Visibility="Collapsed"
+                             ToolTip="Есть несохранённые изменения" />
+
+                    <Border Style="{DynamicResource WlToolbarRule}" Margin="10,0" />
+
+                    <TextBlock x:Name="FormatChip"
+                               Style="{DynamicResource WlMonoLabel}"
+                               controls:Type.Tracked="ЧЕРНОВИК"
+                               VerticalAlignment="Center" />
                 </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="{DynamicResource WlSuccessSoft}" BorderBrush="{DynamicResource WlSuccessBorder}"
-                            BorderThickness="1" CornerRadius="999" Padding="9,4" Margin="0,0,10,0">
-                        <TextBlock Text="●  Локально" Foreground="{DynamicResource WlSuccessText}" FontSize="11" />
-                    </Border>
-                    <Border Background="{DynamicResource WlSurface}" BorderBrush="{DynamicResource WlBorder}"
-                            BorderThickness="1" CornerRadius="8" Padding="12,6"
-                            AutomationProperties.Name="Язык анализа: русский">
-                        <TextBlock Text="Русский" Foreground="{DynamicResource WlText}" FontSize="12" />
-                    </Border>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Автоисправление"
+                               Style="{DynamicResource WlCaption}"
+                               Foreground="{DynamicResource WlTextSecondary}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0" />
+                    <CheckBox x:Name="AutoCorrectToggle"
+                              Style="{DynamicResource WlToggleSwitch}"
+                              VerticalAlignment="Center"
+                              ToolTip="Применять безопасные исправления автоматически"
+                              AutomationProperties.Name="Автоматическое исправление"
+                              Checked="AutoCorrect_Changed"
+                              Unchecked="AutoCorrect_Changed" />
+                    <Border Style="{DynamicResource WlToolbarRule}" Margin="12,0" />
+                    <Button Content="Проверить"
+                            Style="{DynamicResource WlPrimaryButton}"
+                            MinHeight="28"
+                            Click="Recheck_Click"
+                            AutomationProperties.Name="Повторно проверить текст" />
                 </StackPanel>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1" Grid.Column="0" Margin="22,20,18,16">
-            <Border Style="{DynamicResource WlPremiumCard}" Padding="0" CornerRadius="14">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="42" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Border Background="{DynamicResource WlRaised}" BorderBrush="{DynamicResource WlBorder}"
-                            BorderThickness="0,0,0,1" CornerRadius="14,14,0,0">
-                        <Grid Margin="14,0">
-                            <TextBlock Text="ТЕКСТ" Style="{DynamicResource WlSectionLabel}" VerticalAlignment="Center" />
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button Content="Очистить" Style="{DynamicResource WlGhostButton}" Padding="10,3"
-                                        Click="Clear_Click" AutomationProperties.Name="Очистить редактор" />
-                                <Button Content="Проверить" Style="{DynamicResource WlPrimaryButton}" Padding="11,3" Margin="8,0,0,0"
-                                        Click="Recheck_Click" AutomationProperties.Name="Повторно проверить текст" />
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                    <TextBox x:Name="EditorTextBox" Grid.Row="1" AcceptsReturn="True" AcceptsTab="True"
-                             TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                             Background="Transparent" Foreground="{DynamicResource WlText}" BorderThickness="0"
-                             CaretBrush="{DynamicResource WlBrand}" SelectionBrush="{DynamicResource WlBrandDim}"
-                             FontSize="16" Padding="24,22" TextChanged="EditorTextBox_TextChanged"
-                             SpellCheck.IsEnabled="False" AutomationProperties.Name="Текст для проверки" />
-                </Grid>
-            </Border>
-        </Grid>
+        <!-- ═══ Formatting toolbar ══════════════════════════════════════════ -->
+        <Border Grid.Row="1" Grid.ColumnSpan="2"
+                Background="{DynamicResource WlBgBase}"
+                BorderBrush="{DynamicResource WlLine}"
+                BorderThickness="0,0,0,1">
+            <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+                          VerticalScrollBarVisibility="Disabled"
+                          Focusable="False">
+                <StackPanel Orientation="Horizontal" Margin="18,0,14,0" VerticalAlignment="Center">
+                    <ComboBox x:Name="FontFamilyBox"
+                              Style="{DynamicResource WlComboBox}"
+                              Width="146" MinHeight="26"
+                              IsEditable="False"
+                              SelectionChanged="FontFamily_Changed"
+                              ToolTip="Шрифт"
+                              AutomationProperties.Name="Шрифт" />
 
-        <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource WlBg}"
-                BorderBrush="{DynamicResource WlBorder}" BorderThickness="1,0,0,0">
-            <Grid Margin="16,18,16,14">
+                    <ComboBox x:Name="FontSizeBox"
+                              Style="{DynamicResource WlComboBox}"
+                              Width="66" MinHeight="26"
+                              Margin="6,0,0,0"
+                              IsEditable="True"
+                              SelectionChanged="FontSize_Changed"
+                              ToolTip="Размер"
+                              AutomationProperties.Name="Размер шрифта" />
+
+                    <Border Style="{DynamicResource WlToolbarRule}" />
+
+                    <ToggleButton x:Name="BoldToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Bold_Click" ToolTip="Полужирный (Ctrl+B)"
+                                  AutomationProperties.Name="Полужирный">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconBold}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="ItalicToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Italic_Click" ToolTip="Курсив (Ctrl+I)"
+                                  AutomationProperties.Name="Курсив">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconItalic}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="UnderlineToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Underline_Click" ToolTip="Подчёркнутый (Ctrl+U)"
+                                  AutomationProperties.Name="Подчёркнутый">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconUnderline}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="StrikeToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Strikethrough_Click" ToolTip="Зачёркнутый"
+                                  AutomationProperties.Name="Зачёркнутый">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconStrikethrough}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+
+                    <Button x:Name="TextColorButton" Style="{DynamicResource WlIconButton}"
+                            Width="28" Height="26"
+                            Click="TextColor_Click" ToolTip="Цвет текста"
+                            AutomationProperties.Name="Цвет текста">
+                        <Grid>
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconTextColor}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <Border x:Name="ColorSwatch"
+                                    Height="2" Width="14"
+                                    Background="{DynamicResource WlBrand}"
+                                    VerticalAlignment="Bottom"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,0,1" />
+                        </Grid>
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="ColorMenu" Style="{DynamicResource WlContextMenu}" />
+                        </Button.ContextMenu>
+                    </Button>
+
+                    <Border Style="{DynamicResource WlToolbarRule}" />
+
+                    <ToggleButton x:Name="AlignLeftToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Align_Click" Tag="Left" ToolTip="По левому краю"
+                                  AutomationProperties.Name="Выравнивание по левому краю">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconAlignLeft}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="AlignCenterToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Align_Click" Tag="Center" ToolTip="По центру"
+                                  AutomationProperties.Name="Выравнивание по центру">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconAlignCenter}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="AlignRightToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Align_Click" Tag="Right" ToolTip="По правому краю"
+                                  AutomationProperties.Name="Выравнивание по правому краю">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconAlignRight}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="AlignJustifyToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Align_Click" Tag="Justify" ToolTip="По ширине"
+                                  AutomationProperties.Name="Выравнивание по ширине">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconAlignJustify}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+
+                    <Border x:Name="ListGroupRule" Style="{DynamicResource WlToolbarRule}" />
+
+                    <StackPanel x:Name="ListGroup" Orientation="Horizontal">
+                        <ToggleButton x:Name="BulletToggle" Style="{DynamicResource WlFormatToggle}"
+                                      Click="BulletList_Click" ToolTip="Маркированный список"
+                                      AutomationProperties.Name="Маркированный список">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconListBullet}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                        </ToggleButton>
+                        <ToggleButton x:Name="NumberToggle" Style="{DynamicResource WlFormatToggle}"
+                                      Click="NumberedList_Click" ToolTip="Нумерованный список"
+                                      AutomationProperties.Name="Нумерованный список">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconListNumber}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                        </ToggleButton>
+                        <Button Style="{DynamicResource WlIconButton}" Width="28" Height="26"
+                                Click="IndentLess_Click" ToolTip="Уменьшить отступ"
+                                AutomationProperties.Name="Уменьшить отступ">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconIndentLess}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Button>
+                        <Button Style="{DynamicResource WlIconButton}" Width="28" Height="26"
+                                Click="IndentMore_Click" ToolTip="Увеличить отступ"
+                                AutomationProperties.Name="Увеличить отступ">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconIndentMore}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Button>
+
+                        <Button x:Name="SpacingButton" Style="{DynamicResource WlIconButton}"
+                                Width="28" Height="26" Margin="2,0,0,0"
+                                Click="Spacing_Click" ToolTip="Интервалы и отступы абзаца"
+                                AutomationProperties.Name="Интервалы абзаца">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconLineSpacing}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="SpacingMenu" Style="{DynamicResource WlContextMenu}">
+                                    <MenuItem Header="Междустрочный интервал" IsEnabled="False"
+                                              Style="{DynamicResource WlMenuItem}" />
+                                    <MenuItem Header="1,0" Tag="1.0" Style="{DynamicResource WlMenuItem}" Click="LineSpacing_Click" />
+                                    <MenuItem Header="1,15" Tag="1.15" Style="{DynamicResource WlMenuItem}" Click="LineSpacing_Click" />
+                                    <MenuItem Header="1,5" Tag="1.5" Style="{DynamicResource WlMenuItem}" Click="LineSpacing_Click" />
+                                    <MenuItem Header="2,0" Tag="2.0" Style="{DynamicResource WlMenuItem}" Click="LineSpacing_Click" />
+                                    <Separator Style="{DynamicResource WlMenuSeparator}" />
+                                    <MenuItem Header="Интервал до абзаца +6 пт" Tag="before"
+                                              Style="{DynamicResource WlMenuItem}" Click="ParagraphSpacing_Click" />
+                                    <MenuItem Header="Интервал после абзаца +6 пт" Tag="after"
+                                              Style="{DynamicResource WlMenuItem}" Click="ParagraphSpacing_Click" />
+                                    <MenuItem Header="Убрать интервалы" Tag="none"
+                                              Style="{DynamicResource WlMenuItem}" Click="ParagraphSpacing_Click" />
+                                    <Separator Style="{DynamicResource WlMenuSeparator}" />
+                                    <MenuItem Header="Красная строка 1,25 см" Tag="firstline"
+                                              Style="{DynamicResource WlMenuItem}" Click="ParagraphSpacing_Click" />
+                                    <MenuItem Header="Убрать красную строку" Tag="nofirstline"
+                                              Style="{DynamicResource WlMenuItem}" Click="ParagraphSpacing_Click" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+
+                        <ComboBox x:Name="StyleBox"
+                                  Style="{DynamicResource WlComboBox}"
+                                  Width="126" MinHeight="26"
+                                  Margin="8,0,0,0"
+                                  SelectionChanged="ParagraphStyle_Changed"
+                                  ToolTip="Стиль абзаца"
+                                  AutomationProperties.Name="Стиль абзаца" />
+                    </StackPanel>
+
+                    <Border x:Name="HistoryGroupRule" Style="{DynamicResource WlToolbarRule}" />
+
+                    <StackPanel x:Name="HistoryGroup" Orientation="Horizontal">
+                        <Button Style="{DynamicResource WlIconButton}" Width="28" Height="26"
+                                Click="Undo_Click" ToolTip="Отменить (Ctrl+Z)"
+                                AutomationProperties.Name="Отменить">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconUndo}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Button>
+                        <Button Style="{DynamicResource WlIconButton}" Width="28" Height="26"
+                                Click="Redo_Click" ToolTip="Повторить (Ctrl+Y)"
+                                AutomationProperties.Name="Повторить">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconRedo}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Button>
+                        <Button Style="{DynamicResource WlIconButton}" Width="28" Height="26" Margin="2,0,0,0"
+                                Click="Find_Click" ToolTip="Найти и заменить (Ctrl+F)"
+                                AutomationProperties.Name="Найти и заменить">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconSearch}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- ═══ Find and replace ════════════════════════════════════════════ -->
+        <Border x:Name="FindBar"
+                Grid.Row="2" Grid.ColumnSpan="2"
+                Background="{DynamicResource WlBgSoft}"
+                BorderBrush="{DynamicResource WlLine}"
+                BorderThickness="0,0,0,1"
+                Padding="18,8"
+                Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="FindBox"
+                         Style="{DynamicResource WlSmallInput}"
+                         Width="190"
+                         KeyDown="FindBox_KeyDown"
+                         ToolTip="Что искать"
+                         AutomationProperties.Name="Найти" />
+                <Button Content="Найти далее" Style="{DynamicResource WlToolbarButton}"
+                        Margin="6,0,0,0" Click="FindNext_Click" />
+                <Border Style="{DynamicResource WlToolbarRule}" />
+                <TextBox x:Name="ReplaceBox"
+                         Style="{DynamicResource WlSmallInput}"
+                         Width="190"
+                         ToolTip="Чем заменить"
+                         AutomationProperties.Name="Заменить на" />
+                <Button Content="Заменить" Style="{DynamicResource WlToolbarButton}"
+                        Margin="6,0,0,0" Click="Replace_Click" />
+                <Button Content="Заменить все" Style="{DynamicResource WlToolbarButton}"
+                        Margin="2,0,0,0" Click="ReplaceAll_Click" />
+                <TextBlock x:Name="FindStatusText"
+                           Style="{DynamicResource WlCaption}"
+                           Foreground="{DynamicResource WlTextMuted}"
+                           VerticalAlignment="Center"
+                           Margin="12,0,0,0" />
+                <Button Style="{DynamicResource WlIconButton}" Width="26" Height="26"
+                        Margin="8,0,0,0" Click="CloseFind_Click"
+                        AutomationProperties.Name="Закрыть поиск">
+                    <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconClose}"
+                          Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- ═══ Progress ════════════════════════════════════════════════════ -->
+        <!-- Real progress only. A long import reports the stage it is in and, when
+             the total is knowable, how far through it is; when it is not, the bar
+             stays indeterminate rather than inventing a percentage. -->
+        <Border x:Name="ProgressBar"
+                Grid.Row="3" Grid.ColumnSpan="2"
+                Background="{DynamicResource WlBgSoft}"
+                BorderBrush="{DynamicResource WlLine}"
+                BorderThickness="0,0,0,1"
+                Padding="18,9"
+                Visibility="Collapsed">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="ProgressStageText"
+                               Style="{DynamicResource WlMonoLabel}"
+                               Foreground="{DynamicResource WlBrand}"
+                               VerticalAlignment="Center" />
+                    <ProgressBar x:Name="ProgressIndicator"
+                                 Width="220" Height="3"
+                                 Margin="14,0,0,0"
+                                 Background="{DynamicResource WlRaised}"
+                                 Foreground="{DynamicResource WlBrand}"
+                                 BorderThickness="0"
+                                 VerticalAlignment="Center" />
+                </StackPanel>
+                <Button Content="Отменить"
+                        Style="{DynamicResource WlToolbarButton}"
+                        HorizontalAlignment="Right"
+                        Click="CancelOperation_Click"
+                        AutomationProperties.Name="Отменить операцию" />
+            </Grid>
+        </Border>
+
+        <!-- ═══ Writing canvas ══════════════════════════════════════════════ -->
+        <ScrollViewer Grid.Row="4" Grid.Column="0"
+                      x:Name="CanvasScroller"
+                      Style="{DynamicResource WlScrollViewer}"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Background="{DynamicResource WlBgBase}"
+                      PreviewMouseWheel="Canvas_PreviewMouseWheel">
+            <Grid x:Name="CanvasMeasure"
+                  MaxWidth="760"
+                  HorizontalAlignment="Center"
+                  Margin="40,36,40,120">
+                <Grid.LayoutTransform>
+                    <ScaleTransform x:Name="ZoomTransform" ScaleX="1" ScaleY="1" />
+                </Grid.LayoutTransform>
+
+                <RichTextBox x:Name="Editor"
+                             Style="{DynamicResource WlDocumentSurface}"
+                             TextChanged="Editor_TextChanged"
+                             SelectionChanged="Editor_SelectionChanged"
+                             PreviewMouseLeftButtonUp="Editor_MouseUp"
+                             MouseDoubleClick="Editor_MouseDoubleClick"
+                             PreviewMouseRightButtonDown="Editor_PreviewMouseRightButtonDown"
+                             ContextMenuOpening="Editor_ContextMenuOpening"
+                             AutomationProperties.Name="Текст документа" />
+
+                <TextBlock x:Name="CanvasPlaceholder"
+                           VerticalAlignment="Top"
+                           IsHitTestVisible="False"
+                           TextWrapping="Wrap"
+                           FontSize="16"
+                           LineHeight="26"
+                           Foreground="{DynamicResource WlTextMuted}"
+                           Text="Начните печатать, вставьте текст или перетащите сюда документ DOCX, ODT, PDF или TXT." />
+            </Grid>
+        </ScrollViewer>
+
+        <!-- ═══ Side panel ══════════════════════════════════════════════════ -->
+        <Border x:Name="SuggestionsPanel"
+                Grid.Row="2" Grid.RowSpan="3" Grid.Column="1"
+                Background="{DynamicResource WlBg}"
+                BorderBrush="{DynamicResource WlLine}"
+                BorderThickness="1,0,0,0">
+            <Grid Margin="18,18,14,16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Grid>
-                    <StackPanel>
-                        <TextBlock Text="Предложения" Foreground="{DynamicResource WlText}" FontSize="16" FontWeight="SemiBold" />
-                        <TextBlock x:Name="IssueCountText" Text="Замечаний нет" Foreground="{DynamicResource WlTextMuted}" FontSize="11" Margin="0,3,0,0" />
-                    </StackPanel>
-                    <Border HorizontalAlignment="Right" VerticalAlignment="Top" Background="{DynamicResource WlBrandDim}"
-                            CornerRadius="999" Padding="8,3">
-                        <TextBlock x:Name="IssueBadge" Text="0" Foreground="{DynamicResource WlBrand}" FontWeight="SemiBold" />
-                    </Border>
-                </Grid>
 
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,14,0,10">
-                    <Button Content="Все" Style="{DynamicResource WlGhostButton}" Padding="10,3" IsEnabled="False" />
-                    <TextBlock x:Name="AnalysisStateText" Text="Введите текст" Foreground="{DynamicResource WlTextMuted}"
-                               FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center" />
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                    <RadioButton x:Name="TabIssues" Style="{DynamicResource WlTabButton}"
+                                 Content="Замечания" GroupName="EditorPanel" IsChecked="True"
+                                 Checked="PanelTab_Checked" />
+                    <RadioButton x:Name="TabWord" Style="{DynamicResource WlTabButton}"
+                                 Content="Словарь" GroupName="EditorPanel"
+                                 Checked="PanelTab_Checked" />
                 </StackPanel>
 
-                <Grid Grid.Row="2">
-                    <ListBox x:Name="IssuesList" ItemsSource="{Binding Issues, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                             Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                             SelectionChanged="IssuesList_SelectionChanged" AutomationProperties.Name="Список замечаний"
-                             VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
-                             ScrollViewer.CanContentScroll="True">
-                        <ListBox.ItemsPanel>
-                            <ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate>
-                        </ListBox.ItemsPanel>
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                <Setter Property="Margin" Value="0,0,0,9" />
-                                <Setter Property="Padding" Value="0" />
-                                <Setter Property="Background" Value="Transparent" />
-                                <Setter Property="BorderThickness" Value="0" />
-                            </Style>
-                        </ListBox.ItemContainerStyle>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="{DynamicResource WlSurface}" BorderBrush="{DynamicResource WlBorder}"
-                                        BorderThickness="1" CornerRadius="10" Padding="13">
-                                    <StackPanel>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Ellipse Width="7" Height="7" Fill="{Binding CategoryBrush}" Margin="0,0,7,0" />
-                                            <TextBlock Text="{Binding CategoryLabel}" Foreground="{Binding CategoryBrush}" FontSize="11" FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding SourceLabel}" Foreground="{DynamicResource WlTextMuted}" FontSize="10"
-                                                       HorizontalAlignment="Right" Margin="10,0,0,0" />
-                                        </StackPanel>
-                                        <TextBlock Text="{Binding ChangeLabel}" Foreground="{DynamicResource WlText}" FontSize="14"
-                                                   FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,9,0,0" />
-                                        <TextBlock Text="{Binding Explanation}" Foreground="{DynamicResource WlTextSecondary}" FontSize="12"
-                                                   TextWrapping="Wrap" MaxHeight="54" Margin="0,6,0,0" />
-                                        <StackPanel Orientation="Horizontal" Margin="0,11,0,0">
-                                            <Button Content="Исправить" Style="{DynamicResource WlPrimaryButton}" Padding="10,3"
-                                                    Tag="{Binding}" Click="ApplyIssue_Click" />
-                                            <Button Content="Игнорировать" Style="{DynamicResource WlGhostButton}" Padding="10,3" Margin="7,0,0,0"
-                                                    Tag="{Binding}" Click="IgnoreIssue_Click" />
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                <!-- ── Issues ───────────────────────────────────────────────── -->
+                <Grid x:Name="IssuesTab" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                    <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="230">
-                        <Border Width="48" Height="48" CornerRadius="14" Background="{DynamicResource WlSuccessSoft}"
-                                BorderBrush="{DynamicResource WlSuccessBorder}" BorderThickness="1">
-                            <TextBlock Text="✓" Foreground="{DynamicResource WlSuccess}" FontSize="24"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <TextBlock Text="Всё отлично" Foreground="{DynamicResource WlText}" FontSize="15" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center" Margin="0,12,0,0" />
-                        <TextBlock Text="Новых замечаний не найдено" Foreground="{DynamicResource WlTextMuted}" FontSize="11"
-                                   TextAlignment="Center" Margin="0,4,0,0" />
+                    <StackPanel Grid.Row="0">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Style="{DynamicResource WlMonoNumber}" Text="03" Margin="0,0,12,0" />
+                                <TextBlock Style="{DynamicResource WlSectionTitle}" Text="Замечания" />
+                            </StackPanel>
+                            <TextBlock x:Name="IssueBadge"
+                                       Style="{DynamicResource WlMonoNumber}"
+                                       Foreground="{DynamicResource WlBrand}"
+                                       FontSize="13"
+                                       Text="0"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+                        <TextBlock x:Name="IssueCountText"
+                                   Style="{DynamicResource WlCaption}"
+                                   Text="Замечаний нет"
+                                   Margin="0,6,0,0" />
                     </StackPanel>
+
+                    <WrapPanel x:Name="FilterBar" Grid.Row="1" Margin="0,10,0,6">
+                        <RadioButton x:Name="FilterAll" Style="{DynamicResource WlTabButton}" Content="Все"
+                                     GroupName="EditorFilters" IsChecked="True" Checked="Filter_Checked" />
+                        <RadioButton x:Name="FilterOrthography" Style="{DynamicResource WlTabButton}" Content="Орфография"
+                                     GroupName="EditorFilters" Checked="Filter_Checked" />
+                        <RadioButton x:Name="FilterGrammar" Style="{DynamicResource WlTabButton}" Content="Грамматика"
+                                     GroupName="EditorFilters" Checked="Filter_Checked" />
+                        <RadioButton x:Name="FilterPunctuation" Style="{DynamicResource WlTabButton}" Content="Пунктуация"
+                                     GroupName="EditorFilters" Checked="Filter_Checked" />
+                        <RadioButton x:Name="FilterStyle" Style="{DynamicResource WlTabButton}" Content="Стиль"
+                                     GroupName="EditorFilters" Checked="Filter_Checked" />
+                    </WrapPanel>
+
+                    <Grid Grid.Row="2">
+                        <ListBox x:Name="IssuesList"
+                                 Style="{DynamicResource WlListBox}"
+                                 ItemContainerStyle="{DynamicResource WlCardRow}"
+                                 SelectionChanged="IssuesList_SelectionChanged"
+                                 AutomationProperties.Name="Список замечаний">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{DynamicResource WlCorrectionCard}">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Width="2" Height="10"
+                                                        Background="{Binding CategoryBrush}"
+                                                        CornerRadius="1"
+                                                        Margin="0,0,9,0"
+                                                        VerticalAlignment="Center" />
+                                                <TextBlock Style="{DynamicResource WlCategoryLabel}"
+                                                           controls:Type.Tracked="{Binding CategoryLabelUpper}"
+                                                           Foreground="{Binding CategoryBrush}" />
+                                                <TextBlock Style="{DynamicResource WlMonoLabel}"
+                                                           controls:Type.Tracked="{Binding SourceLabelUpper}"
+                                                           Foreground="{DynamicResource WlTextMuted}"
+                                                           FontSize="9"
+                                                           HorizontalAlignment="Right"
+                                                           Margin="10,0,0,0" />
+                                            </StackPanel>
+
+                                            <WrapPanel Margin="0,11,0,0">
+                                                <TextBlock Style="{DynamicResource WlOriginalText}"
+                                                           Text="{Binding OriginalDisplay}" />
+                                                <TextBlock Style="{DynamicResource WlChangeArrow}"
+                                                           Visibility="{Binding ReplacementVisibility}" />
+                                                <TextBlock Style="{DynamicResource WlReplacementText}"
+                                                           Text="{Binding ReplacementDisplay}"
+                                                           Visibility="{Binding ReplacementVisibility}" />
+                                            </WrapPanel>
+
+                                            <TextBlock Style="{DynamicResource WlExplanation}"
+                                                       Text="{Binding Explanation}"
+                                                       Margin="0,9,0,0" />
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,13,0,0">
+                                                <Button Content="Исправить"
+                                                        Style="{DynamicResource WlPrimaryButton}"
+                                                        MinHeight="28" Padding="12,0"
+                                                        IsEnabled="{Binding CanApply}"
+                                                        Tag="{Binding}" Click="ApplyIssue_Click" />
+                                                <Button Content="Игнорировать"
+                                                        Style="{DynamicResource WlTextButton}"
+                                                        Margin="6,0,0,0"
+                                                        Tag="{Binding}" Click="IgnoreIssue_Click" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <StackPanel x:Name="EmptyState"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    MaxWidth="230">
+                            <Path Style="{DynamicResource WlIconLg}"
+                                  Data="{DynamicResource WlIconCheck}"
+                                  Stroke="{DynamicResource WlSuccess}"
+                                  HorizontalAlignment="Center" />
+                            <TextBlock x:Name="EmptyTitle"
+                                       Style="{DynamicResource WlCardTitle}"
+                                       Text="Замечаний не найдено"
+                                       TextAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,14,0,0" />
+                            <TextBlock x:Name="EmptyHint"
+                                       Style="{DynamicResource WlCaption}"
+                                       Text="Текст выглядит хорошо."
+                                       TextAlignment="Center"
+                                       Margin="0,5,0,0" />
+                        </StackPanel>
+
+                        <StackPanel x:Name="AnalyzingState"
+                                    Visibility="Collapsed"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Style="{DynamicResource WlMonoLabel}"
+                                       controls:Type.Tracked="АНАЛИЗ"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Style="{DynamicResource WlCaption}"
+                                       Text="Проверяем текст…"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,8,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Button Grid.Row="3" x:Name="ApplySafeButton"
+                            Content="Исправить все безопасные"
+                            Style="{DynamicResource WlFooterPrimaryButton}"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,14,0,0"
+                            Click="ApplySafe_Click"
+                            AutomationProperties.Name="Исправить все безопасные замечания" />
                 </Grid>
 
-                <Button Grid.Row="3" x:Name="ApplySafeButton" Content="Исправить безопасные"
-                        Style="{DynamicResource WlFooterPrimaryButton}" Margin="0,12,0,0"
-                        Click="ApplySafe_Click" AutomationProperties.Name="Исправить все безопасные замечания" />
+                <!-- ── Word panel ───────────────────────────────────────────── -->
+                <!-- Synonyms, antonyms, meaning and translation for the selected
+                     word, and the entry point to every AI action. Chips navigate:
+                     clicking one opens that word, which is what turns a lookup into
+                     a lexical database you can walk. -->
+                <Grid x:Name="WordTab" Grid.Row="1" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Style="{DynamicResource WlMonoNumber}" Text="04" Margin="0,0,12,0" />
+                                <TextBlock Style="{DynamicResource WlSectionTitle}" Text="Слово" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button x:Name="WordBackButton"
+                                        Style="{DynamicResource WlIconButton}"
+                                        Width="24" Height="24"
+                                        IsEnabled="False"
+                                        Click="WordBack_Click"
+                                        ToolTip="Назад"
+                                        AutomationProperties.Name="Предыдущее слово">
+                                    <Path Style="{DynamicResource WlIconSm}" Width="11" Height="11"
+                                          Data="{DynamicResource WlIconChevronRight}"
+                                          RenderTransformOrigin="0.5,0.5"
+                                          Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                        <Path.RenderTransform>
+                                            <ScaleTransform ScaleX="-1" />
+                                        </Path.RenderTransform>
+                                    </Path>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock x:Name="WordTrailText"
+                                   Style="{DynamicResource WlCaption}"
+                                   Foreground="{DynamicResource WlTextMuted}"
+                                   TextTrimming="CharacterEllipsis"
+                                   Visibility="Collapsed"
+                                   Margin="0,6,0,0" />
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="1" Style="{DynamicResource WlScrollViewer}">
+                        <StackPanel>
+                            <StackPanel x:Name="WordEmptyState">
+                                <TextBlock Style="{DynamicResource WlCardTitle}"
+                                           Text="Выделите слово"
+                                           Margin="0,20,0,0" />
+                                <TextBlock Style="{DynamicResource WlCaption}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,6,0,0"
+                                           Text="Дважды щёлкните слово в тексте — здесь появятся значение, синонимы, антонимы и перевод. Правый клик открывает действия WriteLite AI." />
+                            </StackPanel>
+
+                            <StackPanel x:Name="WordArticle" Visibility="Collapsed">
+                                <TextBlock x:Name="WordTitleText" Style="{DynamicResource WlWordTitle}" />
+                                <TextBlock x:Name="WordGrammarText"
+                                           Style="{DynamicResource WlCaption}"
+                                           Foreground="{DynamicResource WlTextSecondary}"
+                                           Margin="0,2,0,14" />
+
+                                <StackPanel x:Name="WordActionsBlock" Style="{DynamicResource WlPanelBlock}">
+                                    <TextBlock Style="{DynamicResource WlPanelLabel}"
+                                               controls:Type.Tracked="ДЕЙСТВИЯ" />
+                                    <WrapPanel>
+                                        <Button Content="Переписать" Style="{DynamicResource WlToolbarButton}"
+                                                Tag="Rewrite" Margin="0,0,4,4" Click="QuickAi_Click" />
+                                        <Button Content="Улучшить стиль" Style="{DynamicResource WlToolbarButton}"
+                                                Tag="ImproveStyle" Margin="0,0,4,4" Click="QuickAi_Click" />
+                                        <Button Content="Грамматика" Style="{DynamicResource WlToolbarButton}"
+                                                Tag="Grammar" Margin="0,0,4,4" Click="QuickAi_Click" />
+                                        <Button Content="Своя инструкция…" Style="{DynamicResource WlToolbarButton}"
+                                                Tag="Custom" Margin="0,0,4,4" Click="QuickAi_Click" />
+                                    </WrapPanel>
+                                </StackPanel>
+
+                                <StackPanel x:Name="DefinitionsBlock" Style="{DynamicResource WlPanelBlock}">
+                                    <TextBlock Style="{DynamicResource WlPanelLabel}"
+                                               controls:Type.Tracked="ЗНАЧЕНИЕ" />
+                                    <ItemsControl x:Name="DefinitionsList">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Style="{DynamicResource WlMonoNumber}"
+                                                               FontSize="10"
+                                                               Foreground="{DynamicResource WlTextMuted}"
+                                                               Text="{Binding Number}"
+                                                               Margin="0,2,10,0"
+                                                               VerticalAlignment="Top" />
+                                                    <TextBlock Grid.Column="1"
+                                                               Style="{DynamicResource WlSecondary}"
+                                                               TextWrapping="Wrap"
+                                                               Text="{Binding Text}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+
+                                <StackPanel x:Name="SynonymsBlock" Style="{DynamicResource WlPanelBlock}">
+                                    <TextBlock Style="{DynamicResource WlPanelLabel}"
+                                               controls:Type.Tracked="СИНОНИМЫ" />
+                                    <WrapPanel x:Name="SynonymsPanel" />
+                                    <TextBlock Style="{DynamicResource WlCaption}"
+                                               Foreground="{DynamicResource WlTextMuted}"
+                                               Text="Клик — заменить слово в тексте. Двойной клик — открыть статью."
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0" />
+                                </StackPanel>
+
+                                <StackPanel x:Name="AntonymsBlock" Style="{DynamicResource WlPanelBlock}">
+                                    <TextBlock Style="{DynamicResource WlPanelLabel}"
+                                               controls:Type.Tracked="АНТОНИМЫ" />
+                                    <WrapPanel x:Name="AntonymsPanel" />
+                                </StackPanel>
+
+                                <StackPanel x:Name="TranslationsBlock" Style="{DynamicResource WlPanelBlock}">
+                                    <TextBlock x:Name="TranslationsLabel"
+                                               Style="{DynamicResource WlPanelLabel}"
+                                               controls:Type.Tracked="ПЕРЕВОД" />
+                                    <WrapPanel x:Name="TranslationsPanel" />
+                                </StackPanel>
+
+                                <StackPanel x:Name="FormsBlock" Style="{DynamicResource WlPanelBlock}">
+                                    <TextBlock Style="{DynamicResource WlPanelLabel}"
+                                               controls:Type.Tracked="ФОРМА" />
+                                    <TextBlock x:Name="FormsText"
+                                               Style="{DynamicResource WlCaption}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <TextBlock x:Name="WordSourceText"
+                                           Style="{DynamicResource WlCaption}"
+                                           Foreground="{DynamicResource WlTextMuted}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <TextBlock x:Name="WordMessageText"
+                                       Style="{DynamicResource WlCaption}"
+                                       TextWrapping="Wrap"
+                                       Visibility="Collapsed"
+                                       Margin="0,16,0,0" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
             </Grid>
         </Border>
 
-        <Border Grid.Row="2" Grid.ColumnSpan="2" Background="{DynamicResource WlBg}"
-                BorderBrush="{DynamicResource WlBorder}" BorderThickness="0,1,0,0">
-            <Grid Margin="22,0">
+        <!-- ═══ Status bar ══════════════════════════════════════════════════ -->
+        <Border Grid.Row="5" Grid.ColumnSpan="2"
+                Background="{DynamicResource WlBg}"
+                BorderBrush="{DynamicResource WlLine}"
+                BorderThickness="0,1,0,0">
+            <Grid Margin="20,0,14,0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock x:Name="WordCountText" Text="0 слов" Foreground="{DynamicResource WlTextMuted}" FontSize="11" />
-                    <TextBlock Text="•" Foreground="{DynamicResource WlBorder}" Margin="10,0" />
-                    <TextBlock Text="Системная проверка в редакторе отключена" Foreground="{DynamicResource WlTextMuted}" FontSize="11" />
+                    <TextBlock x:Name="WordCountText" Style="{DynamicResource WlMonoLabel}"
+                               controls:Type.Tracked="0 СЛОВ" />
+                    <Border Style="{DynamicResource WlToolbarRule}" Height="10" />
+                    <TextBlock x:Name="CharCountText" Style="{DynamicResource WlMonoLabel}"
+                               controls:Type.Tracked="0 ЗНАКОВ" />
+                    <Border x:Name="PageCountRule" Style="{DynamicResource WlToolbarRule}" Height="10" />
+                    <TextBlock x:Name="PageCountText" Style="{DynamicResource WlMonoLabel}"
+                               controls:Type.Tracked="1 СТР." />
+                    <Border Style="{DynamicResource WlToolbarRule}" Height="10" />
+                    <TextBlock x:Name="StatusText" Style="{DynamicResource WlMonoLabel}"
+                               controls:Type.Tracked="ЛОКАЛЬНАЯ ПРОВЕРКА" />
+                    <Button x:Name="UndoAutoButton"
+                            Content="Отменить"
+                            Style="{DynamicResource WlToolbarButton}"
+                            Margin="10,0,0,0"
+                            Visibility="Collapsed"
+                            Click="UndoAuto_Click" />
                 </StackPanel>
-                <TextBlock Text="Ctrl+Enter — проверить" HorizontalAlignment="Right" VerticalAlignment="Center"
-                           Foreground="{DynamicResource WlTextMuted}" FontSize="11" />
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="TogglePanelButton"
+                            Content="Панель"
+                            Style="{DynamicResource WlToolbarButton}"
+                            Visibility="Collapsed"
+                            Margin="0,0,8,0"
+                            Click="TogglePanel_Click" />
+                    <Button Style="{DynamicResource WlIconButton}" Width="24" Height="24"
+                            Click="ZoomOut_Click" ToolTip="Уменьшить масштаб"
+                            AutomationProperties.Name="Уменьшить масштаб">
+                        <TextBlock Text="−" FontSize="14"
+                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </Button>
+                    <TextBlock x:Name="ZoomText" Style="{DynamicResource WlMonoLabel}"
+                               controls:Type.Tracked="100%"
+                               VerticalAlignment="Center"
+                               MinWidth="44"
+                               TextAlignment="Center" />
+                    <Button Style="{DynamicResource WlIconButton}" Width="24" Height="24"
+                            Click="ZoomIn_Click" ToolTip="Увеличить масштаб"
+                            AutomationProperties.Name="Увеличить масштаб">
+                        <TextBlock Text="+" FontSize="13"
+                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

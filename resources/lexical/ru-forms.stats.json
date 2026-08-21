@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-08-15",
+  "surfaceForms": 3091391,
+  "lemmas": 183351,
+  "distinctTags": 2722,
+  "arcs": 392198,
+  "alphabetSize": 73,
+  "graphNodes": 141133,
+  "formsBySource": {
+    "opencorpora": 3063288,
+    "modern-vocab": 28103
+  },
+  "formsByPos": {
+    "NOUN": 1026004,
+    "PRTF": 827084,
+    "ADJF": 559561,
+    "VERB": 379692,
+    "GRND": 68054,
+    "ADJS": 66135,
+    "COMP": 58144,
+    "PRTS": 56510,
+    "INFN": 45291,
+    "ADVB": 4044,
+    "INTJ": 281,
+    "NUMR": 191,
+    "NPRO": 119,
+    "CONJ": 112,
+    "PREP": 70,
+    "PRCL": 67,
+    "PRED": 32
+  },
+  "formsByFlag": {
+    "is_proper_name": 424665,
+    "is_slang": 23561,
+    "is_borrowing": 13792,
+    "is_informal": 12274,
+    "is_obscene": 7190,
+    "is_abbreviation": 1886,
+    "is_archaic": 1194,
+    "non_cyrillic": 411
+  },
+  "formsWithFrequency": 316161,
+  "bytes": {
+    "wldawg": 4706554,
+    "meta": 37096692,
+    "strings": 3979861
+  },
+  "buildSeconds": 31.4
+}

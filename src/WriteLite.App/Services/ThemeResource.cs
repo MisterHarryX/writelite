@@ -14,4 +14,12 @@ public static class ThemeResource
 
     public static MediaFontFamily Font(string key, string fallback = "Segoe UI") =>
         WpfApplication.Current?.TryFindResource(key) as MediaFontFamily ?? new MediaFontFamily(fallback);
+
+    /// <summary>
+    /// Resolves a control style so windows built in code can use the same templates as
+    /// the XAML views. Returns null when the theme is not loaded (design time, tests),
+    /// which leaves the control on its default style rather than failing.
+    /// </summary>
+    public static Style? Style(string key) =>
+        WpfApplication.Current?.TryFindResource(key) as Style;
 }

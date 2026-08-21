@@ -25,6 +25,13 @@ public sealed class LexicalPackManifest
     [JsonPropertyName("source")]
     public string? Source { get; set; }
 
+    /// <summary>
+    /// Language of every entry in the pack ("ru", "en"). Absent in packs written
+    /// before multi-language support, which are Russian by definition.
+    /// </summary>
+    [JsonPropertyName("language")]
+    public string? Language { get; set; }
+
     [JsonPropertyName("isDemo")]
     public bool IsDemo { get; set; }
 
@@ -87,6 +94,10 @@ public sealed class LexicalSenseLinkDto
 
     [JsonPropertyName("relevance")]
     public double Relevance { get; set; } = 0.5;
+
+    /// <summary>Id of the source this link was imported from, for provenance.</summary>
+    [JsonPropertyName("sourceId")]
+    public string? SourceId { get; set; }
 }
 
 public sealed class LexicalDefinitionDto

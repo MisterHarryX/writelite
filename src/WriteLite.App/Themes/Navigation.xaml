@@ -1,9 +1,433 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:WriteLite.Controls"
+                    xmlns:wl="clr-namespace:WriteLite.Services">
+    <!--
+        Navigation rail. Lightweight on purpose: the editor stays the focus, so the
+        rail carries no card, no fill and no heavy divider — just a hairline against
+        the page. Selection reads as a 2 px orange indicator plus a slightly warmer
+        surface and a brighter label, never as a solid orange block.
+
+        The indicator is not part of this template. It is one element that lives in
+        the rail and slides between items (see MainWindow.MoveNavIndicator), because
+        an indicator that vanishes from one row and reappears on another says nothing
+        about where the selection went — the movement is the whole point of having
+        one. Items keep an empty 2 px column so their content still lines up with it.
+    -->
+
+    <wl:EditorialEase x:Key="WlEase" />
+
     <Style x:Key="WlNavigationRail" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource WlBg}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource WlBorder}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLine}" />
         <Setter Property="BorderThickness" Value="0,0,1,0" />
-        <Setter Property="Padding" Value="12" />
+        <Setter Property="Padding" Value="10,8,10,12" />
+    </Style>
+
+    <!-- The moving selection indicator. -->
+    <Style x:Key="WlNavIndicator" TargetType="Border">
+        <Setter Property="Width" Value="2" />
+        <Setter Property="CornerRadius" Value="1" />
+        <Setter Property="Background" Value="{DynamicResource WlBrand}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+
+    <Style TargetType="{x:Type controls:NavItem}">
+        <Setter Property="wl:Motion.Settle" Value="True" />
+        <Setter Property="Height" Value="34" />
+        <Setter Property="Margin" Value="0,1" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextSecondary}" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:NavItem}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <!-- Reserved for the rail's shared indicator. -->
+                            <ColumnDefinition Width="2" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Grid.Column="1" Margin="8,0,0,0">
+                            <!-- Two surface layers rather than one background that
+                                 switches value: hover and selection fade
+                                 independently, so moving off a selected item does
+                                 not flash its fill away and back. -->
+                            <Border x:Name="Selected"
+                                    Background="{DynamicResource WlSurface}"
+                                    CornerRadius="5"
+                                    Opacity="0" />
+                            <Border x:Name="Hover"
+                                    Background="{DynamicResource WlSurfaceHi}"
+                                    CornerRadius="5"
+                                    Opacity="0" />
+                            <Border x:Name="Focus"
+                                    BorderBrush="{DynamicResource WlLineAccent}"
+                                    BorderThickness="1"
+                                    CornerRadius="5"
+                                    Opacity="0" />
+
+                            <Grid x:Name="Row" Margin="9,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock x:Name="IndexText"
+                                           Grid.Column="0"
+                                           Style="{DynamicResource WlMonoNumber}"
+                                           Text="{TemplateBinding Index}"
+                                           Foreground="{DynamicResource WlTextMuted}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,11,0" />
+
+                                <Path x:Name="IconPath"
+                                      Grid.Column="1"
+                                      Style="{DynamicResource WlIcon}"
+                                      Width="16" Height="16"
+                                      Data="{TemplateBinding Icon}"
+                                      Stroke="{TemplateBinding Foreground}"
+                                      VerticalAlignment="Center" />
+
+                                <TextBlock x:Name="LabelText"
+                                           Grid.Column="2"
+                                           Text="{TemplateBinding Label}"
+                                           Foreground="{TemplateBinding Foreground}"
+                                           FontSize="{TemplateBinding FontSize}"
+                                           FontFamily="{TemplateBinding FontFamily}"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           Margin="11,0,0,0" />
+                            </Grid>
+                        </Grid>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="IndexText" Property="Foreground" Value="{DynamicResource WlBrand}" />
+                            <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                            <Setter TargetName="Selected" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="wl:Motion.IsSettled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard FillBehavior="Stop">
+                                        <DoubleAnimation Storyboard.TargetName="Selected"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.20"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard FillBehavior="Stop">
+                                        <DoubleAnimation Storyboard.TargetName="Selected"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="1" To="0" Duration="0:0:0.20"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.ExitActions>
+                        </MultiTrigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Focus" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <!-- Icon-only rail below ~1000 px. -->
+                        <Trigger Property="IsCompact" Value="True">
+                            <Setter TargetName="IndexText" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="LabelText" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="Row" Property="Margin" Value="0" />
+                            <Setter TargetName="Row" Property="HorizontalAlignment" Value="Center" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Legacy plain nav button, still used for the rail footer action. -->
+    <Style x:Key="WlNavButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextMuted}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="9,7" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="wl:Motion.Press" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="Hover"
+                                Background="{DynamicResource WlSurface}"
+                                CornerRadius="5"
+                                Opacity="0" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="Center" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- TabControl chrome for the word card. The stock WPF tab strip draws Windows
+         chrome — a raised header, a 3D border and a grey background — which would
+         plant a piece of another design system inside the popover. -->
+    <Style x:Key="WlTabItem" TargetType="TabItem">
+        <Setter Property="wl:Motion.Settle" Value="True" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextMuted}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="2,8" />
+        <Setter Property="Margin" Value="0,0,16,0" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Grid>
+                        <ContentPresenter ContentSource="Header"
+                                          Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                        <!-- The underline grows out of the label rather than
+                             appearing under it, so the eye follows the selection
+                             across the strip. -->
+                        <Border x:Name="Rule"
+                                Height="1.5"
+                                VerticalAlignment="Bottom"
+                                Background="{DynamicResource WlBrand}"
+                                Opacity="0"
+                                RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform x:Name="RuleScale" ScaleX="1" />
+                            </Border.RenderTransform>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                        </Trigger>
+                        <!-- Resting state. Applies instantly for a tab that is already
+                             selected when the page opens. -->
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                            <Setter TargetName="Rule" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <!-- The transition, only once the strip has settled. -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True" />
+                                <Condition Property="wl:Motion.IsSettled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard FillBehavior="Stop">
+                                        <DoubleAnimation Storyboard.TargetName="Rule"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="RuleScale"
+                                                         Storyboard.TargetProperty="ScaleX"
+                                                         From="0.4" To="1" Duration="0:0:0.20"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard FillBehavior="Stop">
+                                        <DoubleAnimation Storyboard.TargetName="Rule"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="1" To="0" Duration="0:0:0.12"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="RuleScale"
+                                                         Storyboard.TargetProperty="ScaleX"
+                                                         From="1" To="0.4" Duration="0:0:0.12"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.ExitActions>
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="WlTabControl" TargetType="TabControl">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource WlTabItem}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0"
+                                BorderBrush="{DynamicResource WlLine}"
+                                BorderThickness="0,0,0,1">
+                            <TabPanel IsItemsHost="True" Panel.ZIndex="1" Margin="0" />
+                        </Border>
+                        <ContentPresenter Grid.Row="1"
+                                          ContentSource="SelectedContent"
+                                          Margin="0,2,0,0" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Underlined tab used by the system suggestions panel. -->
+    <Style x:Key="WlTabButton" TargetType="RadioButton">
+        <Setter Property="wl:Motion.Settle" Value="True" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextMuted}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="2,9" />
+        <Setter Property="Margin" Value="0,0,16,0" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Grid>
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                        <Border x:Name="Rule"
+                                Height="1.5"
+                                VerticalAlignment="Bottom"
+                                Background="{DynamicResource WlBrand}"
+                                Opacity="0"
+                                RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform x:Name="RuleScale" ScaleX="1" />
+                            </Border.RenderTransform>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                            <Setter TargetName="Rule" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="wl:Motion.IsSettled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard FillBehavior="Stop">
+                                        <DoubleAnimation Storyboard.TargetName="Rule"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="RuleScale"
+                                                         Storyboard.TargetProperty="ScaleX"
+                                                         From="0.4" To="1" Duration="0:0:0.20"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard FillBehavior="Stop">
+                                        <DoubleAnimation Storyboard.TargetName="Rule"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="1" To="0" Duration="0:0:0.12"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="RuleScale"
+                                                         Storyboard.TargetProperty="ScaleX"
+                                                         From="1" To="0.4" Duration="0:0:0.12"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.ExitActions>
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>

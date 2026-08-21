@@ -1,0 +1,33 @@
+{
+  "totalEntries": 2652,
+  "newVsOpenCorpora": 1921,
+  "alreadyInOpenCorpora": 731,
+  "byCategory": {
+    "abbreviation": 194,
+    "borrowing": 147,
+    "brand": 403,
+    "business": 39,
+    "finance": 96,
+    "gaming": 234,
+    "internet": 464,
+    "medicine": 13,
+    "profanity": 465,
+    "science": 5,
+    "slang": 138,
+    "tech": 454
+  },
+  "byRegister": {
+    "neutral": 1088,
+    "informal": 729,
+    "slang": 560,
+    "obscene": 275
+  },
+  "byPos": {
+    "noun": 2053,
+    "adj": 117,
+    "verb": 427,
+    "interj": 32,
+    "adv": 23
+  },
+  "inflectTrue": 2105
+}

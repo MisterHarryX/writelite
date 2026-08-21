@@ -14,6 +14,8 @@ namespace WriteLite.Views;
 
 public partial class SuggestionsWindow : Window
 {
+    private string? _pendingCopy;
+
     private readonly ObservableCollection<IssueCard> _allIssues = [];
     private readonly ObservableCollection<IssueCard> _visibleIssues = [];
     private bool _isBusy;
@@ -118,23 +120,68 @@ public partial class SuggestionsWindow : Window
             0 when !snapshot.IsFullDictionaryLoaded => "Словарь загружается",
             0 when !snapshot.Target.SupportsDirectWrite => "Только для чтения",
             0 => "Нет замечаний",
-            1 => "1 замечание",
-            _ => $"{count} замечаний"
+            _ => RussianPlural.Issues(count)
         };
     }
 
     private void UpdateTabCounts(TextSnapshot snapshot)
     {
-        var issues = snapshot.Issues;
-        TabAll.Content = $"Все {issues.Count}";
-        TabOrthography.Content = $"Орфография {issues.Count(issue => issue.Category == IssueCategory.Orthography)}";
-        TabPunctuation.Content = $"Пунктуация {issues.Count(issue => issue.Category == IssueCategory.Punctuation)}";
-        TabGrammar.Content = $"Грамматика {issues.Count(issue => issue.Category == IssueCategory.Grammar)}";
-        TabStyle.Content = $"Стиль {issues.Count(issue => issue.Category == IssueCategory.Style)}";
+        var counts = IssueCountSummary.From(snapshot.Issues);
+        TabAll.Content = $"Все {counts.All}";
+        TabOrthography.Content = $"Орфография {counts.Orthography}";
+        TabPunctuation.Content = $"Пунктуация {counts.Punctuation}";
+        TabGrammar.Content = $"Грамматика {counts.Grammar}";
+        TabStyle.Content = $"Стиль {counts.Style}";
+    }
+
+    /// <summary>
+    /// Reports a correction that did not apply, without a modal dialog.
+    /// </summary>
+    /// <remarks>
+    /// The panel's counterpart to the card's own failure row — §12. Used when the click came
+    /// from the panel, or from a popup the user has since closed, so that a failure is always
+    /// visible somewhere the user is already looking rather than in a window that steals the
+    /// keyboard from the field being corrected.
+    /// </remarks>
+    public void ShowApplyFeedback(string message, string? replacementForCopy)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.BeginInvoke(() => ShowApplyFeedback(message, replacementForCopy));
+            return;
+        }
+
+        _pendingCopy = replacementForCopy;
+        ApplyFeedbackText.Text = message;
+        ApplyFeedbackCopy.Visibility = string.IsNullOrEmpty(replacementForCopy)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+        ApplyFeedbackBanner.Visibility = string.IsNullOrWhiteSpace(message)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+        IssuesScroller.Visibility = Visibility.Visible;
+    }
+
+    private void ApplyFeedbackCopy_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(_pendingCopy)) return;
+        try
+        {
+            System.Windows.Clipboard.SetText(_pendingCopy);
+            ApplyFeedbackText.Text = "Исправление скопировано в буфер обмена.";
+            ApplyFeedbackCopy.Visibility = Visibility.Collapsed;
+        }
+        catch (Exception exception)
+        {
+            CompatibilityLogger.Technical("clipboard-copy-failed", $"type={exception.GetType().Name}");
+        }
     }
 
     private void UpdateBanners(TextSnapshot snapshot)
     {
+        // A fresh snapshot means the field moved on; a stale failure notice must not outlive it.
+        ApplyFeedbackBanner.Visibility = Visibility.Collapsed;
+
         ReadonlyBanner.Visibility = snapshot.Target.SupportsDirectWrite
             ? Visibility.Collapsed
             : Visibility.Visible;
@@ -164,7 +211,7 @@ public partial class SuggestionsWindow : Window
             "Orthography" => issue.Category == IssueCategory.Orthography,
             "Punctuation" => issue.Category == IssueCategory.Punctuation,
             "Grammar" => issue.Category == IssueCategory.Grammar,
-            "Style" => issue.Category == IssueCategory.Style,
+            "Style" => issue.Category is IssueCategory.Style or IssueCategory.Readability,
             _ => true
         };
     }
@@ -176,12 +223,14 @@ public partial class SuggestionsWindow : Window
 
         EmptyState.Visibility = !hasVisible && !_isBusy ? Visibility.Visible : Visibility.Collapsed;
         IssuesScroller.Visibility = hasVisible || ReadonlyBanner.Visibility == Visibility.Visible || DictBanner.Visibility == Visibility.Visible
+                                    || ApplyFeedbackBanner.Visibility == Visibility.Visible
             ? Visibility.Visible
             : (hasAny ? Visibility.Visible : Visibility.Collapsed);
 
         if (!hasVisible && !_isBusy)
         {
             IssuesScroller.Visibility = ReadonlyBanner.Visibility == Visibility.Visible || DictBanner.Visibility == Visibility.Visible
+                                        || ApplyFeedbackBanner.Visibility == Visibility.Visible
                 ? Visibility.Visible
                 : Visibility.Collapsed;
         }
@@ -312,19 +361,15 @@ public partial class SuggestionsWindow : Window
             Issue = normalized;
             CanApply = TextCorrectionService.CanApplyManual(normalized, currentText, supportsDirectWrite)
                        || TextCorrectionService.CanApply(normalized, currentText, supportsDirectWrite);
-            if (CorrectionPresentation.IsTerminalPunctuationInsert(normalized) || normalized.Length == 0)
-            {
-                OriginalDisplay = "—";
-                CorrectedDisplay = CorrectionPresentation.FormatChipLabel(normalized);
-            }
-            else
-            {
-                OriginalDisplay = VisualizeWhitespace(Shorten(StripMarkdownDecorations(normalized.Original), 80));
-                CorrectedDisplay = VisualizeWhitespace(Shorten(StripMarkdownDecorations(normalized.Replacement ?? string.Empty), 80));
-            }
 
-            BriefLabel = string.IsNullOrWhiteSpace(normalized.Title) ? CategoryLabel : normalized.Title;
-            (CategoryBrush, CategoryBackground) = ResolveCategoryBrushes(normalized.Category);
+            // Shared with the in-app editor panel so the same issue reads identically
+            // in both places.
+            OriginalDisplay = CorrectionCardText.OriginalDisplay(normalized);
+            CorrectedDisplay = CorrectionCardText.ReplacementDisplay(normalized);
+            BriefLabel = string.IsNullOrWhiteSpace(normalized.Title)
+                ? CorrectionCardText.CategoryLabel(normalized.Category)
+                : normalized.Title;
+            (CategoryBrush, CategoryBackground) = CorrectionCardText.CategoryBrushes(normalized.Category);
         }
 
         public TextIssue Issue { get; }
@@ -339,54 +384,6 @@ public partial class SuggestionsWindow : Window
         public Brush CategoryBrush { get; }
         public Brush CategoryBackground { get; }
 
-        public string CategoryLabel => Issue.Category switch
-        {
-            IssueCategory.Orthography => "ОРФОГРАФИЯ",
-            IssueCategory.Grammar => "ГРАММАТИКА",
-            IssueCategory.Punctuation => "ПУНКТУАЦИЯ",
-            IssueCategory.Style => "СТИЛЬ",
-            IssueCategory.Readability => "ОФОРМЛЕНИЕ",
-            _ => "ЗАМЕЧАНИЕ"
-        };
-
-        private static (Brush Foreground, Brush Background) ResolveCategoryBrushes(IssueCategory category)
-        {
-            return category switch
-            {
-                IssueCategory.Orthography => (ThemeResource.Brush("WlCatSpelling"), ThemeResource.Brush("WlCatSpellingBg")),
-                IssueCategory.Punctuation => (ThemeResource.Brush("WlCatPunctuation"), ThemeResource.Brush("WlCatPunctuationBg")),
-                IssueCategory.Grammar => (ThemeResource.Brush("WlCatGrammar"), ThemeResource.Brush("WlCatGrammarBg")),
-                IssueCategory.Style => (ThemeResource.Brush("WlCatStyle"), ThemeResource.Brush("WlCatStyleBg")),
-                IssueCategory.Readability => (ThemeResource.Brush("WlCatFormatting"), ThemeResource.Brush("WlCatFormattingBg")),
-                _ => (ThemeResource.Brush("WlTextSecondary"), ThemeResource.Brush("WlRaised"))
-            };
-        }
-
-        private static string Shorten(string value, int maxLength)
-        {
-            var normalized = value.Replace("\r", " ").Replace("\n", " ").Trim();
-            return normalized.Length <= maxLength
-                ? normalized
-                : normalized[..maxLength] + "...";
-        }
-
-        private static string VisualizeWhitespace(string value)
-        {
-            return value
-                .Replace("\r\n", "↵")
-                .Replace('\n', '↵')
-                .Replace('\r', '↵')
-                .Replace('\t', '→')
-                .Replace(' ', '·');
-        }
-
-        private static string StripMarkdownDecorations(string value)
-        {
-            // Display-only: never show analyzer-injected stars in cards.
-            return value
-                .Replace("**", "", StringComparison.Ordinal)
-                .Replace("__", "", StringComparison.Ordinal)
-                .Replace("~~", "", StringComparison.Ordinal);
-        }
+        public string CategoryLabel => CorrectionCardText.CategoryLabelUpper(Issue.Category);
     }
 }

@@ -1,0 +1,31 @@
+English Hunspell dictionary (en_US) -- provenance and licence
+=============================================================
+
+Source     : LibreOffice/dictionaries, path en/, commit
+             4fa94195b8136364dd40bf2b0366a0fe32058899
+             https://github.com/LibreOffice/dictionaries
+Upstream   : SCOWL (http://wordlist.sourceforge.net), en_US Hunspell dictionary
+Licence    : SCOWL collective work, Copyright 2000-2018 Kevin Atkinson.
+
+  Permission to use, copy, modify, distribute and sell these word lists, the
+  associated scripts, the output created from the scripts, and its
+  documentation for any purpose is hereby granted without fee, provided that
+  the above copyright notice appears in all copies and that both that
+  copyright notice and this permission notice appear in supporting
+  documentation. Kevin Atkinson makes no representations about the
+  suitability of this array for any purpose. It is provided "as is" without
+  express or implied warranty.
+
+The affix file additionally derives from Geoff Kuenning's Ispell english.aff
+and is covered by his BSD licence, as stated in the upstream README_en_US.txt.
+
+Local modification
+------------------
+en_US.dic is byte-identical to upstream.
+en_US.aff is upstream plus one patch: WORDCHARS gains the typographic
+apostrophe (U+2019) so contractions are not split at the apostrophe.
+Rebuild with:  python tools/build-spelling/build_en_us_dictionary.py
+
+Commercial use : allowed
+Modification   : allowed
+Redistribution : allowed with the copyright notice above

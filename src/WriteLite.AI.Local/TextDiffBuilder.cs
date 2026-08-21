@@ -1,11 +1,18 @@
 using WriteLite.AI.Contracts;
+using WriteLite.Language.Core;
 
 namespace WriteLite.AI.Local;
 
 /// <summary>
-/// Builds issue list from original vs corrected text using prefix/suffix alignment + token hunks.
-/// Indices are UTF-16 code units (same as .NET string indexing).
+/// Builds an issue list from original vs corrected text by aligning the two on words and
+/// punctuation. Indices are UTF-16 code units (same as .NET string indexing).
 /// </summary>
+/// <remarks>
+/// Alignment is <see cref="LinguisticDiff"/>'s, shared with the app-side diff service, so
+/// both AI paths cut a rewrite into the same units. This one previously trimmed the common
+/// character prefix and suffix and reported the whole remaining middle as a single issue,
+/// which turned every multi-word rewrite into one span the user could only take or leave.
+/// </remarks>
 public static class TextDiffBuilder
 {
     public static IReadOnlyList<AiTextIssue> BuildIssues(
@@ -27,61 +34,47 @@ public static class TextDiffBuilder
         typeInferrer ??= InferType;
         explanationFactory ??= DefaultExplanation;
 
-        var prefix = CommonPrefixLength(original, corrected);
-        var a = original.AsSpan(prefix);
-        var b = corrected.AsSpan(prefix);
-        var suffix = CommonSuffixLength(a, b);
-        if (suffix > 0)
+        var issues = new List<AiTextIssue>();
+        foreach (var edit in LinguisticDiff.Compute(original, corrected))
         {
-            a = a[..^suffix];
-            b = b[..^suffix];
+            var type = TypeFor(edit, typeInferrer);
+            var confidence = ConfidenceFor(type, edit.Original, edit.Replacement);
+            if (edit.IsPhraseLevel)
+            {
+                // The alignment found no smaller unit. That is the least trustworthy shape
+                // this can produce and it should not read as an ordinary word fix.
+                confidence *= 0.8;
+            }
+
+            issues.Add(new AiTextIssue(
+                edit.Start,
+                edit.Length,
+                edit.Original,
+                edit.Replacement,
+                type,
+                explanationFactory(edit.Original, edit.Replacement),
+                confidence,
+                SafeToApply: confidence >= 0.8 && !edit.IsPhraseLevel && edit.Original.Length <= 48,
+                LowConfidence: confidence < 0.7));
         }
 
-        var start = prefix;
-        var origMid = a.ToString();
-        var corrMid = b.ToString();
-        if (origMid.Length == 0 && corrMid.Length == 0)
-        {
-            return [];
-        }
-
-        // Prefer a single contiguous mid change for short edits (punctuation, casing).
-        if (origMid.Length <= 80 && corrMid.Length <= 100)
-        {
-            var type = typeInferrer(origMid, corrMid);
-            var conf = ConfidenceFor(type, origMid, corrMid);
-            return
-            [
-                new AiTextIssue(
-                    start,
-                    origMid.Length,
-                    origMid,
-                    corrMid,
-                    type,
-                    explanationFactory(origMid, corrMid),
-                    conf,
-                    SafeToApply: conf >= 0.8 && origMid.Length <= 48,
-                    LowConfidence: conf < 0.7)
-            ];
-        }
-
-        // Fallback: whole-mid block.
-        var t = typeInferrer(origMid, corrMid);
-        var c = ConfidenceFor(t, origMid, corrMid);
-        return
-        [
-            new AiTextIssue(
-                start,
-                origMid.Length,
-                origMid,
-                corrMid,
-                t,
-                explanationFactory(origMid, corrMid),
-                c,
-                SafeToApply: c >= 0.85 && origMid.Length <= 40,
-                LowConfidence: c < 0.7)
-        ];
+        return issues;
     }
+
+    /// <summary>
+    /// The edit type answers most of the classification; the caller's inferrer is consulted
+    /// only where the shape genuinely leaves the question open.
+    /// </summary>
+    private static AiIssueType TypeFor(TextEdit edit, Func<string, string, AiIssueType> inferrer) => edit.EditType switch
+    {
+        TextEditType.PunctuationInsertion
+            or TextEditType.PunctuationDeletion
+            or TextEditType.PunctuationReplacement => AiIssueType.Punctuation,
+        TextEditType.WhitespaceCorrection => AiIssueType.Spacing,
+        TextEditType.WordInsertion => AiIssueType.MissingWord,
+        TextEditType.WordDeletion => AiIssueType.ExtraWord,
+        _ => inferrer(edit.Original, edit.Replacement),
+    };
 
     public static string ApplyIssuesRightToLeft(string original, IReadOnlyList<AiTextIssue> issues)
     {
@@ -203,23 +196,6 @@ public static class TextDiffBuilder
         }
 
         return n;
-    }
-
-    private static int CommonPrefixLength(string a, string b)
-    {
-        var n = Math.Min(a.Length, b.Length);
-        var i = 0;
-        while (i < n && a[i] == b[i]) i++;
-        return i;
-    }
-
-    private static int CommonSuffixLength(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
-    {
-        var n = Math.Min(a.Length, b.Length);
-        var i = 0;
-        while (i < n && a[a.Length - 1 - i] == b[b.Length - 1 - i]) i++;
-        if (i == a.Length && i == b.Length) return 0;
-        return i;
     }
 
     private static int Levenshtein(string a, string b)

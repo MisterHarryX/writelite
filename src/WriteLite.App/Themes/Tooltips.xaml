@@ -1,11 +1,36 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Style x:Key="WlSiteToolTip" TargetType="ToolTip">
+    <!--
+        Tooltip. Applied implicitly so every ToolTip="…" string in the app is
+        styled without repeating the style reference; the tray icon uses a native
+        Win32 balloon and is unaffected.
+    -->
+    <Style x:Key="WlToolTip" TargetType="ToolTip">
         <Setter Property="Background" Value="{DynamicResource WlTooltipBg}" />
         <Setter Property="Foreground" Value="{DynamicResource WlText}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource WlBorder}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLineStrong}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="9,6" />
+        <Setter Property="Padding" Value="9,5" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
         <Setter Property="FontSize" Value="12" />
+        <Setter Property="HasDropShadow" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
+
+    <Style TargetType="ToolTip" BasedOn="{StaticResource WlToolTip}" />
+
+    <!-- Legacy alias. -->
+    <Style x:Key="WlSiteToolTip" TargetType="ToolTip" BasedOn="{StaticResource WlToolTip}" />
 </ResourceDictionary>

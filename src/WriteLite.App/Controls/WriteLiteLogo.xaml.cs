@@ -43,7 +43,8 @@ public partial class WriteLiteLogo : UserControl
 
         LogoFrame.Width = size;
         LogoFrame.Height = size;
-        // UI Spec: ~27% of size
-        LogoFrame.CornerRadius = new CornerRadius(Math.Round(size * 0.27));
+        // Restrained radius, as on the website mark: 5 px at the 32 px header size,
+        // scaled proportionally and clamped so large renders never look like a pill.
+        LogoFrame.CornerRadius = new CornerRadius(Math.Clamp(Math.Round(size * 0.16), 3, 10));
     }
 }

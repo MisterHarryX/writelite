@@ -1,0 +1,456 @@
+{
+  "Corpus": "E:\\Programming\\DProjects\\WriteLite-Starter\\WriteLite-Starter\\ai\\data\\benchmark\\ru_frozen_v1.jsonl",
+  "CorpusSha256": "16adfd7c763d8c17c696040a90178a8e7e9c83f5d6d09f99eb017538ec91293d",
+  "CorpusSha256Lf": "16adfd7c763d8c17c696040a90178a8e7e9c83f5d6d09f99eb017538ec91293d",
+  "ItemCount": 841,
+  "RunUtc": "2026-08-12T13:21:54.1851102Z",
+  "Label": "03-lt",
+  "Layers": [
+    "lt"
+  ],
+  "Configuration": "rules=off spell=off lt=ready ai=off",
+  "Overall": {
+    "Items": 841,
+    "Tokens": 5478,
+    "GoldErrors": 497,
+    "Predicted": 356,
+    "TruePositives": 312,
+    "FalsePositives": 44,
+    "FalseNegatives": 185,
+    "Precision": 0.8764,
+    "Recall": 0.6278,
+    "F1": 0.7315,
+    "CorrectionAccuracy": 0.3944,
+    "NoChangeAccuracy": 0.9083,
+    "SemanticCorruptions": 30
+  },
+  "PerCategory": {
+    "clean": {
+      "Items": 277,
+      "Tokens": 2010,
+      "GoldErrors": 0,
+      "Predicted": 3,
+      "TruePositives": 0,
+      "FalsePositives": 3,
+      "FalseNegatives": 0,
+      "Precision": 0,
+      "Recall": 0,
+      "F1": 0,
+      "CorrectionAccuracy": 0,
+      "NoChangeAccuracy": 0.9892,
+      "SemanticCorruptions": 0
+    },
+    "homoglyph": {
+      "Items": 30,
+      "Tokens": 155,
+      "GoldErrors": 30,
+      "Predicted": 30,
+      "TruePositives": 30,
+      "FalsePositives": 0,
+      "FalseNegatives": 0,
+      "Precision": 1,
+      "Recall": 1,
+      "F1": 1,
+      "CorrectionAccuracy": 0,
+      "NoChangeAccuracy": 0,
+      "SemanticCorruptions": 0
+    },
+    "layout": {
+      "Items": 35,
+      "Tokens": 183,
+      "GoldErrors": 35,
+      "Predicted": 6,
+      "TruePositives": 6,
+      "FalsePositives": 0,
+      "FalseNegatives": 29,
+      "Precision": 1,
+      "Recall": 0.1714,
+      "F1": 0.2927,
+      "CorrectionAccuracy": 0,
+      "NoChangeAccuracy": 0,
+      "SemanticCorruptions": 0
+    },
+    "modern_term": {
+      "Items": 30,
+      "Tokens": 187,
+      "GoldErrors": 30,
+      "Predicted": 29,
+      "TruePositives": 28,
+      "FalsePositives": 1,
+      "FalseNegatives": 2,
+      "Precision": 0.9655,
+      "Recall": 0.9333,
+      "F1": 0.9492,
+      "CorrectionAccuracy": 0.5667,
+      "NoChangeAccuracy": 0,
+      "SemanticCorruptions": 2
+    },
+    "morphology": {
+      "Items": 46,
+      "Tokens": 294,
+      "GoldErrors": 47,
+      "Predicted": 15,
+      "TruePositives": 15,
+      "FalsePositives": 0,
+      "FalseNegatives": 32,
+      "Precision": 1,
+      "Recall": 0.3191,
+      "F1": 0.4839,
+      "CorrectionAccuracy": 0.0213,
+      "NoChangeAccuracy": 0,
+      "SemanticCorruptions": 1
+    },
+    "orthography": {
+      "Items": 76,
+      "Tokens": 464,
+      "GoldErrors": 77,
+      "Predicted": 62,
+      "TruePositives": 61,
+      "FalsePositives": 1,
+      "FalseNegatives": 16,
+      "Precision": 0.9839,
+      "Recall": 0.7922,
+      "F1": 0.8777,
+      "CorrectionAccuracy": 0.5455,
+      "NoChangeAccuracy": 0,
+      "SemanticCorruptions": 1
+    },
+    "profanity": {
+      "Items": 26,
+      "Tokens": 174,
+      "GoldErrors": 0,
+      "Predicted": 17,
+      "TruePositives": 0,
+      "FalsePositives": 17,
+      "FalseNegatives": 0,
+      "Precision": 0,
+      "Recall": 0,
+      "F1": 0,
+      "CorrectionAccuracy": 0,
+      "NoChangeAccuracy": 0.3846,
+      "SemanticCorruptions": 0
+    },
+    "proper_name": {
+      "Items": 30,
+      "Tokens": 181,
+      "GoldErrors": 30,
+      "Predicted": 29,
+      "TruePositives": 28,
+      "FalsePositives": 1,
+      "FalseNegatives": 2,
+      "Precision": 0.9655,
+      "Recall": 0.9333,
+      "F1": 0.9492,
+      "CorrectionAccuracy": 0.8667,
+      "NoChangeAccuracy": 0,
+      "SemanticCorruptions": 25
+    },
+    "punctuation": {
+      "Items": 30,
+      "Tokens": 189,
+      "GoldErrors": 33,
+      "Predicted": 6,
+      "TruePositives": 6,
+      "FalsePositives": 0,
+      "FalseNegatives": 27,
+      "Precision": 1,
+      "Recall": 0.1818,
+      "F1": 0.3077,
+      "CorrectionAccuracy": 0.0909,
+      "NoChangeAccuracy": 0,
+      "SemanticCorruptions": 0
+    },
+    "real_word": {
+      "Items": 80,
+      "Tokens": 527,
+      "GoldErrors": 80,
+      "Predicted": 5,
+      "TruePositives": 5,
+      "FalsePositives": 0,
+      "FalseNegatives": 75,
+      "Precision": 1,
+      "Recall": 0.0625,
+      "F1": 0.1176,
+      "CorrectionAccuracy": 0,
+      "NoChangeAccuracy": 0,
+      "SemanticCorruptions": 0
+    },
+    "slang": {
+      "Items": 46,
+      "Tokens": 328,
+      "GoldErrors": 0,
+      "Predicted": 15,
+      "TruePositives": 0,
+      "FalsePositives": 15,
+      "FalseNegatives": 0,
+      "Precision": 0,
+      "Recall": 0,
+      "F1": 0,
+      "CorrectionAccuracy": 0,
+      "NoChangeAccuracy": 0.7174,
+      "SemanticCorruptions": 0
+    },
+    "technical": {
+      "Items": 30,
+      "Tokens": 182,
+      "GoldErrors": 30,
+      "Predicted": 36,
+      "TruePositives": 30,
+      "FalsePositives": 6,
+      "FalseNegatives": 0,
+      "Precision": 0.8333,
+      "Recall": 1,
+      "F1": 0.9091,
+      "CorrectionAccuracy": 0.7333,
+      "NoChangeAccuracy": 0,
+      "SemanticCorruptions": 0
+    },
+    "typo_keyboard": {
+      "Items": 35,
+      "Tokens": 184,
+      "GoldErrors": 35,
+      "Predicted": 34,
+      "TruePositives": 34,
+      "FalsePositives": 0,
+      "FalseNegatives": 1,
+      "Precision": 1,
+      "Recall": 0.9714,
+      "F1": 0.9855,
+      "CorrectionAccuracy": 0.7714,
+      "NoChangeAccuracy": 0,
+      "SemanticCorruptions": 0
+    },
+    "typo_simple": {
+      "Items": 70,
+      "Tokens": 420,
+      "GoldErrors": 70,
+      "Predicted": 69,
+      "TruePositives": 69,
+      "FalsePositives": 0,
+      "FalseNegatives": 1,
+      "Precision": 1,
+      "Recall": 0.9857,
+      "F1": 0.9928,
+      "CorrectionAccuracy": 0.8286,
+      "NoChangeAccuracy": 0,
+      "SemanticCorruptions": 1
+    }
+  },
+  "FalsePositives": {
+    "Sentences": 277,
+    "Tokens": 2010,
+    "FalsePositiveIssues": 3,
+    "SentencesWithAnyIssue": 3,
+    "PerHundredTokens": 0.14925373134328357,
+    "PerSentenceRate": 0.010830324909747292
+  },
+  "NoChangeAccuracy": {
+    "Scope": "clean+slang+profanity",
+    "Total": 349,
+    "Correct": 317,
+    "Accuracy": 0.9083094555873925
+  },
+  "SemanticCorruption": {
+    "Scope": "items whose text changed after applying auto-appliable corrections",
+    "Total": 306,
+    "Corrupted": 30,
+    "Rate": 0.09803921568627451,
+    "ByReason": {
+      "name": 29,
+      "negation": 1
+    },
+    "Examples": [
+      {
+        "Category": "typo_simple",
+        "Id": "typo_simple-0033",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Ребёнок нарисовал большой жолтый круг.",
+        "Produced": "Ребёнок нарисовал большой Жолтый круг."
+      },
+      {
+        "Category": "orthography",
+        "Id": "orthography-0065",
+        "Reasons": [
+          "negation"
+        ],
+        "Original": "Он сделал это не смотря на прямой запрет.",
+        "Produced": "Он сделал это несмотря на прямой запрет."
+      },
+      {
+        "Category": "morphology",
+        "Id": "morphology-0007",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Она хочет поехать в Москва этим летом.",
+        "Produced": "Она хочет поехать в москве этим летом."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0002",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Он живёт в Нижнем Новгараде уже пять лет.",
+        "Produced": "Он живёт в Нижнем Новгороде уже пять лет."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0003",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Я читал биографию Достаевского прошлым летом.",
+        "Produced": "Я читал биографию Достоевского прошлым летом."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0004",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Мы обсуждали лирику Пушкена на уроке литературы.",
+        "Produced": "Мы обсуждали лирику Пушкина на уроке литературы."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0006",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Она переехала в Екатиринбург в прошлом году.",
+        "Produced": "Она переехала в Екатеринбург в прошлом году."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0007",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Мы слушали музыку Чайковскаго весь вечер.",
+        "Produced": "Мы слушали музыку Чайковского весь вечер."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0008",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Он приехал из Краснадара ночным поездом.",
+        "Produced": "Он приехал из Краснодара ночным поездом."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0010",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Мы были в Иркуцке прошлой зимой.",
+        "Produced": "Мы были в Иркутске прошлой зимой."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0012",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Мы отдыхали на берегу Байкола две недели.",
+        "Produced": "Мы отдыхали на берегу Байкала две недели."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0013",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Я перечитал Булгакава на каникулах.",
+        "Produced": "Я перечитал Булгакова на каникулах."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0014",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Он работает в Ярославли уже давно.",
+        "Produced": "Он работает в Ярославле уже давно."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0015",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Мы поехали в Волгаград на выходные.",
+        "Produced": "Мы поехали в Волгоград на выходные."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0016",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Спектакль по Чехаву идёт в среду вечером.",
+        "Produced": "Спектакль по Чехову идёт в среду вечером."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0017",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Он родился и вырос в Челябенске.",
+        "Produced": "Он родился и вырос в Челябинске."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0019",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Она изучает историю Сибире по архивам.",
+        "Produced": "Она изучает историю Сибере по архивам."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0020",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Наш офис находится в Новосибирьске.",
+        "Produced": "Наш офис находится в Новосибирске."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0021",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Мы летим в Мурманьск в понедельник.",
+        "Produced": "Мы летим в Мурманск в понедельник."
+      },
+      {
+        "Category": "proper_name",
+        "Id": "proper_name-0022",
+        "Reasons": [
+          "name"
+        ],
+        "Original": "Он большой поклонник Гогаля.",
+        "Produced": "Он большой поклонник Гоголя."
+      }
+    ]
+  },
+  "Timings": {
+    "TotalMs": 119698.553,
+    "MsPerSentenceMean": 142.3288,
+    "MsPerSentenceP50": 131.55,
+    "MsPerSentenceP95": 195.8806,
+    "MsPerSentenceP99": 344.5574,
+    "MsPerSentenceMax": 536.1494,
+    "PeakWorkingSetMb": 134.61,
+    "WorkingSetMb": 128.19,
+    "ManagedHeapMb": 42.85
+  }
+}

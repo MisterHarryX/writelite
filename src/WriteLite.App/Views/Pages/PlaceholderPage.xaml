@@ -1,35 +1,27 @@
 <UserControl x:Class="WriteLite.Views.Pages.PlaceholderPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WriteLite.Controls"
              Background="{DynamicResource WlBgBase}"
              FontFamily="{DynamicResource WlFont}">
-    <Grid Margin="32,28">
-        <Border Style="{DynamicResource WlCard}"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                MaxWidth="560"
-                Padding="24,22">
-            <StackPanel>
-                <TextBlock x:Name="TitleText"
-                           Text="Раздел"
-                           FontSize="20"
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource WlText}" />
-                <TextBlock x:Name="DescriptionText"
-                           Text=""
-                           FontSize="13"
-                           Foreground="{DynamicResource WlTextSecondary}"
-                           TextWrapping="Wrap"
-                           Margin="0,10,0,0"
-                           LineHeight="20" />
-                <Button x:Name="ActionButton"
-                        Style="{DynamicResource WlGhostButton}"
-                        Content="Открыть"
-                        HorizontalAlignment="Left"
-                        Margin="0,18,0,0"
-                        Visibility="Collapsed"
-                        Click="ActionButton_Click" />
-            </StackPanel>
-        </Border>
-    </Grid>
+    <!-- Informational page. Typography carries it: no card, no illustration. -->
+    <ScrollViewer Style="{DynamicResource WlScrollViewer}">
+        <StackPanel MaxWidth="640" HorizontalAlignment="Left" Margin="36,34,36,40">
+            <controls:SectionHeader x:Name="Header" Index="" Title="Раздел" />
+
+            <TextBlock x:Name="DescriptionText"
+                       Style="{DynamicResource WlBody}"
+                       Foreground="{DynamicResource WlTextSecondary}"
+                       LineHeight="23"
+                       Margin="0,20,0,0" />
+
+            <Button x:Name="ActionButton"
+                    Style="{DynamicResource WlSecondaryButton}"
+                    Content="Открыть"
+                    HorizontalAlignment="Left"
+                    Margin="0,24,0,0"
+                    Visibility="Collapsed"
+                    Click="ActionButton_Click" />
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

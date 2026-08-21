@@ -76,6 +76,60 @@ public static class CompatibilityLogger
             $"exception={Sanitize(exception.GetType().Name)} hresult=0x{exception.HResult:X8}");
     }
 
+    /// <summary>
+    /// Records a failure nobody handled, with enough detail to act on it.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately more than <see cref="AccessError"/> writes. That one is for the
+    /// automation surface, where an exception message can carry a fragment of whatever
+    /// the user was typing in another application, so it records only the shape of the
+    /// failure. An exception that reached a global handler is a defect in WriteLite, and
+    /// "exception=InvalidOperationException" on its own does not locate one.
+    ///
+    /// The stack trace is code — type and method names, and file paths that
+    /// <see cref="Sanitize"/> replaces — so it can be recorded. The exception *message*
+    /// still cannot: it is the one field that routinely quotes the user's own text back.
+    /// The result is a line naming the operation, the type, where it was thrown and how
+    /// it got there, which is what makes a report actionable without making it personal.
+    /// </remarks>
+    public static void Unhandled(string source, Exception exception, string? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        var inner = exception.InnerException;
+
+        Write(
+            "unhandled",
+            $"source={Sanitize(source)} " +
+            (context is null ? string.Empty : $"context={Sanitize(context)} ") +
+            $"exception={Sanitize(exception.GetType().FullName ?? "unknown")} " +
+            $"hresult=0x{exception.HResult:X8} " +
+            $"site={Sanitize(exception.TargetSite?.DeclaringType?.FullName + "." + exception.TargetSite?.Name)} " +
+            (inner is null ? string.Empty : $"inner={Sanitize(inner.GetType().Name)} ") +
+            $"stack={Sanitize(Frames(exception))}");
+    }
+
+    /// <summary>The stack, trimmed to the frames that identify the fault.</summary>
+    /// <remarks>
+    /// Bounded so one failure cannot fill the log: the top of a stack is what says where
+    /// the defect is, and forty frames of dispatcher plumbing underneath say nothing that
+    /// the source field has not already said.
+    /// </remarks>
+    private static string Frames(Exception exception, int max = 12)
+    {
+        var stack = exception.StackTrace;
+        if (string.IsNullOrWhiteSpace(stack))
+        {
+            return "none";
+        }
+
+        var frames = stack
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Take(max);
+
+        return string.Join(" | ", frames);
+    }
+
     private static void Write(string eventName, string fields)
     {
         try

@@ -7,6 +7,14 @@
 *.csproj text eol=crlf
 *.sln text eol=crlf
 
+# Corpora are hashed byte-exactly as LF, which is what their generators write and
+# what their manifests record. `* text=auto` above would convert them to CRLF on a
+# Windows checkout and change every hash without changing a single character — the
+# exact drift that left the frozen benchmark unverifiable until 2026-08-12. Marking
+# them -text takes them out of line-ending normalisation entirely.
+*.jsonl -text
+*.tsv -text
+
 *.png binary
 *.ico binary
 *.gguf binary

@@ -2,116 +2,122 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:WriteLite.Controls"
-             Background="Transparent"
+             Background="{DynamicResource WlBgBase}"
              FontFamily="{DynamicResource WlFont}">
-    <ScrollViewer Style="{DynamicResource WlScrollViewer}" Padding="32,26">
-        <StackPanel MaxWidth="880" HorizontalAlignment="Left">
-            <Grid Margin="0,0,0,24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <Border Background="{DynamicResource WlBrandSoft}" BorderBrush="{DynamicResource WlBrandDim}"
-                            BorderThickness="1" CornerRadius="999" Padding="10,5" HorizontalAlignment="Left">
-                        <TextBlock Text="ЛОКАЛЬНЫЙ ПОМОЩНИК ДЛЯ WINDOWS" Foreground="{DynamicResource WlBrand}"
-                                   FontSize="10" FontWeight="SemiBold" />
-                    </Border>
-                    <TextBlock Text="Пишите увереннее — там, где работаете"
-                               Style="{DynamicResource WlPageTitle}" FontSize="34" MaxWidth="650"
-                               TextWrapping="Wrap" Margin="0,16,0,0" />
-                    <TextBlock Text="WriteLite проверяет активные редактируемые поля, объясняет точечные ошибки и помогает исправлять их без отправки базового текста во внешние сервисы."
-                               Style="{DynamicResource WlPageSubtitle}" FontSize="14" MaxWidth="660" Margin="0,10,0,0" />
+    <ScrollViewer Style="{DynamicResource WlScrollViewer}" Padding="0">
+        <StackPanel MaxWidth="860" HorizontalAlignment="Left" Margin="36,34,36,40">
+
+            <!-- ═══ Hero ════════════════════════════════════════════════════ -->
+            <TextBlock Style="{DynamicResource WlMonoLabel}"
+                       controls:Type.Tracked="ЛОКАЛЬНЫЙ ПОМОЩНИК ДЛЯ WINDOWS"
+                       Foreground="{DynamicResource WlBrand}" />
+
+            <TextBlock Style="{DynamicResource WlDisplay}"
+                       Text="Грамотный текст — там, где вы печатаете."
+                       MaxWidth="620"
+                       HorizontalAlignment="Left"
+                       Margin="0,16,0,0" />
+
+            <TextBlock Style="{DynamicResource WlBodyLarge}"
+                       Foreground="{DynamicResource WlTextSecondary}"
+                       Text="WriteLite находит ошибки в активных полях Windows, объясняет правило за каждым исправлением и работает на этом компьютере."
+                       MaxWidth="600"
+                       HorizontalAlignment="Left"
+                       Margin="0,14,0,0" />
+
+            <StackPanel Orientation="Horizontal" Margin="0,26,0,0">
+                <Button Style="{DynamicResource WlCtaButton}" Content="Открыть редактор" Click="OpenEditor_Click" />
+                <Button Style="{DynamicResource WlSecondaryButton}" Content="Настройки проверки"
+                        MinHeight="44" Margin="10,0,0,0" Click="OpenSettings_Click" />
+            </StackPanel>
+
+            <!-- ═══ 01 Состояние ════════════════════════════════════════════ -->
+            <controls:SectionHeader Index="01" Title="Состояние" Margin="0,44,0,0" />
+
+            <UniformGrid Columns="3" Margin="0,18,0,0">
+                <StackPanel Margin="0,0,20,0">
+                    <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="МОНИТОРИНГ" />
+                    <TextBlock x:Name="MonitorStatusText" Style="{DynamicResource WlSectionTitle}"
+                               Text="Активен" Margin="0,8,0,0" />
+                    <TextBlock x:Name="EngineStatusText" Style="{DynamicResource WlCaption}"
+                               Text="Базовая проверка WriteLite" Margin="0,5,0,0" />
                 </StackPanel>
-                <Border Grid.Column="1" Width="92" Height="92" Margin="28,4,0,0"
-                        Background="{DynamicResource WlSurface}" BorderBrush="{DynamicResource WlBorder}"
-                        BorderThickness="1" CornerRadius="24" Effect="{DynamicResource WlShadowBrand}">
-                    <controls:WriteLiteLogo LogoSize="52" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </Border>
-            </Grid>
+                <StackPanel Margin="0,0,20,0">
+                    <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="ОБРАБОТКА" />
+                    <TextBlock Style="{DynamicResource WlSectionTitle}" Text="Локальная" Margin="0,8,0,0" />
+                    <TextBlock Style="{DynamicResource WlCaption}" Text="Текст остаётся на этом устройстве" Margin="0,5,0,0" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="ЯЗЫКИ" />
+                    <TextBlock Style="{DynamicResource WlSectionTitle}" Text="RU · EN" Margin="0,8,0,0" />
+                    <TextBlock Style="{DynamicResource WlCaption}" Text="Смешанный текст, английский в разработке" Margin="0,5,0,0" />
+                </StackPanel>
+            </UniformGrid>
 
-            <TextBlock Text="СОСТОЯНИЕ" Style="{DynamicResource WlSectionLabel}" Margin="0,0,0,10" />
-            <Grid Margin="0,0,0,26">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Style="{DynamicResource WlPremiumCard}" Margin="0,0,10,0">
-                    <Grid>
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                        <Border Width="38" Height="38" CornerRadius="12" Background="{DynamicResource WlSuccessSoft}">
-                            <Path Data="{DynamicResource WlIconStatus}" Stroke="{DynamicResource WlSuccess}" StrokeThickness="2"
-                                  Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="14,0,0,0">
-                            <TextBlock Text="Мониторинг" Foreground="{DynamicResource WlTextSecondary}" FontSize="11" />
-                            <TextBlock x:Name="MonitorStatusText" Text="Активен" Foreground="{DynamicResource WlText}"
-                                       FontSize="17" FontWeight="SemiBold" Margin="0,4,0,0" />
-                            <TextBlock x:Name="EngineStatusText" Text="Базовая проверка WriteLite"
-                                       Foreground="{DynamicResource WlTextMuted}" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,0" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-                <Border Grid.Column="1" Style="{DynamicResource WlPremiumCard}" Margin="0,0,10,0">
+            <!-- ═══ 02 Как это работает ═════════════════════════════════════ -->
+            <controls:SectionHeader Index="02" Title="Как это работает" Margin="0,44,0,0" />
+
+            <UniformGrid Columns="3" Margin="0,18,0,0">
+                <StackPanel Margin="0,0,24,0">
+                    <TextBlock Style="{DynamicResource WlMonoNumber}" Text="01" Foreground="{DynamicResource WlBrand}" />
+                    <TextBlock Style="{DynamicResource WlCardTitle}" Text="Печатайте" Margin="0,9,0,0" />
+                    <TextBlock Style="{DynamicResource WlSecondary}"
+                               Text="Интерфейс появляется только после реального ввода в доступном поле."
+                               Margin="0,6,0,0" />
+                </StackPanel>
+                <StackPanel Margin="0,0,24,0">
+                    <TextBlock Style="{DynamicResource WlMonoNumber}" Text="02" Foreground="{DynamicResource WlBrand}" />
+                    <TextBlock Style="{DynamicResource WlCardTitle}" Text="Проверьте" Margin="0,9,0,0" />
+                    <TextBlock Style="{DynamicResource WlSecondary}"
+                               Text="Волна отмечает слово, а пунктуационный маркер — место вставки."
+                               Margin="0,6,0,0" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Style="{DynamicResource WlMonoNumber}" Text="03" Foreground="{DynamicResource WlBrand}" />
+                    <TextBlock Style="{DynamicResource WlCardTitle}" Text="Исправьте" Margin="0,9,0,0" />
+                    <TextBlock Style="{DynamicResource WlSecondary}"
+                               Text="Один щелчок открывает объяснение и применяет выбранный вариант."
+                               Margin="0,6,0,0" />
+                </StackPanel>
+            </UniformGrid>
+
+            <!-- ═══ 03 Возможности ══════════════════════════════════════════ -->
+            <controls:SectionHeader Index="03" Title="Возможности" Margin="0,44,0,0" />
+
+            <StackPanel Margin="0,4,0,0">
+                <Border Style="{DynamicResource WlGroup}" BorderThickness="0">
                     <StackPanel>
-                        <TextBlock Text="Приватность" Foreground="{DynamicResource WlTextSecondary}" FontSize="11" />
-                        <TextBlock Text="Локально" Foreground="{DynamicResource WlText}" FontSize="17" FontWeight="SemiBold" Margin="0,8,0,0" />
-                        <TextBlock Text="Текст не покидает компьютер" Foreground="{DynamicResource WlTextMuted}" FontSize="11" Margin="0,5,0,0" />
+                        <controls:SettingRow Label="Точные исправления"
+                                             Description="Диапазон и исходный фрагмент проверяются перед показом и перед заменой." />
+                        <controls:SettingRow Label="Карточка слова"
+                                             Description="Двойной щелчок показывает формы, синонимы, определения и примеры." />
+                        <controls:SettingRow Label="Защита данных в тексте"
+                                             Description="URL, адреса почты, пути, версии, JSON и команды не правятся." />
+                        <controls:SettingRow Label="Объяснение правила"
+                                             Description="Каждое замечание сопровождается причиной, а не только заменой." />
                     </StackPanel>
                 </Border>
-                <Border Grid.Column="2" Style="{DynamicResource WlPremiumCard}">
-                    <StackPanel>
-                        <TextBlock Text="Языки" Foreground="{DynamicResource WlTextSecondary}" FontSize="11" />
-                        <TextBlock Text="RU + EN" Foreground="{DynamicResource WlText}" FontSize="17" FontWeight="SemiBold" Margin="0,8,0,0" />
-                        <TextBlock Text="Смешанный текст" Foreground="{DynamicResource WlTextMuted}" FontSize="11" Margin="0,5,0,0" />
-                    </StackPanel>
-                </Border>
-            </Grid>
+            </StackPanel>
 
-            <TextBlock Text="КАК ЭТО РАБОТАЕТ" Style="{DynamicResource WlSectionLabel}" Margin="0,0,0,10" />
-            <Border Style="{DynamicResource WlPremiumCard}" Margin="0,0,0,26" Padding="22">
+            <!-- ═══ Privacy note ════════════════════════════════════════════ -->
+            <Border Style="{DynamicResource WlCard}" Margin="0,36,0,0" Padding="16,14">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" /><ColumnDefinition Width="24" />
-                        <ColumnDefinition Width="*" /><ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="01" Foreground="{DynamicResource WlBrand}" FontWeight="SemiBold" FontSize="11" />
-                        <TextBlock Text="Печатайте" Foreground="{DynamicResource WlText}" FontSize="15" FontWeight="SemiBold" Margin="0,8,0,0" />
-                        <TextBlock Text="Интерфейс появляется только после реального ввода в доступном поле."
-                                   Style="{DynamicResource WlPageSubtitle}" FontSize="12" Margin="0,6,0,0" />
-                    </StackPanel>
-                    <TextBlock Grid.Column="1" Text="→" Foreground="{DynamicResource WlTextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    <StackPanel Grid.Column="2">
-                        <TextBlock Text="02" Foreground="{DynamicResource WlBrand}" FontWeight="SemiBold" FontSize="11" />
-                        <TextBlock Text="Проверьте" Foreground="{DynamicResource WlText}" FontSize="15" FontWeight="SemiBold" Margin="0,8,0,0" />
-                        <TextBlock Text="Точная волна отмечает слово, а пунктуационный маркер — место вставки."
-                                   Style="{DynamicResource WlPageSubtitle}" FontSize="12" Margin="0,6,0,0" />
-                    </StackPanel>
-                    <TextBlock Grid.Column="3" Text="→" Foreground="{DynamicResource WlTextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    <StackPanel Grid.Column="4">
-                        <TextBlock Text="03" Foreground="{DynamicResource WlBrand}" FontWeight="SemiBold" FontSize="11" />
-                        <TextBlock Text="Исправьте" Foreground="{DynamicResource WlText}" FontSize="15" FontWeight="SemiBold" Margin="0,8,0,0" />
-                        <TextBlock Text="Один щелчок открывает объяснение и применяет выбранный вариант."
-                                   Style="{DynamicResource WlPageSubtitle}" FontSize="12" Margin="0,6,0,0" />
+                    <Path Grid.Column="0" Style="{DynamicResource WlIcon}"
+                          Data="{DynamicResource WlIconPrivacy}"
+                          Stroke="{DynamicResource WlTextSubtle}"
+                          VerticalAlignment="Top" Margin="0,1,0,0" />
+                    <StackPanel Grid.Column="1" Margin="13,0,0,0">
+                        <TextBlock Style="{DynamicResource WlCardTitle}" Text="Ваш текст остаётся вашим" />
+                        <TextBlock Style="{DynamicResource WlSecondary}"
+                                   Text="Проверка в приложении выполняется на этом компьютере. Ни профилей, ни трекеров, ни обязательной регистрации."
+                                   Margin="0,5,0,0" />
                     </StackPanel>
                 </Grid>
             </Border>
-
-            <TextBlock Text="ВОЗМОЖНОСТИ" Style="{DynamicResource WlSectionLabel}" Margin="0,0,0,10" />
-            <UniformGrid Columns="3">
-                <Border Style="{DynamicResource WlPremiumCard}" Margin="0,0,10,10">
-                    <StackPanel><TextBlock Text="Точные исправления" Foreground="{DynamicResource WlText}" FontWeight="SemiBold" FontSize="14" /><TextBlock Text="Диапазон и исходный фрагмент проверяются перед показом и заменой." Style="{DynamicResource WlPageSubtitle}" FontSize="12" Margin="0,7,0,0" /></StackPanel>
-                </Border>
-                <Border Style="{DynamicResource WlPremiumCard}" Margin="0,0,10,10">
-                    <StackPanel><TextBlock Text="Карточка слова" Foreground="{DynamicResource WlText}" FontWeight="SemiBold" FontSize="14" /><TextBlock Text="Двойной щелчок показывает формы, синонимы, перевод и определения." Style="{DynamicResource WlPageSubtitle}" FontSize="12" Margin="0,7,0,0" /></StackPanel>
-                </Border>
-                <Border Style="{DynamicResource WlPremiumCard}" Margin="0,0,0,10">
-                    <StackPanel><TextBlock Text="Безопасные данные" Foreground="{DynamicResource WlText}" FontWeight="SemiBold" FontSize="14" /><TextBlock Text="URL, email, пути, версии, JSON и команды защищены от правок." Style="{DynamicResource WlPageSubtitle}" FontSize="12" Margin="0,7,0,0" /></StackPanel>
-                </Border>
-            </UniformGrid>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

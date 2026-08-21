@@ -1,0 +1,245 @@
+{
+  "RunUtc": "2026-08-14T16:06:12.0677539Z",
+  "Label": "P6-cov-dev-before",
+  "Corpus": "E:\\Programming\\DProjects\\WriteLite-Starter\\WriteLite-Starter\\ai\\data\\errors\\validation.jsonl",
+  "Layers": "spell",
+  "ScoredTargets": 1177,
+  "CoveredTargets": 737,
+  "Coverage": 0.6262,
+  "CasingOnlyTargetsExcluded": 110,
+  "MeanCandidatesPerTarget": 1.53,
+  "P95CandidatesPerTarget": 6,
+  "MaxCandidatesPerTarget": 6,
+  "CleanTokensProbed": 13544,
+  "CleanTokensOffered": 314,
+  "CleanTokenOfferRate": 0.02318,
+  "MeanCandidatesPerCleanToken": 0.084,
+  "PerClass": {
+    "orthography": {
+      "Targets": 756,
+      "Covered": 700,
+      "CandidateTotal": 1748,
+      "Coverage": 0.9259,
+      "MeanCandidates": 2.31
+    },
+    "real_word": {
+      "Targets": 230,
+      "Covered": 0,
+      "CandidateTotal": 0,
+      "Coverage": 0,
+      "MeanCandidates": 0
+    },
+    "case_form": {
+      "Targets": 97,
+      "Covered": 0,
+      "CandidateTotal": 0,
+      "Coverage": 0,
+      "MeanCandidates": 0
+    },
+    "layout": {
+      "Targets": 29,
+      "Covered": 29,
+      "CandidateTotal": 29,
+      "Coverage": 1,
+      "MeanCandidates": 1
+    },
+    "verb_form": {
+      "Targets": 20,
+      "Covered": 0,
+      "CandidateTotal": 0,
+      "Coverage": 0,
+      "MeanCandidates": 0
+    },
+    "agreement": {
+      "Targets": 17,
+      "Covered": 0,
+      "CandidateTotal": 0,
+      "Coverage": 0,
+      "MeanCandidates": 0
+    },
+    "morphology": {
+      "Targets": 16,
+      "Covered": 0,
+      "CandidateTotal": 0,
+      "Coverage": 0,
+      "MeanCandidates": 0
+    },
+    "тся/ться": {
+      "Targets": 12,
+      "Covered": 8,
+      "CandidateTotal": 27,
+      "Coverage": 0.6667,
+      "MeanCandidates": 2.25
+    }
+  },
+  "PerCorpusCategory": {
+    "confusion_pair": {
+      "Targets": 221,
+      "Covered": 4,
+      "CandidateTotal": 14,
+      "Coverage": 0.0181,
+      "MeanCandidates": 0.06
+    },
+    "keyboard_neighbour": {
+      "Targets": 127,
+      "Covered": 105,
+      "CandidateTotal": 305,
+      "Coverage": 0.8268,
+      "MeanCandidates": 2.4
+    },
+    "morph_inflect": {
+      "Targets": 120,
+      "Covered": 0,
+      "CandidateTotal": 15,
+      "Coverage": 0,
+      "MeanCandidates": 0.12
+    },
+    "char_delete": {
+      "Targets": 87,
+      "Covered": 74,
+      "CandidateTotal": 273,
+      "Coverage": 0.8506,
+      "MeanCandidates": 3.14
+    },
+    "ortho_unstressed_vowel": {
+      "Targets": 85,
+      "Covered": 75,
+      "CandidateTotal": 218,
+      "Coverage": 0.8824,
+      "MeanCandidates": 2.56
+    },
+    "char_transpose": {
+      "Targets": 73,
+      "Covered": 68,
+      "CandidateTotal": 108,
+      "Coverage": 0.9315,
+      "MeanCandidates": 1.48
+    },
+    "ortho_voicing": {
+      "Targets": 66,
+      "Covered": 63,
+      "CandidateTotal": 157,
+      "Coverage": 0.9545,
+      "MeanCandidates": 2.38
+    },
+    "char_replace": {
+      "Targets": 62,
+      "Covered": 54,
+      "CandidateTotal": 129,
+      "Coverage": 0.871,
+      "MeanCandidates": 2.08
+    },
+    "char_double": {
+      "Targets": 59,
+      "Covered": 54,
+      "CandidateTotal": 123,
+      "Coverage": 0.9153,
+      "MeanCandidates": 2.08
+    },
+    "char_insert": {
+      "Targets": 57,
+      "Covered": 55,
+      "CandidateTotal": 78,
+      "Coverage": 0.9649,
+      "MeanCandidates": 1.37
+    },
+    "ortho_nn": {
+      "Targets": 42,
+      "Covered": 38,
+      "CandidateTotal": 86,
+      "Coverage": 0.9048,
+      "MeanCandidates": 2.05
+    },
+    "homoglyph": {
+      "Targets": 38,
+      "Covered": 34,
+      "CandidateTotal": 93,
+      "Coverage": 0.8947,
+      "MeanCandidates": 2.45
+    },
+    "layout_word": {
+      "Targets": 30,
+      "Covered": 29,
+      "CandidateTotal": 29,
+      "Coverage": 0.9667,
+      "MeanCandidates": 0.97
+    },
+    "ortho_prefix_zs": {
+      "Targets": 26,
+      "Covered": 26,
+      "CandidateTotal": 31,
+      "Coverage": 1,
+      "MeanCandidates": 1.19
+    },
+    "ortho_zhi_shi": {
+      "Targets": 15,
+      "Covered": 13,
+      "CandidateTotal": 24,
+      "Coverage": 0.8667,
+      "MeanCandidates": 1.6
+    },
+    "ortho_ne_ni": {
+      "Targets": 14,
+      "Covered": 8,
+      "CandidateTotal": 15,
+      "Coverage": 0.5714,
+      "MeanCandidates": 1.07
+    },
+    "ortho_pre_pri": {
+      "Targets": 12,
+      "Covered": 10,
+      "CandidateTotal": 22,
+      "Coverage": 0.8333,
+      "MeanCandidates": 1.83
+    },
+    "layout_partial": {
+      "Targets": 12,
+      "Covered": 4,
+      "CandidateTotal": 15,
+      "Coverage": 0.3333,
+      "MeanCandidates": 1.25
+    },
+    "ortho_tsya": {
+      "Targets": 10,
+      "Covered": 8,
+      "CandidateTotal": 27,
+      "Coverage": 0.8,
+      "MeanCandidates": 2.7
+    },
+    "ortho_cha_shcha": {
+      "Targets": 9,
+      "Covered": 8,
+      "CandidateTotal": 19,
+      "Coverage": 0.8889,
+      "MeanCandidates": 2.11
+    },
+    "char_undouble": {
+      "Targets": 5,
+      "Covered": 5,
+      "CandidateTotal": 12,
+      "Coverage": 1,
+      "MeanCandidates": 2.4
+    },
+    "ortho_yo": {
+      "Targets": 4,
+      "Covered": 0,
+      "CandidateTotal": 0,
+      "Coverage": 0,
+      "MeanCandidates": 0
+    },
+    "ortho_chu_shchu": {
+      "Targets": 2,
+      "Covered": 2,
+      "CandidateTotal": 5,
+      "Coverage": 1,
+      "MeanCandidates": 2.5
+    },
+    "ortho_signs": {
+      "Targets": 1,
+      "Covered": 0,
+      "CandidateTotal": 6,
+      "Coverage": 0,
+      "MeanCandidates": 6
+    }
+  }
+}

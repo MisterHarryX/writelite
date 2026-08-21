@@ -133,8 +133,121 @@ public sealed class LexicalLayerTests
 
         Assert.AreEqual("автомобиль", result.Lemma);
         Assert.IsNotNull(result.Morphology);
-        Assert.IsTrue(result.IsEmpty, "OpenRussian morphology must not be presented as a fabricated definition.");
+        // Since the Russian Wiktionary layer was merged in, this lemma has a real
+        // imported sense. Every definition must still be attributable to a source;
+        // morphology alone may never be rendered as a definition.
+        foreach (var definition in result.Definitions)
+        {
+            Assert.IsFalse(string.IsNullOrWhiteSpace(definition.SourceId),
+                "every definition must carry the id of the source it was imported from");
+            Assert.AreNotEqual(result.Lemma, definition.Definition,
+                "a lemma repeated back is morphology, not a definition");
+        }
+    }
+
+    [TestMethod]
+    public async Task Lookup_MorphologyOnlyEntry_IsNotPresentedAsDefinition()
+    {
+        // "автомашина" carries OpenRussian inflections but no imported sense of
+        // any kind, so the card must stay empty rather than inventing an article
+        // out of morphology.
+        var svc = CreateService();
+        var result = await svc.LookupAsync(new LexicalLookupRequest(
+            "автомашины", "Во дворе стояли автомашины.", "Во дворе стояли автомашины.",
+            16, 10, LexicalLanguage.Russian, 25));
+
+        Assert.IsNotNull(result.Morphology);
+        Assert.IsTrue(result.IsEmpty,
+            "OpenRussian morphology must not be presented as a fabricated definition.");
         Assert.IsFalse(string.IsNullOrWhiteSpace(result.StatusMessage));
+    }
+
+    [TestMethod]
+    public async Task Lookup_EnglishWord_ReturnsWordNetSenses()
+    {
+        var svc = CreateService();
+        if (!svc.IsEnglishPackLoaded)
+            Assert.Inconclusive("English pack not present in this build output.");
+
+        var result = await svc.LookupAsync(new LexicalLookupRequest(
+            "bright", "The room was bright.", "The room was bright.",
+            14, 6, LexicalLanguage.English, 40));
+
+        Assert.AreEqual(LexicalLanguage.English, result.Language);
+        Assert.AreEqual("bright", result.Lemma);
+        Assert.IsFalse(result.IsEmpty);
+        Assert.IsGreaterThan(0, result.Definitions.Count);
+        foreach (var definition in result.Definitions)
+            Assert.AreEqual("oewn-2024", definition.SourceId);
+    }
+
+    [TestMethod]
+    public async Task Lookup_English_DoesNotApplyRussianMorphology()
+    {
+        var svc = CreateService();
+        if (!svc.IsEnglishPackLoaded)
+            Assert.Inconclusive("English pack not present in this build output.");
+
+        var result = await svc.LookupAsync(new LexicalLookupRequest(
+            "house", "A small house.", "A small house.", 8, 5,
+            LexicalLanguage.English, 41));
+
+        // The morphology and syntax analysers are Russian rule-based engines;
+        // running them on English would invent forms and roles.
+        Assert.IsNull(result.Morphology);
+        Assert.IsNull(result.Syntax);
+        Assert.IsNull(result.SurfaceFormNote);
+    }
+
+    [TestMethod]
+    public async Task Lookup_UnknownEnglishWord_IsHonestlyEmpty()
+    {
+        var svc = CreateService();
+        if (!svc.IsEnglishPackLoaded)
+            Assert.Inconclusive("English pack not present in this build output.");
+
+        var result = await svc.LookupAsync(new LexicalLookupRequest(
+            "zzzqwertyx", "A zzzqwertyx.", "A zzzqwertyx.", 2, 10,
+            LexicalLanguage.English, 42));
+
+        Assert.IsTrue(result.IsEmpty);
+        Assert.IsEmpty(result.Definitions);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(result.StatusMessage));
+    }
+
+    [TestMethod]
+    public void WordRange_ResolvesEnglishProseButNotIdentifiers()
+    {
+        var r = new WordRangeResolver();
+        var range = r.ResolveFromText("The bright room.", 5);
+        Assert.IsNotNull(range);
+        Assert.AreEqual("bright", range!.Word);
+        Assert.AreEqual(LexicalLanguage.English, range.Language);
+
+        // Identifiers must not open a dictionary card.
+        Assert.IsNull(r.ResolveFromText("release-v1 API_TOKEN", 4));
+        Assert.IsNull(r.ResolveFromText("release-v1 API_TOKEN", 13));
+    }
+
+    [TestMethod]
+    public void EnglishPack_DeclaresAttributionForBothUpstreamSources()
+    {
+        var svc = CreateService();
+        if (!svc.IsEnglishPackLoaded)
+            Assert.Inconclusive("English pack not present in this build output.");
+
+        var dir = Path.Combine(AppContext.BaseDirectory, "resources", "lexical");
+        var path = Path.Combine(dir, "writelight-lexical-en.json");
+        if (!File.Exists(path))
+            Assert.Inconclusive("English pack file not found next to the test host.");
+
+        var result = LexicalPackLoader.LoadFromFile(path);
+        Assert.IsTrue(result.Success, result.Error);
+        Assert.AreEqual(LexicalLanguage.English, result.Language);
+        Assert.AreEqual("CC-BY-4.0", result.Manifest!.License);
+        // CC BY 4.0 and the Princeton WordNet License both require attribution.
+        StringAssert.Contains(result.Manifest.LicenseNote, "Open English Wordnet");
+        StringAssert.Contains(result.Manifest.LicenseNote, "Princeton");
     }
 
     [TestMethod]
@@ -306,11 +419,14 @@ public sealed class LexicalLayerTests
     }
 
     [TestMethod]
-    public void LanguageDetector_IsRussianOnly()
+    public void LanguageDetector_SeparatesRussianFromEnglish()
     {
         var d = new LexicalLanguageDetector();
         Assert.AreEqual(LexicalLanguage.Russian, d.DetectWord("ошибка"));
-        Assert.AreEqual(LexicalLanguage.Unknown, d.DetectWord("error"));
+        Assert.AreEqual(LexicalLanguage.English, d.DetectWord("error"));
+        Assert.AreEqual(LexicalLanguage.Unknown, d.DetectWord("1234"));
+        // A stray Latin letter in a Russian word is a typo, not a language switch.
+        Assert.AreEqual(LexicalLanguage.Russian, d.DetectWord("ошибkа"));
     }
 
     [TestMethod]

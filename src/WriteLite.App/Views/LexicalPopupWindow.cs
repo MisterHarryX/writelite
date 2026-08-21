@@ -36,13 +36,17 @@ public sealed class LexicalPopupWindow : Window
 {
     private static readonly MediaBrush CardBackground = ThemeResource.Brush("WlSurface", Brushes.Black);
     private static readonly MediaBrush RaisedBackground = ThemeResource.Brush("WlRaised", Brushes.DarkSlateGray);
-    private static readonly MediaBrush CardBorderBrush = ThemeResource.Brush("WlBorder", Brushes.DimGray);
+    private static readonly MediaBrush CardBorderBrush = ThemeResource.Brush("WlLineStrong", Brushes.DimGray);
     private static readonly MediaBrush TextBrush = ThemeResource.Brush("WlText", Brushes.White);
     private static readonly MediaBrush MutedBrush = ThemeResource.Brush("WlTextSecondary", Brushes.LightGray);
+    private static readonly MediaBrush FaintBrush = ThemeResource.Brush("WlTextMuted", Brushes.Gray);
     private static readonly MediaBrush AccentBrush = ThemeResource.Brush("WlBrand", Brushes.Orange);
+    private static readonly MediaBrush OnAccentBrush = ThemeResource.Brush("WlOnBrand", Brushes.Black);
+    private static readonly MediaBrush HoverBrush = ThemeResource.Brush("WlHover", Brushes.DimGray);
 
-    private readonly TextBlock _titleWord = new() { FontSize = 16, FontWeight = FontWeights.SemiBold, Foreground = TextBrush };
-    private readonly TextBlock _subtitle = new() { FontSize = 12, Foreground = MutedBrush, Margin = new Thickness(0, 2, 0, 8) };
+    // The headword is the largest thing in the card, the way a dictionary entry reads.
+    private readonly TextBlock _titleWord = new() { FontSize = 21, FontWeight = FontWeights.Medium, Foreground = TextBrush };
+    private readonly TextBlock _subtitle = new() { FontSize = 12, Foreground = MutedBrush, Margin = new Thickness(0, 5, 0, 10) };
     private readonly TextBlock _status = new() { FontSize = 12, Foreground = MutedBrush, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0) };
     private readonly TextBlock _source = new() { FontSize = 11, Foreground = MutedBrush, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 6, 0, 0) };
     private readonly TabControl _tabs;
@@ -88,30 +92,27 @@ public sealed class LexicalPopupWindow : Window
             BorderBrush = CardBorderBrush,
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(12),
-            Padding = new Thickness(14, 12, 14, 12),
-            Effect = new DropShadowEffect { BlurRadius = 18, ShadowDepth = 4, Direction = 270, Opacity = .4, Color = Colors.Black }
+            Padding = new Thickness(16, 13, 16, 13),
+            Effect = new DropShadowEffect { BlurRadius = 26, ShadowDepth = 8, Direction = 270, Opacity = .6, Color = Colors.Black }
         };
 
         var root = new DockPanel();
-        var header = new Grid { Margin = new Thickness(0, 0, 0, 6) };
+        var header = new Grid { Margin = new Thickness(0, 0, 0, 4) };
         header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var brand = new Border
+
+        // A quiet mono eyebrow rather than a brand badge: the word is the subject of
+        // this card, not the product.
+        var eyebrow = new TextBlock
         {
-            Width = 22, Height = 22, CornerRadius = new CornerRadius(7), Background = AccentBrush,
-            Child = new TextBlock
-            {
-                Text = "W", FontSize = 12, FontWeight = FontWeights.SemiBold, Foreground = Brushes.Black,
-                HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center
-            }
+            FontSize = 10,
+            FontFamily = ThemeResource.Font("WlFontMono", "Cascadia Mono, Consolas"),
+            Foreground = ThemeResource.Brush("WlTextSubtle", Brushes.Gray),
+            VerticalAlignment = VerticalAlignment.Center
         };
+        Controls.Type.SetTracked(eyebrow, "СЛОВАРЬ");
         var titleRow = new StackPanel { Orientation = Orientation.Horizontal };
-        titleRow.Children.Add(brand);
-        titleRow.Children.Add(new TextBlock
-        {
-            Text = "Словарь", FontSize = 13, FontWeight = FontWeights.SemiBold, Foreground = TextBrush,
-            VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0)
-        });
+        titleRow.Children.Add(eyebrow);
         var close = CreateGhostButton("\u00d7", 26, 26);
         close.Click += (_, _) => Hide();
         Grid.SetColumn(close, 1);
@@ -134,7 +135,9 @@ public sealed class LexicalPopupWindow : Window
         {
             Background = Brushes.Transparent,
             BorderThickness = new Thickness(0),
-            Padding = new Thickness(0)
+            Padding = new Thickness(0),
+            // Falls back to the default template when the theme is not loaded.
+            Style = ThemeResource.Style("WlTabControl")
         };
         _wordTab = CreateTab("Слово", _morphologyPanel);
         _synonymsTab = CreateTab("Синонимы", _synonymsPanel);
@@ -370,7 +373,7 @@ public sealed class LexicalPopupWindow : Window
             var row = new Border
             {
                 Background = RaisedBackground,
-                CornerRadius = new CornerRadius(10),
+                CornerRadius = new CornerRadius(5),
                 Padding = new Thickness(10, 8, 10, 8),
                 Margin = new Thickness(0, 0, 0, 6)
             };
@@ -422,7 +425,7 @@ public sealed class LexicalPopupWindow : Window
                 var row = new Border
                 {
                     Background = RaisedBackground,
-                    CornerRadius = new CornerRadius(10),
+                    CornerRadius = new CornerRadius(5),
                     Padding = new Thickness(10, 8, 10, 8),
                     Margin = new Thickness(0, 0, 0, 6),
                     Child = new TextBlock { Text = a.Value, FontSize = 14, Foreground = TextBrush }
@@ -452,8 +455,6 @@ public sealed class LexicalPopupWindow : Window
             if (!string.IsNullOrEmpty(d.EraLabel)) tags.Add(d.EraLabel);
             tags.Add(PosLabel(d.PartOfSpeech));
             tags.Add(d.UsageLabel);
-            if (!string.IsNullOrEmpty(d.SourceId) && d.SourceId is not "writelight-cc0")
-                tags.Add(d.SourceId);
             var meta = string.Join(" · ", tags.Where(x => !string.IsNullOrWhiteSpace(x)));
             if (!string.IsNullOrEmpty(meta))
                 block.Children.Add(new TextBlock { Text = meta, FontSize = 11, Foreground = MutedBrush, Margin = new Thickness(0, 2, 0, 0) });
@@ -587,40 +588,11 @@ public sealed class LexicalPopupWindow : Window
 
     private void PopulateSource(LexicalLookupResult result)
     {
+        // Pack identifiers, repository URLs and licence strings are legal/build
+        // metadata, not dictionary content. Attribution remains in
+        // ThirdParty/THIRD_PARTY_NOTICES.txt; the everyday lookup popup stays lexical.
         _source.Inlines.Clear();
-        if (string.IsNullOrWhiteSpace(result.PackSource) && string.IsNullOrWhiteSpace(result.PackLicense))
-            return;
-
-        _source.Inlines.Add(new System.Windows.Documents.Run("Источник: "));
-        var source = result.PackSource ?? "локальный пакет WriteLite";
-        if (Uri.TryCreate(source, UriKind.Absolute, out var sourceUri)
-            && sourceUri.Scheme is "https" or "http")
-        {
-            var link = new System.Windows.Documents.Hyperlink(new System.Windows.Documents.Run(source))
-            {
-                NavigateUri = sourceUri,
-                Foreground = AccentBrush
-            };
-            link.RequestNavigate += (_, args) =>
-            {
-                try
-                {
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(args.Uri.AbsoluteUri)
-                    {
-                        UseShellExecute = true
-                    });
-                }
-                catch { /* browser is optional */ }
-            };
-            _source.Inlines.Add(link);
-        }
-        else
-        {
-            _source.Inlines.Add(new System.Windows.Documents.Run(source));
-        }
-
-        if (!string.IsNullOrWhiteSpace(result.PackLicense))
-            _source.Inlines.Add(new System.Windows.Documents.Run($" · лицензия: {result.PackLicense}"));
+        _source.Visibility = Visibility.Collapsed;
     }
 
     private static TabItem CreateTab(string header, StackPanel content)
@@ -636,11 +608,7 @@ public sealed class LexicalPopupWindow : Window
         {
             Header = header,
             Content = scroll,
-            Foreground = TextBrush,
-            Background = Brushes.Transparent,
-            BorderThickness = new Thickness(0),
-            Padding = new Thickness(10, 6, 10, 6),
-            FontSize = 12
+            Style = ThemeResource.Style("WlTabItem")
         };
     }
 
@@ -694,23 +662,25 @@ public sealed class LexicalPopupWindow : Window
 
     private static Button CreateAccentButton(string text)
     {
-        return new Button
+        var button = new Button
         {
             Content = text,
-            Padding = new Thickness(10, 4, 10, 4),
+            Padding = new Thickness(12, 5, 12, 5),
             Margin = new Thickness(8, 0, 0, 0),
             Background = AccentBrush,
-            Foreground = Brushes.Black,
+            Foreground = OnAccentBrush,
             BorderThickness = new Thickness(0),
             Cursor = Cursors.Hand,
             FontSize = 12,
-            FontWeight = FontWeights.SemiBold
+            FontWeight = FontWeights.Medium
         };
+        button.Template = RoundedButtonTemplate(new CornerRadius(5), ThemeResource.Brush("WlBrandHover", AccentBrush));
+        return button;
     }
 
     private static Button CreateGhostButton(string text, double width, double height)
     {
-        return new Button
+        var button = new Button
         {
             Content = text,
             Width = width,
@@ -721,6 +691,39 @@ public sealed class LexicalPopupWindow : Window
             Cursor = Cursors.Hand,
             FontSize = 14
         };
+        button.Template = RoundedButtonTemplate(new CornerRadius(5), HoverBrush);
+        return button;
+    }
+
+    /// <summary>
+    /// Minimal rounded button template. This window is built without XAML, so the shape
+    /// and hover surface are reproduced here from the same tokens Themes/Buttons.xaml uses.
+    /// </summary>
+    private static ControlTemplate RoundedButtonTemplate(CornerRadius radius, MediaBrush hoverBrush)
+    {
+        var border = new FrameworkElementFactory(typeof(Border));
+        border.Name = "border";
+        border.SetValue(Border.CornerRadiusProperty, radius);
+        border.SetValue(Border.SnapsToDevicePixelsProperty, true);
+        border.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding("Background")
+        {
+            RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
+        });
+        var content = new FrameworkElementFactory(typeof(ContentPresenter));
+        content.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+        content.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+        border.AppendChild(content);
+
+        var template = new ControlTemplate(typeof(Button)) { VisualTree = border };
+        var hover = new Trigger { Property = UIElement.IsMouseOverProperty, Value = true };
+        hover.Setters.Add(new Setter(Border.BackgroundProperty, hoverBrush, "border"));
+        template.Triggers.Add(hover);
+
+        var disabled = new Trigger { Property = UIElement.IsEnabledProperty, Value = false };
+        disabled.Setters.Add(new Setter(UIElement.OpacityProperty, 0.45, "border"));
+        template.Triggers.Add(disabled);
+
+        return template;
     }
 
     [DllImport("user32.dll")]

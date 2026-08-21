@@ -117,7 +117,15 @@ public sealed class QwenRouterAndParseTests
     public async Task Analyzer_WithoutQwenPack_UsesLiteFallback()
     {
         var dir = Path.Combine(Path.GetTempPath(), "wl-qwen-missing-" + Guid.NewGuid());
-        await using var analyzer = new LocalAiTextAnalyzer(modelDirectory: dir);
+
+        // An empty directory is not enough on its own: a developer machine normally has a
+        // live loopback server on the default port, and the backend would find it and report
+        // itself available. Point at a dead port and refuse the unverified-loopback optimism
+        // so "no model" actually means no model.
+        var qwen = new QwenModelBackend(dir, "http://127.0.0.1:9", allowUnverifiedLoopback: false);
+        Assert.IsFalse(qwen.IsAvailable, "test setup: the backend must have no model to fall back from");
+
+        await using var analyzer = new LocalAiTextAnalyzer(modelDirectory: dir, qwen: qwen);
         var result = await analyzer.AnalyzeAsync(new AiTextAnalysisRequest(
             "привет как дела сегодня",
             "ru",

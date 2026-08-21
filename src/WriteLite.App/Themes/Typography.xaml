@@ -1,23 +1,118 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <FontFamily x:Key="WlFont">Segoe UI Variable Text, Segoe UI</FontFamily>
-    <FontFamily x:Key="WlFontDisplay">Segoe UI Variable Display, Segoe UI Semibold</FontFamily>
-    <FontFamily x:Key="WlFontMono">Cascadia Mono, Consolas</FontFamily>
+    <!--
+        Type scale mirroring the website: Inter for prose, JetBrains Mono for
+        labels, numbers and technical values. Headings are weight 500 with tight
+        tracking; mono eyebrows are 10–11 px uppercase with wide tracking. That
+        contrast is the WriteLite voice — avoid Bold and avoid Light everywhere.
+
+        Inter and JetBrains Mono are not present on a stock Windows install, so the
+        stacks fall back to Segoe UI Variable and Cascadia Mono, both of which have
+        complete Cyrillic coverage. Dropping the OFL font files into the app makes
+        the desktop match the web page exactly with no XAML change.
+    -->
+    <FontFamily x:Key="WlFont">Inter, Segoe UI Variable Text, Segoe UI</FontFamily>
+    <FontFamily x:Key="WlFontDisplay">Inter, Segoe UI Variable Display, Segoe UI</FontFamily>
+    <FontFamily x:Key="WlFontMono">JetBrains Mono, Cascadia Mono, Consolas</FontFamily>
+
+    <!-- ── Headings ────────────────────────────────────────────────────────── -->
+    <Style x:Key="WlDisplay" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFontDisplay}" />
+        <Setter Property="FontSize" Value="34" />
+        <Setter Property="LineHeight" Value="38" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
     <Style x:Key="WlPageTitle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{DynamicResource WlFontDisplay}" />
-        <Setter Property="FontSize" Value="28" />
-        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="26" />
+        <Setter Property="LineHeight" Value="30" />
+        <Setter Property="FontWeight" Value="Medium" />
         <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
-    <Style x:Key="WlPageSubtitle" TargetType="TextBlock">
+
+    <Style x:Key="WlSectionTitle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="LineHeight" Value="24" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="WlCardTitle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="LineHeight" Value="20" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- ── Prose ───────────────────────────────────────────────────────────── -->
+    <Style x:Key="WlBodyLarge" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="LineHeight" Value="23" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="WlBody" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="LineHeight" Value="21" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="WlSecondary" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="LineHeight" Value="20" />
         <Setter Property="Foreground" Value="{DynamicResource WlTextSecondary}" />
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
-    <Style x:Key="WlSectionLabel" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="11" />
-        <Setter Property="FontWeight" Value="SemiBold" />
+
+    <!-- Alias for the page lede paragraph. -->
+    <Style x:Key="WlPageSubtitle" TargetType="TextBlock" BasedOn="{StaticResource WlSecondary}" />
+
+    <Style x:Key="WlCaption" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="LineHeight" Value="17" />
         <Setter Property="Foreground" Value="{DynamicResource WlTextMuted}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- ── Mono ────────────────────────────────────────────────────────────── -->
+    <!-- Use with controls:Type.Tracked="…" instead of Text="…" so the wide
+         uppercase tracking of the website is reproduced. -->
+    <Style x:Key="WlMonoLabel" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFontMono}" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="LineHeight" Value="15" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextSubtle}" />
+    </Style>
+
+    <!-- Legacy alias used by pages that predate the mono voice. -->
+    <Style x:Key="WlSectionLabel" TargetType="TextBlock" BasedOn="{StaticResource WlMonoLabel}" />
+
+    <Style x:Key="WlMonoNumber" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFontMono}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextSubtle}" />
+    </Style>
+
+    <Style x:Key="WlMonoValue" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFontMono}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="LineHeight" Value="19" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextSecondary}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 </ResourceDictionary>

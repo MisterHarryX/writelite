@@ -1,0 +1,290 @@
+<UserControl x:Class="WriteLite.Views.Pages.ReaderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WriteLite.Controls"
+             Background="{DynamicResource WlBgBase}"
+             FontFamily="{DynamicResource WlFont}"
+             SizeChanged="Reader_SizeChanged"
+             AutomationProperties.Name="Чтение">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ═══ Document bar ════════════════════════════════════════════════ -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource WlBgBase}"
+                BorderBrush="{DynamicResource WlLine}"
+                BorderThickness="0,0,0,1">
+            <Grid Margin="18,0,14,0" MinHeight="44">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="BackButton"
+                        Grid.Column="0"
+                        Style="{DynamicResource WlToolbarButton}"
+                        Content="← Библиотека"
+                        Click="Back_Click"
+                        AutomationProperties.Name="Вернуться к библиотеке" />
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,16,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="TitleText"
+                               Style="{DynamicResource WlCardTitle}"
+                               TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" />
+                    <Border Style="{DynamicResource WlToolbarRule}" Margin="12,0" />
+                    <TextBlock x:Name="LocationText"
+                               Style="{DynamicResource WlMonoLabel}"
+                               Foreground="{DynamicResource WlTextMuted}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="ProgressText"
+                               Style="{DynamicResource WlMonoLabel}"
+                               Foreground="{DynamicResource WlTextSubtle}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0" />
+                    <Border Width="72" VerticalAlignment="Center">
+                        <Grid>
+                            <Border Style="{DynamicResource WlProgressTrack}" />
+                            <Border x:Name="ProgressFill" Style="{DynamicResource WlProgressFill}" Width="0" />
+                        </Grid>
+                    </Border>
+                    <ToggleButton x:Name="PanelToggle"
+                                  Style="{DynamicResource WlFormatToggle}"
+                                  Margin="12,0,0,0"
+                                  IsChecked="True"
+                                  Checked="PanelToggle_Changed"
+                                  Unchecked="PanelToggle_Changed"
+                                  ToolTip="Показать или скрыть панель пометок"
+                                  AutomationProperties.Name="Панель пометок">
+                        <Path Style="{DynamicResource WlIconSm}"
+                              Data="{DynamicResource WlIconPanel}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══ Reader toolbar ══════════════════════════════════════════════ -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource WlBg}"
+                BorderBrush="{DynamicResource WlLine}"
+                BorderThickness="0,0,0,1">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
+                          Padding="14,0" MinHeight="40">
+                <!-- Horizontally scrollable rather than wrapping: the reader toolbar is
+                     one row of related controls, and letting it reflow into two rows
+                     would push the reading canvas down every time the window narrows. -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="HighlightButton" Style="{DynamicResource WlToolbarButton}"
+                            Click="Highlight_Click" ToolTip="Выделить выбранный фрагмент"
+                            AutomationProperties.Name="Выделить">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconHighlight}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  VerticalAlignment="Center" />
+                            <TextBlock Text="Выделить" Margin="7,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="AnnotateButton" Style="{DynamicResource WlToolbarButton}"
+                            Click="Annotate_Click" ToolTip="Добавить пометку к выбранному фрагменту"
+                            AutomationProperties.Name="Добавить пометку">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconAnnotation}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  VerticalAlignment="Center" />
+                            <TextBlock Text="Пометка" Margin="7,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="CardButton" Style="{DynamicResource WlToolbarButton}"
+                            Click="Card_Click" ToolTip="Создать карточку из выбранного фрагмента"
+                            AutomationProperties.Name="Создать карточку">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconCards}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  VerticalAlignment="Center" />
+                            <TextBlock Text="Карточка" Margin="7,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="BookmarkButton" Style="{DynamicResource WlToolbarButton}"
+                            Click="Bookmark_Click" ToolTip="Добавить закладку на текущем месте"
+                            AutomationProperties.Name="Добавить закладку">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconBookmark}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  VerticalAlignment="Center" />
+                            <TextBlock Text="Закладка" Margin="7,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Border Style="{DynamicResource WlToolbarRule}" Margin="10,0" />
+
+                    <TextBlock Style="{DynamicResource WlMonoLabel}"
+                               controls:Type.Tracked="РАЗМЕР"
+                               Foreground="{DynamicResource WlTextMuted}"
+                               VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <Button x:Name="FontSmallerButton" Style="{DynamicResource WlIconButton}" Width="28" Height="28"
+                            Content="−" Click="FontSmaller_Click" ToolTip="Уменьшить шрифт"
+                            AutomationProperties.Name="Уменьшить шрифт" />
+                    <TextBlock x:Name="FontSizeText" Style="{DynamicResource WlMonoValue}"
+                               Width="30" TextAlignment="Center" VerticalAlignment="Center" />
+                    <Button x:Name="FontLargerButton" Style="{DynamicResource WlIconButton}" Width="28" Height="28"
+                            Content="+" Click="FontLarger_Click" ToolTip="Увеличить шрифт"
+                            AutomationProperties.Name="Увеличить шрифт" />
+
+                    <Border Style="{DynamicResource WlToolbarRule}" Margin="10,0" />
+
+                    <TextBlock Style="{DynamicResource WlMonoLabel}"
+                               controls:Type.Tracked="ИНТЕРЛИНЬЯЖ"
+                               Foreground="{DynamicResource WlTextMuted}"
+                               VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <Slider x:Name="SpacingSlider" Style="{DynamicResource WlSlider}"
+                            Width="90" Minimum="1.2" Maximum="2.6" TickFrequency="0.1"
+                            IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                            ValueChanged="Spacing_Changed"
+                            AutomationProperties.Name="Межстрочный интервал" />
+
+                    <Border Style="{DynamicResource WlToolbarRule}" Margin="10,0" />
+
+                    <TextBlock Style="{DynamicResource WlMonoLabel}"
+                               controls:Type.Tracked="ШИРИНА"
+                               Foreground="{DynamicResource WlTextMuted}"
+                               VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <Slider x:Name="WidthSlider" Style="{DynamicResource WlSlider}"
+                            Width="90" Minimum="480" Maximum="1400" TickFrequency="20"
+                            IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                            ValueChanged="Width_Changed"
+                            AutomationProperties.Name="Ширина колонки" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- ═══ Canvas and marks ════════════════════════════════════════════ -->
+        <Grid Grid.Row="2">
+            <!-- The text column keeps a floor and the panel gives way above it. A fixed
+                 340 px sidebar against a bare star column let the reading canvas be
+                 squeezed to nothing as the window narrowed, which is how the book
+                 disappeared while the panel stayed. MaxWidth on the panel means it
+                 stops growing rather than the text stopping shrinking. -->
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="320" />
+                <ColumnDefinition x:Name="PanelColumn" Width="340" MinWidth="0" MaxWidth="340" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer x:Name="CanvasScroll"
+                          Grid.Column="0"
+                          Style="{DynamicResource WlScrollViewer}"
+                          Padding="0"
+                          ScrollChanged="Canvas_ScrollChanged">
+                <Grid>
+                    <RichTextBox x:Name="Canvas"
+                                 Style="{DynamicResource WlReadingCanvas}"
+                                 Margin="48,40,48,80"
+                                 MaxWidth="720"
+                                 HorizontalAlignment="Center"
+                                 ContextMenuOpening="Canvas_ContextMenuOpening"
+                                 MouseDoubleClick="Canvas_MouseDoubleClick"
+                                 AutomationProperties.Name="Текст книги" />
+
+                    <StackPanel x:Name="LoadingState"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Top"
+                                Margin="0,90,0,0"
+                                Visibility="Collapsed">
+                        <TextBlock Style="{DynamicResource WlMonoLabel}"
+                                   controls:Type.Tracked="ОТКРЫВАЕМ КНИГУ"
+                                   Foreground="{DynamicResource WlTextMuted}"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock x:Name="LoadingHint"
+                                   Style="{DynamicResource WlCaption}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,10,0,0" />
+                    </StackPanel>
+
+                    <StackPanel x:Name="ErrorState"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Top"
+                                MaxWidth="440"
+                                Margin="0,90,0,0"
+                                Visibility="Collapsed">
+                        <TextBlock x:Name="ErrorTitle" Style="{DynamicResource WlSectionTitle}" />
+                        <TextBlock x:Name="ErrorHint" Style="{DynamicResource WlSecondary}" Margin="0,8,0,0" />
+                        <Button x:Name="RelocateButton"
+                                Style="{DynamicResource WlSecondaryButton}"
+                                Content="Указать файл заново"
+                                HorizontalAlignment="Left"
+                                Margin="0,18,0,0"
+                                Click="Relocate_Click" />
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- ── Marks panel ────────────────────────────────────────────── -->
+            <Border x:Name="Panel"
+                    Grid.Column="1"
+                    Background="{DynamicResource WlBg}"
+                    BorderBrush="{DynamicResource WlLine}"
+                    BorderThickness="1,0,0,0">
+                <Grid Margin="18,16,10,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <RadioButton x:Name="TabAnnotations" Style="{DynamicResource WlTabButton}"
+                                     Content="Пометки" GroupName="ReaderPanel" IsChecked="True"
+                                     Checked="PanelTab_Changed" />
+                        <RadioButton x:Name="TabBookmarks" Style="{DynamicResource WlTabButton}"
+                                     Content="Закладки" GroupName="ReaderPanel"
+                                     Checked="PanelTab_Changed" />
+                        <RadioButton x:Name="TabCards" Style="{DynamicResource WlTabButton}"
+                                     Content="Карточки" GroupName="ReaderPanel"
+                                     Checked="PanelTab_Changed" />
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="1" Style="{DynamicResource WlScrollViewer}" Padding="0,0,8,0">
+                        <StackPanel>
+                            <StackPanel x:Name="MarksList" />
+                            <StackPanel x:Name="PanelEmpty" Margin="0,20,0,0" Visibility="Collapsed">
+                                <TextBlock x:Name="PanelEmptyTitle" Style="{DynamicResource WlCardTitle}" />
+                                <TextBlock x:Name="PanelEmptyHint" Style="{DynamicResource WlSecondary}" Margin="0,7,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ═══ Status ══════════════════════════════════════════════════════ -->
+        <Border Grid.Row="3"
+                Background="{DynamicResource WlBg}"
+                BorderBrush="{DynamicResource WlLine}"
+                BorderThickness="0,1,0,0"
+                Padding="18,0">
+            <Grid Height="30">
+                <TextBlock x:Name="SummaryText"
+                           Style="{DynamicResource WlMonoLabel}"
+                           Foreground="{DynamicResource WlTextMuted}"
+                           VerticalAlignment="Center" />
+                <TextBlock x:Name="HintText"
+                           Style="{DynamicResource WlMonoLabel}"
+                           Foreground="{DynamicResource WlTextMuted}"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           controls:Type.Tracked="ВЫДЕЛИТЕ ТЕКСТ ДЛЯ ДЕЙСТВИЙ · F11 — ВО ВЕСЬ ЭКРАН" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

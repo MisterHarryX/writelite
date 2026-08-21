@@ -1,0 +1,19 @@
+{
+  "dump": "ruwiktionary-20260801-pages-articles.xml.bz2",
+  "dumpUrl": "https://dumps.wikimedia.org/ruwiktionary/20260801/ruwiktionary-20260801-pages-articles.xml.bz2",
+  "dumpSha256": "4d261710f3c377675a1b17314886c1b6c407c804ed9cd40b89a027895dd9ab93",
+  "sourceId": "ruwiktionary-20260801",
+  "pagesScanned": 1511590,
+  "skippedByTitle": 922374,
+  "skippedNoRussian": 142557,
+  "records": 446659,
+  "recordsWithDefinitions": 245729,
+  "recordsWithSynonyms": 117593,
+  "recordsWithAntonyms": 21862,
+  "recordsWithPos": 418607,
+  "definitions": 321042,
+  "synonyms": 192873,
+  "antonyms": 37895,
+  "examples": 137486,
+  "seconds": 365.0
+}

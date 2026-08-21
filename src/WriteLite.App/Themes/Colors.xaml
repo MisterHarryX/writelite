@@ -1,51 +1,94 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Color x:Key="WlBgBaseColor">#0C0D0F</Color>
-    <Color x:Key="WlBgColor">#111318</Color>
-    <Color x:Key="WlSurfaceColor">#171A20</Color>
-    <Color x:Key="WlRaisedColor">#1D2129</Color>
-    <Color x:Key="WlHoverColor">#252A33</Color>
-    <Color x:Key="WlBorderColor">#2B303A</Color>
-    <Color x:Key="WlTooltipBgColor">#171A20</Color>
-    <Color x:Key="WlBrandColor">#FF7A00</Color>
-    <Color x:Key="WlBrandHoverColor">#FF963F</Color>
-    <Color x:Key="WlBrandPressedColor">#D95D00</Color>
+    <!--
+        WriteLite palette — mirrors the CSS custom properties of writelite-web.vercel.app.
+        Warm near-black surfaces, warm white foreground, a single orange accent.
+        Do not introduce cool greys, blues or additional hues here: every screen
+        resolves its colour through these keys.
+    -->
+
+    <!-- ── Surfaces ────────────────────────────────────────────────────────── -->
+    <Color x:Key="WlBgBaseColor">#080808</Color>     <!-- window background      -->
+    <Color x:Key="WlBgColor">#0C0C0B</Color>         <!-- title bar, nav rail    -->
+    <Color x:Key="WlBgSoftColor">#10100F</Color>     <!-- inset / recessed       -->
+    <Color x:Key="WlSurfaceColor">#151514</Color>    <!-- card, panel            -->
+    <Color x:Key="WlSurfaceHiColor">#181817</Color>  <!-- surface hover          -->
+    <Color x:Key="WlRaisedColor">#1B1B19</Color>     <!-- input, raised control  -->
+    <Color x:Key="WlHoverColor">#1F1F1D</Color>      <!-- control hover          -->
+    <Color x:Key="WlTooltipBgColor">#151514</Color>
 
     <SolidColorBrush x:Key="WlBgBase" Color="{StaticResource WlBgBaseColor}" />
     <SolidColorBrush x:Key="WlBg" Color="{StaticResource WlBgColor}" />
+    <SolidColorBrush x:Key="WlBgSoft" Color="{StaticResource WlBgSoftColor}" />
     <SolidColorBrush x:Key="WlSurface" Color="{StaticResource WlSurfaceColor}" />
+    <SolidColorBrush x:Key="WlSurfaceHi" Color="{StaticResource WlSurfaceHiColor}" />
     <SolidColorBrush x:Key="WlRaised" Color="{StaticResource WlRaisedColor}" />
     <SolidColorBrush x:Key="WlHover" Color="{StaticResource WlHoverColor}" />
-    <SolidColorBrush x:Key="WlBorder" Color="{StaticResource WlBorderColor}" />
     <SolidColorBrush x:Key="WlTooltipBg" Color="{StaticResource WlTooltipBgColor}" />
+
+    <!-- ── Hairlines ───────────────────────────────────────────────────────── -->
+    <!-- White at 4.5 % / 7 % / 12 %. Borders organise information; they are not
+         meant to draw a box around every element. -->
+    <Color x:Key="WlLineSoftColor">#0BFFFFFF</Color>
+    <Color x:Key="WlLineColor">#12FFFFFF</Color>
+    <Color x:Key="WlLineStrongColor">#1FFFFFFF</Color>
+
+    <SolidColorBrush x:Key="WlLineSoft" Color="{StaticResource WlLineSoftColor}" />
+    <SolidColorBrush x:Key="WlLine" Color="{StaticResource WlLineColor}" />
+    <SolidColorBrush x:Key="WlLineStrong" Color="{StaticResource WlLineStrongColor}" />
+    <!-- Legacy alias: the C#-built popups resolve "WlBorder". -->
+    <SolidColorBrush x:Key="WlBorder" Color="{StaticResource WlLineColor}" />
+    <SolidColorBrush x:Key="WlLineAccent" Color="#59EC6C08" />
+
+    <!-- ── Brand ───────────────────────────────────────────────────────────── -->
+    <Color x:Key="WlBrandColor">#EC6C08</Color>
+    <Color x:Key="WlBrandHoverColor">#FF7A00</Color>
+    <Color x:Key="WlBrandPressedColor">#B94300</Color>
+    <Color x:Key="WlOnBrandColor">#170C03</Color>
+
     <SolidColorBrush x:Key="WlBrand" Color="{StaticResource WlBrandColor}" />
     <SolidColorBrush x:Key="WlBrandHover" Color="{StaticResource WlBrandHoverColor}" />
     <SolidColorBrush x:Key="WlBrandPressed" Color="{StaticResource WlBrandPressedColor}" />
-    <SolidColorBrush x:Key="WlBrandDim" Color="#2EFF7A00" />
-    <SolidColorBrush x:Key="WlBrandSoft" Color="#18FF7A00" />
-    <SolidColorBrush x:Key="WlText" Color="#F5F6F7" />
-    <SolidColorBrush x:Key="WlTextSecondary" Color="#A8AFBA" />
-    <SolidColorBrush x:Key="WlTextMuted" Color="#747C89" />
-    <SolidColorBrush x:Key="WlSuccess" Color="#42C77A" />
-    <SolidColorBrush x:Key="WlSuccessText" Color="#42C77A" />
-    <SolidColorBrush x:Key="WlSuccessSoft" Color="#1842C77A" />
-    <SolidColorBrush x:Key="WlSuccessBorder" Color="#4242C77A" />
-    <SolidColorBrush x:Key="WlWarning" Color="#E98A42" />
-    <SolidColorBrush x:Key="WlWarningSoft" Color="#18E98A42" />
-    <SolidColorBrush x:Key="WlWarningBorder" Color="#42E98A42" />
-    <SolidColorBrush x:Key="WlInfo" Color="#A8AFBA" />
-    <SolidColorBrush x:Key="WlInfoSoft" Color="#18A8AFBA" />
-    <SolidColorBrush x:Key="WlInfoBorder" Color="#36A8AFBA" />
-    <SolidColorBrush x:Key="WlError" Color="#ED6672" />
-    <SolidColorBrush x:Key="WlDisabled" Color="#66747C89" />
-    <SolidColorBrush x:Key="WlCatSpelling" Color="#E96B70" />
-    <SolidColorBrush x:Key="WlCatSpellingBg" Color="#20E96B70" />
-    <SolidColorBrush x:Key="WlCatPunctuation" Color="#E98A42" />
-    <SolidColorBrush x:Key="WlCatPunctuationBg" Color="#20E98A42" />
-    <SolidColorBrush x:Key="WlCatGrammar" Color="#E3A640" />
-    <SolidColorBrush x:Key="WlCatGrammarBg" Color="#20E3A640" />
-    <SolidColorBrush x:Key="WlCatStyle" Color="#6F94C9" />
-    <SolidColorBrush x:Key="WlCatStyleBg" Color="#206F94C9" />
-    <SolidColorBrush x:Key="WlCatFormatting" Color="#A8AFBA" />
-    <SolidColorBrush x:Key="WlCatFormattingBg" Color="#18A8AFBA" />
+    <SolidColorBrush x:Key="WlOnBrand" Color="{StaticResource WlOnBrandColor}" />
+    <SolidColorBrush x:Key="WlBrandDim" Color="#26EC6C08" />
+    <SolidColorBrush x:Key="WlBrandSoft" Color="#14EC6C08" />
+
+    <!-- ── Foreground ──────────────────────────────────────────────────────── -->
+    <Color x:Key="WlTextColor">#F1EFEC</Color>
+    <SolidColorBrush x:Key="WlText" Color="{StaticResource WlTextColor}" />
+    <SolidColorBrush x:Key="WlTextSecondary" Color="#A09D98" />
+    <SolidColorBrush x:Key="WlTextMuted" Color="#65625E" />
+    <!-- Mono eyebrows and section numbers. -->
+    <SolidColorBrush x:Key="WlTextSubtle" Color="#8A847B" />
+    <SolidColorBrush x:Key="WlDisabled" Color="#5965625E" />
+
+    <!-- ── Semantic ────────────────────────────────────────────────────────── -->
+    <!-- Muted sage and warm coral, so status never reads as neon. -->
+    <SolidColorBrush x:Key="WlSuccess" Color="#6FB593" />
+    <SolidColorBrush x:Key="WlSuccessText" Color="#6FB593" />
+    <SolidColorBrush x:Key="WlSuccessSoft" Color="#146FB593" />
+    <SolidColorBrush x:Key="WlSuccessBorder" Color="#3D6FB593" />
+    <SolidColorBrush x:Key="WlWarning" Color="#E89645" />
+    <SolidColorBrush x:Key="WlWarningSoft" Color="#14E89645" />
+    <SolidColorBrush x:Key="WlWarningBorder" Color="#3DE89645" />
+    <SolidColorBrush x:Key="WlInfo" Color="#A09D98" />
+    <SolidColorBrush x:Key="WlInfoSoft" Color="#12A09D98" />
+    <SolidColorBrush x:Key="WlInfoBorder" Color="#2EA09D98" />
+    <SolidColorBrush x:Key="WlDanger" Color="#E3695A" />
+    <!-- Legacy alias kept so older bindings keep resolving. -->
+    <SolidColorBrush x:Key="WlError" Color="#E3695A" />
+
+    <!-- ── Correction categories ───────────────────────────────────────────── -->
+    <!-- One warm family. The website's wavy marks use exactly these hues; a blue
+         or green issue colour would read as a different product. -->
+    <SolidColorBrush x:Key="WlCatSpelling" Color="#EC6C08" />
+    <SolidColorBrush x:Key="WlCatSpellingBg" Color="#1FEC6C08" />
+    <SolidColorBrush x:Key="WlCatGrammar" Color="#E0A64B" />
+    <SolidColorBrush x:Key="WlCatGrammarBg" Color="#1FE0A64B" />
+    <SolidColorBrush x:Key="WlCatPunctuation" Color="#E89645" />
+    <SolidColorBrush x:Key="WlCatPunctuationBg" Color="#1FE89645" />
+    <SolidColorBrush x:Key="WlCatStyle" Color="#A48447" />
+    <SolidColorBrush x:Key="WlCatStyleBg" Color="#1FA48447" />
+    <SolidColorBrush x:Key="WlCatFormatting" Color="#8A847B" />
+    <SolidColorBrush x:Key="WlCatFormattingBg" Color="#148A847B" />
 </ResourceDictionary>

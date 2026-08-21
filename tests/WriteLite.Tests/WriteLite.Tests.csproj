@@ -17,4 +17,11 @@
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Fixtures\**\*" Link="Fixtures\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Only the shipped artefacts: the quantised graph, its vocabulary and the
+         config. The PyTorch checkpoint under hf/ stays out of the test output. -->
+    <Content Include="..\..\models\writelight-reranker\model.onnx;..\..\models\writelight-reranker\vocab.txt;..\..\models\writelight-reranker\reranker.json" Link="models\writelight-reranker\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Condition="Exists('..\..\models\writelight-reranker\model.onnx')" />
+  </ItemGroup>
 </Project>

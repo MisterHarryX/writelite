@@ -45,20 +45,53 @@ public sealed class LocalAiTextProvider : IAiTextProvider, IAsyncDisposable, IDi
 
     public string LastBackend => _analyzer.LastBackend;
 
+    /// <summary>
+    /// True only when the local model's own output reached the result. <see cref="LastBackend"/>
+    /// reports which route was attempted, which stays <c>writelight-qwen</c> even when the
+    /// answer was rejected and the deterministic engine produced the text.
+    /// </summary>
+    public bool LastNeuralOutputUsed => _analyzer.LastNeuralOutputUsed;
+
     public string? LastErrorCode { get; private set; }
 
     public string QwenEndpoint => _analyzer.Qwen.ActiveEndpoint;
 
     public bool QwenAvailable => _analyzer.Qwen.IsAvailable;
 
-    public async Task WarmupAsync(CancellationToken cancellationToken = default)
+    /// <summary>The address the WriteAI local server is answering on.</summary>
+    /// <remarks>
+    /// Product-facing name for <see cref="QwenEndpoint"/>. The transport type keeps its own
+    /// name because it is the name of the protocol it speaks; §3 keeps provenance honest
+    /// internally while the product says WriteAI.
+    /// </remarks>
+    public string WriteAiEndpoint => QwenEndpoint;
+
+    /// <summary>Whether WriteAI's local model is reachable.</summary>
+    public bool WriteAiAvailable => QwenAvailable;
+
+    /// <summary>
+    /// The local runtime, shared with the editor's rewriting service.
+    /// </summary>
+    /// <remarks>
+    /// Exposed rather than duplicated: a second backend would probe, and possibly
+    /// start, a second copy of the loopback server, doubling the memory the local
+    /// model costs for no benefit. One process, one runtime.
+    /// </remarks>
+    public QwenModelBackend Backend => _analyzer.Qwen;
+
+    /// <param name="startBackend">
+    /// Whether to start the WriteAI model server, or only to notice one that is already
+    /// running. False from application startup — see the remarks on
+    /// <see cref="LocalAiTextAnalyzer.WarmupAsync"/> for the 481 MB this saves.
+    /// </param>
+    public async Task WarmupAsync(bool startBackend = true, CancellationToken cancellationToken = default)
     {
         if (!IsConfigured)
         {
             return;
         }
 
-        await _analyzer.WarmupAsync(cancellationToken).ConfigureAwait(false);
+        await _analyzer.WarmupAsync(startBackend, cancellationToken).ConfigureAwait(false);
         CompatibilityLogger.Technical(
             "local-ai-provider-warmup",
             $"qwenAvailable={(QwenAvailable ? 1 : 0)} endpoint={QwenEndpoint} profile={ActiveProfile}");
@@ -97,6 +130,15 @@ public sealed class LocalAiTextProvider : IAiTextProvider, IAsyncDisposable, IDi
                 $"backend={result.Backend} profile={result.ProfileUsed} issues={result.Issues.Count} " +
                 $"correctedLength={result.CorrectedText.Length} durationMs={result.ProcessingTime.TotalMilliseconds:F0} " +
                 $"uncertain={(result.Uncertain ? 1 : 0)} error={result.ErrorCode ?? "OK"}");
+
+            // Whether the model's own output reached the answer, or whether the local rules
+            // engine produced it after the model's reply was rejected. Without this the trace
+            // could see an inference happen and a result come back, and still not tell the two
+            // apart — which is exactly the state a truncated reply leaves the pipeline in.
+            Diagnostics.CheckPipelineTracing.Current?.Note(
+                $"ai-backend={result.Backend} neuralOutputUsed={(LastNeuralOutputUsed ? 1 : 0)} "
+                + $"error={result.ErrorCode ?? "OK"}"
+                + (string.IsNullOrWhiteSpace(result.Warning) ? string.Empty : $" warning={result.Warning}"));
 
             if (result.ErrorCode is AiErrorCodes.Cancelled)
             {

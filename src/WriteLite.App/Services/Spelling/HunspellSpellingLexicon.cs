@@ -106,7 +106,11 @@ public sealed class HunspellSpellingLexicon : ISpellingLexicon, IDisposable
             try
             {
                 var suggestions = _wordList.Suggest(word);
-                return CorrectionCandidateValidityPolicy.FilterSuggestions(word, suggestions, maxSuggestions);
+                // Hunspell's suggester offers word splits («ро ботает» for «роботает»)
+                // indistinguishably from ordinary candidates. Its own word list is the
+                // evidence that decides which of them are real.
+                return CorrectionCandidateValidityPolicy.FilterSuggestions(
+                    word, suggestions, maxSuggestions, isKnownWord: ContainsExact);
             }
             catch
             {

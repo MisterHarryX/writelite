@@ -31,7 +31,31 @@ public sealed class QwenModelBackend : IAsyncDisposable
 
     private readonly string _modelDirectory;
     private readonly string? _endpointOverride;
+    private readonly bool _allowUnverifiedLoopback;
     private readonly object _gate = new();
+
+    /// <summary>
+    /// Serialises inference. The server runs with <c>--parallel 1</c>, so overlapping
+    /// requests would queue inside it where WriteLite can neither see nor supersede them.
+    /// Holding the queue on this side keeps it manageable.
+    /// </summary>
+    private readonly SemaphoreSlim _inferenceGate = new(1, 1);
+
+    /// <summary>
+    /// Monotonic request id. A request that is still queued when a newer one arrives is
+    /// dropped before it reaches the socket, which is what bounds the queue while the user
+    /// types: at most one in flight and one waiting.
+    /// </summary>
+    private long _requestGeneration;
+
+    private int _activeRequests;
+    private int _consecutiveTimeouts;
+    private int _recoveryAttempts;
+    private DateTimeOffset? _lastSuccessUtc;
+    private DateTimeOffset? _lastTimeoutUtc;
+    private DateTimeOffset? _lastCancellationUtc;
+    private DateTimeOffset? _lastRecoveryUtc;
+    private LocalAiBackendState _state = LocalAiBackendState.Stopped;
     private HttpClient? _http;
     private Process? _server;
     private IntPtr _jobHandle = IntPtr.Zero;
@@ -42,13 +66,25 @@ public sealed class QwenModelBackend : IAsyncDisposable
     private string _activeEndpoint = DefaultEndpoint;
     private readonly string _systemPrompt;
 
-    public QwenModelBackend(string? modelDirectory = null, string? endpoint = null)
+    /// <param name="allowUnverifiedLoopback">
+    /// When true (the product default) the backend reports itself available against a
+    /// loopback endpoint even with no pack on disk and no answer from /health, on the
+    /// assumption that a server may still be started. Pass false to require positive
+    /// evidence — a healthy endpoint or an installed pack — which is what a test that
+    /// wants a genuinely absent model needs, since a developer machine usually has a
+    /// live server on the default port.
+    /// </param>
+    public QwenModelBackend(
+        string? modelDirectory = null,
+        string? endpoint = null,
+        bool allowUnverifiedLoopback = true)
     {
         _modelDirectory = modelDirectory
                           ?? Path.Combine(AppContext.BaseDirectory, "models", "writelight-qwen");
         _endpointOverride = FirstNonEmpty(
             endpoint,
             Environment.GetEnvironmentVariable("WRITELITE_QWEN_ENDPOINT"));
+        _allowUnverifiedLoopback = allowUnverifiedLoopback;
         _systemPrompt = LoadSystemPrompt(_modelDirectory);
         RefreshAvailability();
     }
@@ -82,11 +118,67 @@ public sealed class QwenModelBackend : IAsyncDisposable
 
     public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(90);
 
+    /// <summary>
+    /// Interactive Smart Actions have a smaller hard ceiling than background GEC.
+    /// A wedged local server must not leave a preview in processing for 90 seconds.
+    /// </summary>
+    public TimeSpan InstructionTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Floor for the completion budget: enough for one short text field.</summary>
     public int MaxNewTokens { get; set; } = 96;
+
+    /// <summary>
+    /// Ceiling for the completion budget, so prompt and answer together stay inside the
+    /// server's context window.
+    /// </summary>
+    /// <remarks>
+    /// The shipped server runs at <see cref="DefaultServerContextTokens"/> (768). Measured
+    /// against it, the largest input this backend will send — the 480-character interactive
+    /// window — produces a prompt of roughly 430 tokens including the system prompt, leaving
+    /// about 330 for the answer. 288 keeps a margin and is comfortably more than the ~240 a
+    /// 480-character Russian rewrite needs.
+    /// </remarks>
+    public int MaxCompletionTokens { get; set; } = 288;
+
+    /// <summary>
+    /// The completion budget for one input.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>This has to scale with the input, and it did not.</b> The contract asks the
+    /// model to return the whole corrected text, so the answer is never shorter than the
+    /// question; a fixed 96-token budget is therefore a hard limit on the length of text the
+    /// backend can correct at all, not a safety valve. Above roughly one short sentence the
+    /// server stopped mid-string, <see cref="ParseModelContent"/> could not parse the
+    /// truncated JSON, and the whole answer was discarded as a null response — so a paragraph
+    /// was not corrected badly, it was silently not corrected at all, while every log line
+    /// and status indicator still reported the model as available and consulted.</para>
+    ///
+    /// <para>Russian runs about 2.5 characters per token for this tokenizer, and the JSON
+    /// envelope costs about 60. The floor keeps short fields on exactly the budget they had.</para>
+    /// </remarks>
+    internal int CompletionBudgetFor(string text)
+        => Math.Clamp(
+            60 + (int)((text?.Length ?? 0) / 2.5),
+            MaxNewTokens,
+            Math.Max(MaxNewTokens, MaxCompletionTokens));
 
     public int LastHttpStatus { get; private set; }
 
     public long LastDurationMs { get; private set; }
+
+    /// <summary>
+    /// How many inference requests this process has actually dispatched to the model server.
+    /// </summary>
+    /// <remarks>
+    /// Counted immediately before the request goes onto the wire, so it answers "was the
+    /// model asked" rather than "was the model configured". Availability flags, backend
+    /// labels and the status indicator all report intent; this reports the HTTP call. Static
+    /// because it is a process-wide fact and the diagnostic that reads it does not hold a
+    /// reference to the backend instance.
+    /// </remarks>
+    public static long DispatchedInferenceCalls => Interlocked.Read(ref _dispatchedInferenceCalls);
+
+    private static long _dispatchedInferenceCalls;
 
     /// <summary>
     /// Probes loopback health and pack files. Call on warmup and before analysis.
@@ -151,7 +243,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
         }
 
         // Still allow attempts against default loopback when Local AI is enabled by host.
-        if (IsLoopback(endpoint))
+        if (_allowUnverifiedLoopback && IsLoopback(endpoint))
         {
             lock (_gate)
             {
@@ -193,6 +285,34 @@ public sealed class QwenModelBackend : IAsyncDisposable
     /// Runs GEC inference. Returns null on any failure (caller falls back).
     /// Temperature forced to 0. Logs technical events without user text.
     /// </summary>
+    /// <summary>
+    /// Runs GEC inference, serialised, and never aborts a request that has already reached
+    /// the server.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The obvious implementation — pass the caller's token to <c>SendAsync</c> — is what
+    /// produced the Phase 2 wedge. Aborting an HTTP request mid-generation leaves the
+    /// single-slot llama.cpp server holding a connection it never reaps; a handful of those
+    /// and it stops serving entirely while <c>/health</c> still answers 200. Since
+    /// <c>HybridTextAnalysisService</c> cancels on every keystroke burst, ordinary typing
+    /// was enough to silence local AI.
+    /// </para>
+    /// <para>
+    /// So cancellation is handled without touching the transport:
+    /// </para>
+    /// <list type="number">
+    /// <item>A token cancelled before dispatch costs the server nothing — we never send.</item>
+    /// <item>A request still queued when a newer one arrives is dropped before dispatch,
+    /// which bounds the queue at one in flight plus one waiting.</item>
+    /// <item>Once dispatched, the request runs to completion under a hard timeout only.
+    /// The caller gets control back immediately on cancellation and the result is
+    /// discarded — stale suppression, not transport teardown.</item>
+    /// </list>
+    /// <para>
+    /// The user-visible requirement is unchanged: a superseded answer is never applied.
+    /// </para>
+    /// </remarks>
     public async Task<QwenInferenceResult?> InferAsync(
         string text,
         string? language,
@@ -200,7 +320,6 @@ public sealed class QwenModelBackend : IAsyncDisposable
     {
         LastHttpStatus = 0;
         LastDurationMs = 0;
-        var sw = Stopwatch.StartNew();
 
         if (!IsAvailable)
         {
@@ -214,13 +333,278 @@ public sealed class QwenModelBackend : IAsyncDisposable
             return null;
         }
 
+        // A caller who has already given up never reaches the wire.
+        if (cancellationToken.IsCancellationRequested)
+        {
+            NoteCancellation();
+            LocalAiDiagnostics.Technical("qwen-request-skipped", "reason=cancelled-before-dispatch");
+            return null;
+        }
+
+        var generation = Interlocked.Increment(ref _requestGeneration);
+        var inference = RunSerialisedInferenceAsync(text, generation);
+
+        // Hand control back the moment the caller loses interest. The inference keeps
+        // running in the background so the server's slot is returned cleanly.
+        var abandoned = await Task.WhenAny(inference, WhenCancelled(cancellationToken)).ConfigureAwait(false);
+        if (abandoned != inference)
+        {
+            NoteCancellation();
+            ObserveInBackground(inference);
+            LocalAiDiagnostics.Technical(
+                "qwen-request-superseded",
+                $"generation={generation} note=connection-left-running-to-completion");
+            return null;
+        }
+
+        var result = await inference.ConfigureAwait(false);
+
+        // Won the race by a hair but the caller is gone: still not their answer.
+        if (cancellationToken.IsCancellationRequested)
+        {
+            NoteCancellation();
+            return null;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Consecutive hard timeouts before the backend is declared wedged.
+    /// </summary>
+    /// <remarks>
+    /// Two rather than one: a single timeout is an unlucky long generation, and declaring
+    /// a healthy backend dead on one slow sentence would cost the user the feature for no
+    /// reason. Two in a row with no success between them is the wedge signature.
+    /// </remarks>
+    public int WedgeThreshold { get; set; } = 2;
+
+    /// <summary>Minimum gap between recovery attempts — the guard against restart loops.</summary>
+    public TimeSpan RecoveryCooldown { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Recovery attempts before giving up and staying in <see cref="LocalAiBackendState.Failed"/>.</summary>
+    public int MaxRecoveryAttempts { get; set; } = 3;
+
+    /// <summary>Current backend state. See <see cref="LocalAiBackendState"/>.</summary>
+    public LocalAiBackendState State
+    {
+        get { lock (_gate) return _state; }
+    }
+
+    /// <summary>A privacy-safe snapshot for diagnostics. Contains no user text.</summary>
+    public LocalAiHealthSnapshot Health()
+    {
+        lock (_gate)
+        {
+            var state = _state;
+            if (state is LocalAiBackendState.Ready && Volatile.Read(ref _activeRequests) > 0)
+            {
+                state = LocalAiBackendState.Busy;
+            }
+
+            return new LocalAiHealthSnapshot(
+                state,
+                Volatile.Read(ref _activeRequests),
+                _lastSuccessUtc,
+                _lastTimeoutUtc,
+                _lastCancellationUtc,
+                _consecutiveTimeouts,
+                _recoveryAttempts,
+                _lastRecoveryUtc,
+                SanitizeEndpoint(_activeEndpoint));
+        }
+    }
+
+    private void NoteSuccess()
+    {
+        lock (_gate)
+        {
+            _lastSuccessUtc = DateTimeOffset.UtcNow;
+            _consecutiveTimeouts = 0;
+            _recoveryAttempts = 0;
+            _state = LocalAiBackendState.Ready;
+        }
+    }
+
+    private void NoteCancellation()
+    {
+        lock (_gate) _lastCancellationUtc = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Records a hard timeout and returns true when the backend has become wedged.</summary>
+    private bool NoteTimeout()
+    {
+        lock (_gate)
+        {
+            _lastTimeoutUtc = DateTimeOffset.UtcNow;
+            _consecutiveTimeouts++;
+            if (_consecutiveTimeouts < WedgeThreshold)
+            {
+                return false;
+            }
+
+            _state = LocalAiBackendState.Wedged;
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Restarts a wedged server, if this instance owns one and the cooldown has elapsed.
+    /// </summary>
+    /// <remarks>
+    /// Rate-limited and capped, because a restart loop against a model that takes seconds
+    /// to load would be worse for the user than the wedge it is trying to clear. When the
+    /// cap is reached the backend stays <see cref="LocalAiBackendState.Failed"/> and the
+    /// deterministic pipeline carries the product, which it is designed to do.
+    /// </remarks>
+    public async Task<bool> TryRecoverAsync(CancellationToken cancellationToken = default)
+    {
+        Process? doomed;
+        lock (_gate)
+        {
+            if (_state is not (LocalAiBackendState.Wedged or LocalAiBackendState.Failed))
+            {
+                return false;
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            if (_lastRecoveryUtc is { } last && now - last < RecoveryCooldown)
+            {
+                return false;
+            }
+
+            if (_recoveryAttempts >= MaxRecoveryAttempts)
+            {
+                _state = LocalAiBackendState.Failed;
+                return false;
+            }
+
+            _recoveryAttempts++;
+            _lastRecoveryUtc = now;
+            _state = LocalAiBackendState.Recovering;
+            doomed = _server;
+            _server = null;
+        }
+
         LocalAiDiagnostics.Technical(
-            "qwen-request-started",
-            $"endpoint={SanitizeEndpoint(ActiveEndpoint)} path=/{ChatCompletionsPath} textLength={text.Length} lang=ru maxTokens={MaxNewTokens}");
+            "qwen-recovery-started",
+            $"attempt={_recoveryAttempts} reason=wedged");
 
         try
         {
-            await EnsureServerAsync(cancellationToken).ConfigureAwait(false);
+            if (doomed is { HasExited: false })
+            {
+                doomed.Kill(entireProcessTree: true);
+                await doomed.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            doomed?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            LocalAiDiagnostics.Technical("qwen-recovery-kill-failed", $"type={ex.GetType().Name}");
+        }
+
+        lock (_gate)
+        {
+            _http?.Dispose();
+            _http = null;
+            _consecutiveTimeouts = 0;
+        }
+
+        try
+        {
+            RefreshAvailability();
+            var ready = await EnsureReadyAsync(cancellationToken).ConfigureAwait(false);
+            lock (_gate)
+            {
+                _state = ready ? LocalAiBackendState.Ready : LocalAiBackendState.Failed;
+            }
+
+            LocalAiDiagnostics.Technical(
+                "qwen-recovery-completed",
+                $"attempt={_recoveryAttempts} ready={(ready ? 1 : 0)}");
+            return ready;
+        }
+        catch (Exception ex)
+        {
+            lock (_gate) _state = LocalAiBackendState.Failed;
+            LocalAiDiagnostics.Technical("qwen-recovery-failed", $"type={ex.GetType().Name}");
+            return false;
+        }
+    }
+
+    /// <summary>Completes when the token is cancelled; never faults.</summary>
+    private static async Task WhenCancelled(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(System.Threading.Timeout.Infinite, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    /// <summary>Keeps an abandoned inference from surfacing as an unobserved task exception.</summary>
+    private static void ObserveInBackground(Task task)
+        => _ = task.ContinueWith(
+            static t => _ = t.Exception,
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+
+    private async Task<QwenInferenceResult?> RunSerialisedInferenceAsync(string text, long generation)
+    {
+        // Not cancellable: whoever holds this gate owns returning the server's slot.
+        await _inferenceGate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            // Superseded while queued — drop it before it costs the server anything.
+            if (Volatile.Read(ref _requestGeneration) != generation)
+            {
+                LocalAiDiagnostics.Technical(
+                    "qwen-request-dropped",
+                    $"generation={generation} reason=superseded-while-queued");
+                return null;
+            }
+
+            Interlocked.Increment(ref _activeRequests);
+            try
+            {
+                var result = await SendInferenceAsync(text).ConfigureAwait(false);
+                if (result is not null)
+                {
+                    // Any completed inference clears the wedge counters, whoever it was for.
+                    NoteSuccess();
+                }
+
+                return result;
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _activeRequests);
+            }
+        }
+        finally
+        {
+            _inferenceGate.Release();
+        }
+    }
+
+    private async Task<QwenInferenceResult?> SendInferenceAsync(string text)
+    {
+        var sw = Stopwatch.StartNew();
+        var completionBudget = CompletionBudgetFor(text);
+
+        LocalAiDiagnostics.Technical(
+            "qwen-request-started",
+            $"endpoint={SanitizeEndpoint(ActiveEndpoint)} path=/{ChatCompletionsPath} textLength={text.Length} lang=ru maxTokens={completionBudget}");
+
+        try
+        {
+            using var hard = new CancellationTokenSource(Timeout);
+            await EnsureServerAsync(hard.Token).ConfigureAwait(false);
             var client = _http;
             if (client is null)
             {
@@ -233,11 +617,21 @@ public sealed class QwenModelBackend : IAsyncDisposable
                 return null;
             }
 
-            var userContent = JsonSerializer.Serialize(new Dictionary<string, string?>
-            {
-                ["language"] = "ru",
-                ["text"] = text
-            });
+            // Russian must reach the model as Russian. System.Text.Json's default encoder
+            // escapes every non-ASCII character, so "Я" becomes the six literal characters
+            // Я — and because this string is the *content* of a chat message rather
+            // than transport, the model sees the escapes and dutifully echoes them back.
+            // Measured against the real server: the escaped form inflated the answer past
+            // the 96-token budget and returned truncated, unparseable JSON every time,
+            // while the same sentence sent as UTF-8 parsed cleanly. This is the difference
+            // between the local model working and never working at all.
+            var userContent = JsonSerializer.Serialize(
+                new Dictionary<string, string?>
+                {
+                    ["language"] = "ru",
+                    ["text"] = text
+                },
+                PromptJsonOptions);
 
             // Contract: OpenAI chat.completions → assistant content = JSON GEC payload
             var body = new
@@ -245,7 +639,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
                 model = "writelight-qwen",
                 temperature = 0.0,
                 top_p = 1.0,
-                max_tokens = MaxNewTokens,
+                max_tokens = completionBudget,
                 stream = false,
                 messages = new object[]
                 {
@@ -259,10 +653,10 @@ public sealed class QwenModelBackend : IAsyncDisposable
                 Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json")
             };
 
-            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            linked.CancelAfter(Timeout);
-
-            using var resp = await client.SendAsync(req, linked.Token).ConfigureAwait(false);
+            // Hard timeout only. The caller's token deliberately does not reach here: an
+            // aborted request is what wedges a single-slot server.
+            Interlocked.Increment(ref _dispatchedInferenceCalls);
+            using var resp = await client.SendAsync(req, hard.Token).ConfigureAwait(false);
             LastHttpStatus = (int)resp.StatusCode;
             sw.Stop();
             LastDurationMs = sw.ElapsedMilliseconds;
@@ -277,8 +671,8 @@ public sealed class QwenModelBackend : IAsyncDisposable
                 return null;
             }
 
-            await using var stream = await resp.Content.ReadAsStreamAsync(linked.Token).ConfigureAwait(false);
-            using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: linked.Token).ConfigureAwait(false);
+            await using var stream = await resp.Content.ReadAsStreamAsync(hard.Token).ConfigureAwait(false);
+            using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: hard.Token).ConfigureAwait(false);
             var content = doc.RootElement
                 .GetProperty("choices")[0]
                 .GetProperty("message")
@@ -312,24 +706,19 @@ public sealed class QwenModelBackend : IAsyncDisposable
             lock (_gate) _lastError = null;
             return parsed;
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException)
         {
+            // The caller's token never reaches this method, so this is always the hard
+            // timeout — the signal that the server accepted work and did not finish it.
             sw.Stop();
             LastDurationMs = sw.ElapsedMilliseconds;
             lock (_gate) _lastError = AiErrorCodes.Timeout;
+            var wedged = NoteTimeout();
             LocalAiDiagnostics.Technical(
                 "qwen-response-rejected",
-                $"reason=timeout durationMs={LastDurationMs}");
+                $"reason=timeout durationMs={LastDurationMs} wedged={(wedged ? 1 : 0)}");
             LocalAiDiagnostics.Technical("qwen-fallback-used", "reason=timeout");
             return null;
-        }
-        catch (OperationCanceledException)
-        {
-            sw.Stop();
-            LastDurationMs = sw.ElapsedMilliseconds;
-            lock (_gate) _lastError = AiErrorCodes.Cancelled;
-            LocalAiDiagnostics.Technical("qwen-response-rejected", $"reason=cancelled durationMs={LastDurationMs}");
-            throw;
         }
         catch (OutOfMemoryException)
         {
@@ -349,6 +738,182 @@ public sealed class QwenModelBackend : IAsyncDisposable
                 "qwen-response-rejected",
                 $"reason=exception type={ex.GetType().Name} durationMs={LastDurationMs}");
             LocalAiDiagnostics.Technical("qwen-fallback-used", $"reason=exception type={ex.GetType().Name}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Runs a free-form instruction against the same local runtime and returns raw text.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="InferAsync"/> speaks one fixed grammar-correction contract and
+    /// parses a JSON payload back. Editor rewriting needs the opposite: an arbitrary
+    /// instruction in, prose out. Both go through the same loopback server, the same
+    /// lifecycle and the same never-leaves-the-machine guarantee — only the prompt
+    /// and the expected shape of the answer differ.
+    ///
+    /// Returns null on any failure so the caller can fall back rather than surface
+    /// an error, exactly like the correction path.
+    /// </remarks>
+    public async Task<string?> CompleteAsync(
+        string systemPrompt,
+        string userPrompt,
+        int maxTokens,
+        double temperature,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsAvailable || string.IsNullOrWhiteSpace(userPrompt))
+        {
+            LocalAiDiagnostics.Technical("qwen-instruction-skipped", "reason=not-available");
+            return null;
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            NoteCancellation();
+            LocalAiDiagnostics.Technical("qwen-instruction-skipped", "reason=cancelled-before-dispatch");
+            return null;
+        }
+
+        // Same contract as InferAsync: serialise, and never abort a dispatched request.
+        // Deliberately *without* supersession — a Smart Action is something the user asked
+        // for explicitly, and dropping it because a background analysis arrived behind it
+        // would make the feature randomly do nothing.
+        var work = RunSerialisedCompletionAsync(systemPrompt, userPrompt, maxTokens, temperature);
+
+        var abandoned = await Task.WhenAny(work, WhenCancelled(cancellationToken)).ConfigureAwait(false);
+        if (abandoned != work)
+        {
+            NoteCancellation();
+            ObserveInBackground(work);
+            LocalAiDiagnostics.Technical(
+                "qwen-instruction-abandoned",
+                "note=connection-left-running-to-completion");
+            return null;
+        }
+
+        var completion = await work.ConfigureAwait(false);
+        if (completion is null && State == LocalAiBackendState.Wedged)
+        {
+            // Recovery starts only after RunSerialisedCompletionAsync released the
+            // single inference slot. It is deliberately background work: the user gets
+            // the honest fallback/error state immediately and may keep editing.
+            ObserveInBackground(TryRecoverAsync(CancellationToken.None));
+        }
+        return cancellationToken.IsCancellationRequested ? null : completion;
+    }
+
+    private async Task<string?> RunSerialisedCompletionAsync(
+        string systemPrompt,
+        string userPrompt,
+        int maxTokens,
+        double temperature)
+    {
+        await _inferenceGate.WaitAsync().ConfigureAwait(false);
+        Interlocked.Increment(ref _activeRequests);
+        try
+        {
+            var completion = await SendCompletionAsync(systemPrompt, userPrompt, maxTokens, temperature)
+                .ConfigureAwait(false);
+            if (completion is not null)
+            {
+                NoteSuccess();
+            }
+
+            return completion;
+        }
+        finally
+        {
+            Interlocked.Decrement(ref _activeRequests);
+            _inferenceGate.Release();
+        }
+    }
+
+    private async Task<string?> SendCompletionAsync(
+        string systemPrompt,
+        string userPrompt,
+        int maxTokens,
+        double temperature)
+    {
+        var sw = Stopwatch.StartNew();
+
+        try
+        {
+            var hardLimit = InstructionTimeout <= Timeout ? InstructionTimeout : Timeout;
+            using var hard = new CancellationTokenSource(hardLimit);
+            await EnsureServerAsync(hard.Token).ConfigureAwait(false);
+            var client = _http;
+            if (client is null)
+            {
+                LocalAiDiagnostics.Technical("qwen-instruction-skipped", "reason=no-http-client");
+                return null;
+            }
+
+            var body = new
+            {
+                model = "writelight-qwen",
+                temperature = Math.Clamp(temperature, 0.0, 1.0),
+                top_p = 0.9,
+                max_tokens = Math.Clamp(maxTokens, 16, 2048),
+                stream = false,
+                messages = new object[]
+                {
+                    new { role = "system", content = systemPrompt },
+                    new { role = "user", content = userPrompt }
+                }
+            };
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, ChatCompletionsPath)
+            {
+                Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json")
+            };
+
+            // Hard timeout only; aborting a dispatched request is what wedges the server.
+            Interlocked.Increment(ref _dispatchedInferenceCalls);
+            using var response = await client.SendAsync(request, hard.Token).ConfigureAwait(false);
+            LastHttpStatus = (int)response.StatusCode;
+            sw.Stop();
+            LastDurationMs = sw.ElapsedMilliseconds;
+
+            if (!response.IsSuccessStatusCode)
+            {
+                LocalAiDiagnostics.Technical(
+                    "qwen-instruction-rejected",
+                    $"reason=http-status httpStatus={LastHttpStatus} durationMs={LastDurationMs}");
+                return null;
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync(hard.Token).ConfigureAwait(false);
+            using var document = await JsonDocument.ParseAsync(stream, cancellationToken: hard.Token).ConfigureAwait(false);
+
+            var content = document.RootElement
+                .GetProperty("choices")[0]
+                .GetProperty("message")
+                .GetProperty("content")
+                .GetString();
+
+            LocalAiDiagnostics.Technical(
+                "qwen-instruction-completed",
+                $"httpStatus={LastHttpStatus} durationMs={LastDurationMs} outputLength={content?.Length ?? 0}");
+
+            return string.IsNullOrWhiteSpace(content) ? null : content;
+        }
+        catch (OperationCanceledException)
+        {
+            sw.Stop();
+            LastDurationMs = sw.ElapsedMilliseconds;
+            var wedged = NoteTimeout();
+            LocalAiDiagnostics.Technical(
+                "qwen-instruction-rejected",
+                $"reason=timeout durationMs={LastDurationMs} wedged={(wedged ? 1 : 0)}");
+            return null;
+        }
+        catch (Exception exception)
+        {
+            sw.Stop();
+            LocalAiDiagnostics.Technical(
+                "qwen-instruction-rejected",
+                $"reason=exception type={exception.GetType().Name} durationMs={sw.ElapsedMilliseconds}");
             return null;
         }
     }
@@ -880,9 +1445,77 @@ public sealed class QwenModelBackend : IAsyncDisposable
         AllowTrailingCommas = true
     };
 
+    /// <summary>
+    /// Serialiser for text that becomes prompt content, as opposed to transport.
+    /// </summary>
+    /// <remarks>
+    /// Relaxed escaping is correct here precisely because this is not transport: the string
+    /// is embedded as a chat message the model reads literally, so escaping Cyrillic makes
+    /// the model read escape sequences instead of words. The value never reaches a browser
+    /// or an HTML context, and the outer request body is still serialised normally.
+    /// </remarks>
+    private static readonly JsonSerializerOptions PromptJsonOptions = new()
+    {
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+
+    /// <summary>
+    /// Reads a schema version written as a number, or as a string such as <c>"1"</c> or
+    /// <c>"1.0"</c>.
+    /// </summary>
+    /// <remarks>
+    /// The shipped WriteLite-Qwen emits <c>"schemaVersion": "1.0"</c> — a string, and not
+    /// an integer-parseable one. Deserialising that into <see cref="int"/> throws, which
+    /// rejected the entire payload as <c>invalid-json</c>. Measured against the real server
+    /// on 2026-08-12: **every** response failed this way, so the generative model had never
+    /// contributed a single correction in production; the pipeline silently fell back to
+    /// the deterministic engine every time.
+    ///
+    /// A model's own version stamp is metadata. It is not worth discarding a correct
+    /// answer over its formatting, so this reads what the model actually writes.
+    /// </remarks>
+    private sealed class LenientSchemaVersionConverter : JsonConverter<int>
+    {
+        public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.Number:
+                    return reader.TryGetInt32(out var number)
+                        ? number
+                        : (int)reader.GetDouble();
+
+                case JsonTokenType.String:
+                    var raw = reader.GetString();
+                    if (int.TryParse(raw, System.Globalization.NumberStyles.Integer,
+                            System.Globalization.CultureInfo.InvariantCulture, out var parsed))
+                    {
+                        return parsed;
+                    }
+
+                    // "1.0" and friends: take the major component.
+                    return double.TryParse(raw, System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out var real)
+                        ? (int)real
+                        : 0;
+
+                case JsonTokenType.Null:
+                    return 0;
+
+                default:
+                    reader.Skip();
+                    return 0;
+            }
+        }
+
+        public override void Write(Utf8JsonWriter writer, int value, JsonSerializerOptions options)
+            => writer.WriteNumberValue(value);
+    }
+
     private sealed class QwenModelJson
     {
         [JsonPropertyName("schemaVersion")]
+        [JsonConverter(typeof(LenientSchemaVersionConverter))]
         public int SchemaVersion { get; set; }
 
         [JsonPropertyName("language")]

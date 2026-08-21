@@ -1,20 +1,35 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:wl="clr-namespace:WriteLite.Services">
     <!--
-        Поле ввода в продуктовом стиле: скруглённая рамка как у кнопок и карточек.
-        Подсказка-плейсхолдер берётся из Tag, поэтому не требует отдельного контрола:
-        <TextBox Style="{DynamicResource WlTextInput}" Tag="Добавьте слово…" />
+        Inputs. Every control here is fully templated: the stock WPF check box,
+        combo box and scroll bar carry Windows chrome that would immediately break
+        the WriteLite surface.
+
+        Placeholder text comes from Tag so no extra element is needed:
+            <TextBox Style="{DynamicResource WlTextInput}" Tag="Добавьте слово…" />
+
+        Motion here follows one rule: both halves of a state change move together.
+        The toggle switch used to glide its thumb while the track colour snapped,
+        which reads as a rendering fault rather than as a switch being thrown.
     -->
+
+    <wl:EditorialEase x:Key="WlEase" />
+
+    <!-- ── Text input ──────────────────────────────────────────────────────── -->
     <Style x:Key="WlTextInput" TargetType="TextBox">
         <Setter Property="Background" Value="{DynamicResource WlRaised}" />
         <Setter Property="Foreground" Value="{DynamicResource WlText}" />
         <Setter Property="CaretBrush" Value="{DynamicResource WlBrand}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource WlBorder}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLine}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="12,9" />
+        <Setter Property="Padding" Value="11,0" />
+        <Setter Property="MinHeight" Value="32" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
         <Setter Property="SelectionBrush" Value="{DynamicResource WlBrandDim}" />
+        <Setter Property="SelectionOpacity" Value="1" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -22,7 +37,8 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="8">
+                            CornerRadius="5"
+                            SnapsToDevicePixels="True">
                         <Grid>
                             <TextBlock x:Name="Placeholder"
                                        Text="{TemplateBinding Tag}"
@@ -34,7 +50,7 @@
                                        Visibility="Collapsed" />
                             <ScrollViewer x:Name="PART_ContentHost"
                                           Margin="{TemplateBinding Padding}"
-                                          VerticalAlignment="Center"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                           BorderThickness="0"
                                           Background="Transparent" />
                         </Grid>
@@ -43,13 +59,610 @@
                         <Trigger Property="Text" Value="">
                             <Setter TargetName="Placeholder" Property="Visibility" Value="Visible" />
                         </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource WlLineStrong}" />
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
         <Style.Triggers>
-            <Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="BorderBrush" Value="{DynamicResource WlBrand}" /></Trigger>
-            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.55" /></Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter Property="BorderBrush" Value="{DynamicResource WlLineAccent}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5" />
+            </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <!-- Numeric / short value input. -->
+    <Style x:Key="WlSmallInput" TargetType="TextBox" BasedOn="{StaticResource WlTextInput}">
+        <Setter Property="Width" Value="96" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Padding" Value="9,0" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFontMono}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextAlignment" Value="Right" />
+    </Style>
+
+    <!-- Search field: leading icon, quieter surface. -->
+    <Style x:Key="WlSearchInput" TargetType="TextBox" BasedOn="{StaticResource WlTextInput}">
+        <Setter Property="Padding" Value="34,0,11,0" />
+        <Setter Property="MinHeight" Value="34" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5"
+                                SnapsToDevicePixels="True" />
+                        <!-- The focus ring fades up rather than replacing the hairline
+                             outright, so taking focus reads as the field waking up. -->
+                        <Border x:Name="FocusRing"
+                                BorderBrush="{DynamicResource WlLineAccent}"
+                                BorderThickness="1"
+                                CornerRadius="5"
+                                Opacity="0"
+                                SnapsToDevicePixels="True" />
+                        <Grid>
+                            <!-- The magnifier warms to the accent on focus: the one
+                                 element that confirms where typing will land. -->
+                            <Path x:Name="SearchIcon"
+                                  Style="{DynamicResource WlIconSm}"
+                                  Data="{DynamicResource WlIconSearch}"
+                                  Stroke="{DynamicResource WlTextMuted}"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Center"
+                                  Margin="11,0,0,0"
+                                  IsHitTestVisible="False" />
+                            <TextBlock x:Name="Placeholder"
+                                       Text="{TemplateBinding Tag}"
+                                       Foreground="{DynamicResource WlTextMuted}"
+                                       FontSize="{TemplateBinding FontSize}"
+                                       Margin="{TemplateBinding Padding}"
+                                       VerticalAlignment="Center"
+                                       IsHitTestVisible="False"
+                                       Visibility="Collapsed" />
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalContentAlignment="Center"
+                                          BorderThickness="0"
+                                          Background="Transparent" />
+                        </Grid>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="Placeholder" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource WlLineStrong}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="SearchIcon" Property="Stroke" Value="{DynamicResource WlBrand}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="FocusRing"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="FocusRing"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── Check box ───────────────────────────────────────────────────────── -->
+    <Style x:Key="WlCheckBox" TargetType="CheckBox">
+        <Setter Property="wl:Motion.Settle" Value="True" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Background="Transparent">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid VerticalAlignment="Center">
+                            <Border x:Name="Box"
+                                    Width="16" Height="16"
+                                    CornerRadius="4"
+                                    Background="{DynamicResource WlRaised}"
+                                    BorderBrush="{DynamicResource WlLineStrong}"
+                                    BorderThickness="1"
+                                    SnapsToDevicePixels="True" />
+                            <!-- The orange fill is a layer, so it can fade in with the
+                                 tick instead of the box changing colour underneath a
+                                 mark that is already fully drawn. -->
+                            <Border x:Name="Fill"
+                                    Width="16" Height="16"
+                                    CornerRadius="4"
+                                    Background="{DynamicResource WlBrand}"
+                                    BorderBrush="{DynamicResource WlBrand}"
+                                    BorderThickness="1"
+                                    Opacity="0"
+                                    SnapsToDevicePixels="True" />
+                            <Path x:Name="Tick"
+                                  Data="{DynamicResource WlIconCheck}"
+                                  Stroke="{DynamicResource WlOnBrand}"
+                                  StrokeThickness="2.4"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round"
+                                  Fill="Transparent"
+                                  Stretch="Uniform"
+                                  Width="9" Height="9"
+                                  Opacity="0"
+                                  RenderTransformOrigin="0.5,0.5"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center">
+                                <Path.RenderTransform>
+                                    <!-- Starts at 0.7, never at 0: a mark that grows
+                                         from nothing looks like it came from nowhere. -->
+                                    <ScaleTransform x:Name="TickScale" ScaleX="1" ScaleY="1" />
+                                </Path.RenderTransform>
+                            </Path>
+                        </Grid>
+                        <ContentPresenter Grid.Column="1"
+                                          Margin="10,0,0,0"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource WlTextMuted}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Fill" Property="Opacity" Value="1" />
+                            <Setter TargetName="Tick" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="wl:Motion.IsSettled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard FillBehavior="Stop">
+                                        <DoubleAnimation Storyboard.TargetName="Fill"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.12"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="Tick"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.12"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="TickScale"
+                                                         Storyboard.TargetProperty="ScaleX"
+                                                         From="0.7" To="1" Duration="0:0:0.16"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="TickScale"
+                                                         Storyboard.TargetProperty="ScaleY"
+                                                         From="0.7" To="1" Duration="0:0:0.16"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard FillBehavior="Stop">
+                                        <DoubleAnimation Storyboard.TargetName="Fill"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="1" To="0" Duration="0:0:0.12"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="Tick"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="1" To="0" Duration="0:0:0.10"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.ExitActions>
+                        </MultiTrigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource WlBrandHover}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── Toggle switch ───────────────────────────────────────────────────── -->
+    <!-- Preferred control for settings rows: state is readable without a label. -->
+    <Style x:Key="WlToggleSwitch" TargetType="CheckBox">
+        <Setter Property="wl:Motion.Settle" Value="True" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Width="36" Height="20">
+                        <Border x:Name="Track"
+                                CornerRadius="10"
+                                Background="{DynamicResource WlRaised}"
+                                BorderBrush="{DynamicResource WlLineStrong}"
+                                BorderThickness="1"
+                                SnapsToDevicePixels="True" />
+                        <!-- The on-state track is its own layer so it can fade up over
+                             the same 160 ms the thumb takes to travel. -->
+                        <Border x:Name="TrackOn"
+                                CornerRadius="10"
+                                Background="{DynamicResource WlBrand}"
+                                BorderBrush="{DynamicResource WlBrand}"
+                                BorderThickness="1"
+                                Opacity="0"
+                                SnapsToDevicePixels="True" />
+                        <Grid>
+                            <Ellipse x:Name="Thumb"
+                                     Width="14" Height="14"
+                                     Fill="{DynamicResource WlTextMuted}"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Center"
+                                     Margin="2,0,0,0">
+                                <Ellipse.RenderTransform>
+                                    <TranslateTransform x:Name="ThumbShift" X="0" />
+                                </Ellipse.RenderTransform>
+                            </Ellipse>
+                            <Ellipse x:Name="ThumbOn"
+                                     Width="14" Height="14"
+                                     Fill="{DynamicResource WlOnBrand}"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Center"
+                                     Margin="2,0,0,0"
+                                     Opacity="0">
+                                <Ellipse.RenderTransform>
+                                    <TranslateTransform x:Name="ThumbOnShift" X="0" />
+                                </Ellipse.RenderTransform>
+                            </Ellipse>
+                        </Grid>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource WlTextMuted}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource WlBrand}" />
+                        </Trigger>
+                        <!-- A plain trigger, unlike the check box above. WPF applies a
+                             trigger's setters when a template is attached to a control
+                             whose state is already true, but it does not replay the
+                             trigger's actions — so a switch bound before its page was
+                             ever shown arrives in position without animating, and only
+                             a switch the user throws animates. The transforms rule out
+                             the setter-plus-MultiTrigger shape used elsewhere: a Setter
+                             can only target a named element, never a named transform. -->
+                        <Trigger Property="IsChecked" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="ThumbShift" Storyboard.TargetProperty="X"
+                                                         To="16" Duration="0:0:0.16"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="ThumbOnShift" Storyboard.TargetProperty="X"
+                                                         To="16" Duration="0:0:0.16"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="TrackOn" Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.16"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="ThumbOn" Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.16"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="ThumbShift" Storyboard.TargetProperty="X"
+                                                         To="0" Duration="0:0:0.16"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="ThumbOnShift" Storyboard.TargetProperty="X"
+                                                         To="0" Duration="0:0:0.16"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="TrackOn" Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.16"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="ThumbOn" Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.16"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── Slider ──────────────────────────────────────────────────────────── -->
+    <!--
+        Volume. Fully templated for the usual reason: the stock WPF slider brings a
+        Windows thumb, tick bar and focus rectangle with it, which would put a piece
+        of another design system at the foot of the rail.
+
+        A 3 px track and a 9 px dot. The thumb grows slightly under the pointer
+        rather than lighting up, which is enough to say "this is draggable" on a
+        control that is 62 px wide.
+    -->
+    <Style x:Key="WlSliderThumb" TargetType="Thumb">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Grid Width="14" Height="14" Background="Transparent">
+                        <Ellipse x:Name="Dot"
+                                 Width="9" Height="9"
+                                 Fill="{DynamicResource WlText}"
+                                 RenderTransformOrigin="0.5,0.5">
+                            <Ellipse.RenderTransform>
+                                <ScaleTransform x:Name="DotScale" ScaleX="1" ScaleY="1" />
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource WlBrand}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="DotScale" Storyboard.TargetProperty="ScaleX"
+                                                         To="1.25" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="DotScale" Storyboard.TargetProperty="ScaleY"
+                                                         To="1.25" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="DotScale" Storyboard.TargetProperty="ScaleX"
+                                                         To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="DotScale" Storyboard.TargetProperty="ScaleY"
+                                                         To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="WlSlider" TargetType="Slider">
+        <Setter Property="Height" Value="16" />
+        <Setter Property="IsMoveToPointEnabled" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid>
+                        <Border Height="3"
+                                CornerRadius="1.5"
+                                Background="{DynamicResource WlLine}"
+                                VerticalAlignment="Center" />
+                        <Track x:Name="PART_Track">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="Slider.DecreaseLarge" Focusable="False">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <!-- The filled portion of the track. Transparent
+                                                 hit area so clicking the rail still seeks. -->
+                                            <Grid Background="Transparent">
+                                                <Border Height="3"
+                                                        CornerRadius="1.5"
+                                                        Background="{DynamicResource WlBrand}"
+                                                        VerticalAlignment="Center" />
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="Slider.IncreaseLarge" Focusable="False">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Grid Background="Transparent" />
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Style="{StaticResource WlSliderThumb}" />
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── Combo box ───────────────────────────────────────────────────────── -->
+    <Style x:Key="WlComboBoxItem" TargetType="ComboBoxItem">
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="10,7" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBoxItem">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="4"
+                            Margin="4,1"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource WlHover}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource WlBrandDim}" />
+                            <Setter Property="Foreground" Value="{DynamicResource WlBrand}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="WlComboBox" TargetType="ComboBox">
+        <Setter Property="Background" Value="{DynamicResource WlRaised}" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLine}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="11,0" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource WlComboBoxItem}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <ToggleButton x:Name="PART_ToggleButton"
+                                      Focusable="False"
+                                      ClickMode="Press"
+                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="Bd"
+                                            Background="{DynamicResource WlRaised}"
+                                            BorderBrush="{DynamicResource WlLine}"
+                                            BorderThickness="1"
+                                            CornerRadius="5"
+                                            SnapsToDevicePixels="True">
+                                        <Path x:Name="Arrow"
+                                              Style="{DynamicResource WlIconSm}"
+                                              Width="11" Height="11"
+                                              Data="{DynamicResource WlIconChevronDown}"
+                                              Stroke="{DynamicResource WlTextMuted}"
+                                              HorizontalAlignment="Right"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,10,0" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource WlLineStrong}" />
+                                            <Setter TargetName="Arrow" Property="Stroke" Value="{DynamicResource WlText}" />
+                                        </Trigger>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource WlLineAccent}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+
+                        <ContentPresenter x:Name="ContentSite"
+                                          Content="{TemplateBinding SelectionBoxItem}"
+                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                          Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"
+                                          IsHitTestVisible="False" />
+
+                        <!-- No PopupAnimation="Fade": WPF's built-in fade has no
+                             movement and no control over its curve. The list rises
+                             4 px out of the field it belongs to instead, so it reads
+                             as coming from the control rather than materialising
+                             over it. -->
+                        <Popup x:Name="PART_Popup"
+                               AllowsTransparency="True"
+                               Placement="Bottom"
+                               VerticalOffset="4"
+                               Focusable="False"
+                               IsOpen="{TemplateBinding IsDropDownOpen}">
+                            <Border x:Name="Menu"
+                                    Background="{DynamicResource WlSurface}"
+                                    BorderBrush="{DynamicResource WlLineStrong}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="0,4"
+                                    Margin="0,0,0,0"
+                                    MinWidth="{TemplateBinding ActualWidth}"
+                                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    Effect="{DynamicResource WlShadowMenu}"
+                                    RenderTransformOrigin="0.5,0">
+                                <Border.RenderTransform>
+                                    <TranslateTransform x:Name="MenuShift" Y="-4" />
+                                </Border.RenderTransform>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsDropDownOpen" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Menu"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.16"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="MenuShift"
+                                                         Storyboard.TargetProperty="Y"
+                                                         From="-4" To="0" Duration="0:0:0.16"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>

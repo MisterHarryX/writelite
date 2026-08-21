@@ -11,7 +11,12 @@ public interface ILocalAiTextAnalyzer : IAsyncDisposable
 
     AiModelProfile ActiveProfile { get; }
 
-    Task WarmupAsync(CancellationToken cancellationToken = default);
+    /// <param name="startBackend">
+    /// Whether the generative model server may be started, or only detected if already
+    /// running. Callers on a path the user did not ask for — application startup — pass
+    /// false, so that a session with no Smart Action in it never loads a model.
+    /// </param>
+    Task WarmupAsync(bool startBackend = true, CancellationToken cancellationToken = default);
 
     Task<AiTextAnalysisResult> AnalyzeAsync(
         AiTextAnalysisRequest request,

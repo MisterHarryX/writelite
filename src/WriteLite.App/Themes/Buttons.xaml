@@ -1,25 +1,432 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Style x:Key="WlWindowButton" TargetType="Button">
-        <Setter Property="Width" Value="38" />
-        <Setter Property="Height" Value="34" />
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:wl="clr-namespace:WriteLite.Services">
+    <!--
+        Button system.
+
+        Primary   orange surface, near-black label — the one action per view
+        Secondary transparent, hairline border
+        Ghost     label only, surface appears on hover
+        Danger    used only for destructive confirmation
+        Icon      28 px square, icon inherits Foreground
+        Toolbar   compact ghost for editor / panel toolbars
+
+        Heights stay compact (28–32 px) and radii stay at 5 px. The 44 px
+        WlCtaButton exists for the single hero action on the Home page only.
+
+        ── Motion ───────────────────────────────────────────────────────────
+
+        Two mechanisms, both shared rather than copied per template:
+
+        Press.  `wl:Motion.Press="True"` gives the control the 0.985 dip. It used
+        to be two storyboards pasted inside each template, which is why only the
+        primary and secondary buttons had it — the other six styles were simply
+        never given a copy. It is now a single setter and every pressable control
+        in the product answers a press.
+
+        Hover.  A dedicated overlay Border fades its Opacity from 0 to 1 rather
+        than the background brush changing colour. WPF cannot animate a brush that
+        came from a DynamicResource (the theme's brushes are frozen and shared), and
+        the alternative — restating palette values as literals inside each
+        animation — is exactly the drift the token file exists to prevent. Fading a
+        layer keeps every colour in Colors.xaml and animates a composited property.
+
+        The Foreground setters stay instant. Animating them would mean literal
+        colours in the template for the same reason as above, and at 140 ms the
+        surface fade is what the eye actually reads as the transition.
+    -->
+
+    <!-- The website's curve. Declared per dictionary rather than referenced from
+         Animations.xaml: an animation inside a template cannot reach a sibling
+         merged dictionary. See Services/EditorialEase.cs. -->
+    <wl:EditorialEase x:Key="WlEase" />
+
+    <!-- ── Primary ─────────────────────────────────────────────────────────── -->
+    <Style x:Key="WlPrimaryButton" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource WlBrand}" />
+        <Setter Property="Foreground" Value="{DynamicResource WlOnBrand}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="wl:Motion.Press" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="5"
+                                SnapsToDevicePixels="True" />
+                        <!-- Hover and pressed states are layers over the base fill, so
+                             the accent value itself is never restated here. -->
+                        <Border x:Name="Hover"
+                                Background="{DynamicResource WlBrandHover}"
+                                CornerRadius="5"
+                                Opacity="0" />
+                        <Border x:Name="Down"
+                                Background="{DynamicResource WlBrandPressed}"
+                                CornerRadius="5"
+                                Opacity="0" />
+                        <Border x:Name="Focus"
+                                BorderBrush="{DynamicResource WlText}"
+                                BorderThickness="1"
+                                CornerRadius="5"
+                                Opacity="0" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Down" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Focus" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <!-- Disabled drops the accent entirely rather than fading it:
+                             a 40 %-opacity orange over the near-black surface reads as a
+                             muddy brown, which looks like a rendering fault. -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource WlSurface}" />
+                            <Setter Property="Foreground" Value="{DynamicResource WlTextMuted}" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Hero action. One per screen, Home only. -->
+    <Style x:Key="WlCtaButton" TargetType="Button" BasedOn="{StaticResource WlPrimaryButton}">
+        <Setter Property="MinHeight" Value="44" />
+        <Setter Property="Padding" Value="22,0" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <!-- Legacy alias for panel footers. -->
+    <Style x:Key="WlFooterPrimaryButton" TargetType="Button" BasedOn="{StaticResource WlPrimaryButton}">
+        <Setter Property="MinHeight" Value="34" />
+    </Style>
+
+    <!-- ── Secondary ───────────────────────────────────────────────────────── -->
+    <Style x:Key="WlSecondaryButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLine}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="wl:Motion.Press" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5"
+                                SnapsToDevicePixels="True" />
+                        <!-- Fill and hairline brighten together: two halves of one
+                             state change must not arrive at different times. -->
+                        <Border x:Name="Hover"
+                                Background="{DynamicResource WlSurface}"
+                                BorderBrush="{DynamicResource WlLineStrong}"
+                                BorderThickness="1"
+                                CornerRadius="5"
+                                Opacity="0" />
+                        <Border x:Name="Focus"
+                                BorderBrush="{DynamicResource WlBrand}"
+                                BorderThickness="1"
+                                CornerRadius="5"
+                                Opacity="0" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Focus" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Legacy alias: existing views ask for WlGhostButton where they mean secondary. -->
+    <Style x:Key="WlGhostButton" TargetType="Button" BasedOn="{StaticResource WlSecondaryButton}" />
+
+    <!-- ── Tertiary / ghost ────────────────────────────────────────────────── -->
+    <Style x:Key="WlTextButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource WlTextSecondary}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="wl:Motion.Press" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="Hover"
+                                Background="{DynamicResource WlSurface}"
+                                CornerRadius="5"
+                                Opacity="0" />
+                        <Border x:Name="Focus"
+                                BorderBrush="{DynamicResource WlBrand}"
+                                BorderThickness="1"
+                                CornerRadius="5"
+                                Opacity="0" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Focus" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Compact ghost for toolbars: same shape, tighter box. -->
+    <Style x:Key="WlToolbarButton" TargetType="Button" BasedOn="{StaticResource WlTextButton}">
+        <Setter Property="MinHeight" Value="26" />
+        <Setter Property="Padding" Value="9,0" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <!-- ── Danger ──────────────────────────────────────────────────────────── -->
+    <Style x:Key="WlDangerButton" TargetType="Button" BasedOn="{StaticResource WlSecondaryButton}">
+        <Setter Property="Foreground" Value="{DynamicResource WlDanger}" />
+        <Setter Property="BorderBrush" Value="#33E3695A" />
+    </Style>
+
+    <!-- ── Icon ────────────────────────────────────────────────────────────── -->
+    <Style x:Key="WlIconButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextSecondary}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="wl:Motion.Press" Value="True" />
+        <!-- A 28 px control needs a deeper dip than a 32 px one to read at all. -->
+        <Setter Property="wl:Motion.PressScale" Value="0.94" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="Hover"
+                                Background="{DynamicResource WlSurface}"
+                                CornerRadius="5"
+                                Opacity="0" />
+                        <Border x:Name="Focus"
+                                BorderBrush="{DynamicResource WlBrand}"
+                                BorderThickness="1"
+                                CornerRadius="5"
+                                Opacity="0" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Focus" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.35" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── Window chrome ───────────────────────────────────────────────────── -->
+    <!-- Deliberately quiet: the close affordance only warms up on hover.
+         No press scale here — the title bar buttons sit against the window edge,
+         where a scaling control reads as the window itself flexing. -->
+    <Style x:Key="WlWindowButton" TargetType="Button">
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextMuted}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="Chrome" Background="{TemplateBinding Background}" CornerRadius="8">
+                    <Grid>
+                        <Border x:Name="Hover"
+                                Background="{DynamicResource WlSurface}"
+                                CornerRadius="5"
+                                Opacity="0" />
+                        <Border x:Name="Focus"
+                                BorderBrush="{DynamicResource WlBrand}"
+                                BorderThickness="1"
+                                CornerRadius="5"
+                                Opacity="0" />
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
+                    </Grid>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource WlHover}" /></Trigger>
-                        <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource WlBrandDim}" /></Trigger>
-                        <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource WlBrand}" /><Setter TargetName="Chrome" Property="BorderThickness" Value="1" /></Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Focus" Property="Opacity" Value="1" />
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style x:Key="WlWindowCloseButton" TargetType="Button" BasedOn="{StaticResource WlWindowButton}">
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource WlBrand}" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 </ResourceDictionary>

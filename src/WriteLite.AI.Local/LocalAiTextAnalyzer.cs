@@ -53,8 +53,22 @@ public sealed class LocalAiTextAnalyzer : ILocalAiTextAnalyzer
 
     public QwenModelBackend Qwen => _qwen;
 
-    /// <summary>Last analysis backend: writelight-qwen | lite | lite-fallback.</summary>
+    /// <summary>
+    /// Last analysis backend: writelight-qwen | lite | lite-fallback.
+    /// </summary>
+    /// <remarks>
+    /// This is an <em>attribution</em>, not a statement about where the text came from.
+    /// It reads <c>writelight-qwen</c> whenever the neural route was attempted, including
+    /// when the model's answer was rejected by the validator and the deterministic engine
+    /// produced the final text — see <see cref="LastNeuralOutputUsed"/> for that question.
+    /// </remarks>
     public string LastBackend { get; private set; } = "lite";
+
+    /// <summary>
+    /// True only when the model's own output survived validation and reached the result.
+    /// False when the neural route was skipped, unreachable, or answered unusably.
+    /// </summary>
+    public bool LastNeuralOutputUsed { get; private set; }
 
     public TimeSpan CacheTtl { get; set; } = TimeSpan.FromMinutes(10);
 
@@ -68,7 +82,32 @@ public sealed class LocalAiTextAnalyzer : ILocalAiTextAnalyzer
     /// <summary>When true, Auto/Standard prefer live Qwen whenever health/pack is available.</summary>
     public bool PreferQwen { get; set; } = true;
 
-    public async Task WarmupAsync(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Prepares the local AI path.
+    /// </summary>
+    /// <param name="startBackend">
+    /// Whether to start the generative model server, or only to check whether one is already
+    /// there. False on the application startup path.
+    /// </param>
+    /// <remarks>
+    /// <para><b>Why the distinction exists.</b> Measured on the Phase 7 release build: warming
+    /// with <c>startBackend: true</c> at startup launched llama-server and left it holding
+    /// 481 MB resident for a session in which no Smart Action was ever invoked. Combined idle
+    /// footprint was 1.52 GB across the three processes. §34 of the brief is explicit that the
+    /// generative model should not consume large memory merely because WriteLite is open, and
+    /// §39 asks for no multi-GB WriteAI RAM while unused.</para>
+    ///
+    /// <para>Availability is still established: <see cref="QwenModelBackend.RefreshAvailability"/>
+    /// checks that the model files are present and notices a server that is already running,
+    /// which is everything the status UI needs to say «WriteAI готов» without a model in
+    /// memory. The server starts on the first request that actually needs it — the rewrite and
+    /// analysis paths both call <c>EnsureServerAsync</c> already — which turns a cost every
+    /// user pays into one only the users of the feature pay.</para>
+    ///
+    /// <para>The deterministic Lite engine is still exercised here. It is in-process, costs
+    /// microseconds, and is what answers when the generative path is unavailable.</para>
+    /// </remarks>
+    public async Task WarmupAsync(bool startBackend = true, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (_warmed)
@@ -81,11 +120,19 @@ public sealed class LocalAiTextAnalyzer : ILocalAiTextAnalyzer
         {
             _ = _engine.Correct("Привет мир");
             _qwen.RefreshAvailability();
-            await _qwen.EnsureReadyAsync(cancellationToken).ConfigureAwait(false);
+            if (startBackend)
+            {
+                await _qwen.EnsureReadyAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             LocalAiDiagnostics.Technical(
                 "local-ai-warmup",
-                $"qwenAvailable={(_qwen.IsAvailable ? 1 : 0)} endpoint={_qwen.ActiveEndpoint} backend={_qwen.BackendName}");
-            _warmed = true;
+                $"qwenAvailable={(_qwen.IsAvailable ? 1 : 0)} endpoint={_qwen.ActiveEndpoint} "
+                + $"backend={_qwen.BackendName} startBackend={(startBackend ? 1 : 0)}");
+
+            // Only a warmup that started the backend has finished the job; an
+            // availability-only pass must not stop a later one from starting it.
+            _warmed = startBackend;
         }
         finally
         {
@@ -173,6 +220,7 @@ public sealed class LocalAiTextAnalyzer : ILocalAiTextAnalyzer
             string corrected = AlwaysRunLiteAssist ? liteCorrected : text;
             bool uncertain = liteUncertain;
             string backend = "lite";
+            bool neuralOutputUsed = false;
             string version = _engine.ModelVersion;
             string? warning = null;
 
@@ -224,6 +272,7 @@ public sealed class LocalAiTextAnalyzer : ILocalAiTextAnalyzer
                     corrected = polished;
                     uncertain = neural.Uncertain || uncertain;
                     backend = "writelight-qwen";
+                    neuralOutputUsed = true;
                     version = neural.ModelVersion;
                     if (neural.Uncertain)
                     {
@@ -260,6 +309,7 @@ public sealed class LocalAiTextAnalyzer : ILocalAiTextAnalyzer
             }
 
             LastBackend = backend;
+            LastNeuralOutputUsed = neuralOutputUsed;
 
             // 3) Deterministic diff from original → corrected (ignore model offsets).
             var rawIssues = TextDiffBuilder.BuildIssues(text, corrected);
@@ -403,6 +453,7 @@ public sealed class LocalAiTextAnalyzer : ILocalAiTextAnalyzer
     {
         sw.Stop();
         LastBackend = "lite";
+        LastNeuralOutputUsed = false;
         return new AiTextAnalysisResult(
             CorrectedText: request.Text ?? "",
             DetectedLanguage: LanguageDetector.Detect(request.Text ?? ""),

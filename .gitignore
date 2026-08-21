@@ -26,8 +26,20 @@ artifacts/
 models/writelight-qwen/merged-hf/
 models/writelight-qwen-polish-staging/
 
-# Generated lexical pack (27 MB). Rebuild: python ai/scripts/build_open_lexical_pack.py
+# Generated lexical packs. Rebuild:
+#   python ai/scripts/build_open_lexical_pack.py --wiktionary ai/data/lexical/ru-wiktionary-20260801.jsonl
+#   python ai/scripts/build_en_lexical_pack.py
+# Hashes and entry counts are recorded in resources/lexical/sources.manifest.json
+# and verified by LexicalProvenanceTests.
 resources/lexical/writelight-lexical-open.json
+resources/lexical/writelight-lexical-en.json
+
+# Intermediate ETL layer (61 MB). Rebuild: python ai/scripts/extract_ru_wiktionary.py
+ai/data/lexical/*.jsonl
+
+# Runtime lexical database (145 MB), built from the JSON packs above.
+# Rebuild: python ai/scripts/build_lexical_sqlite.py
+resources/lexical/*.db
 
 # Duplicated dictionary inputs; canonical copies live in resources/
 tools/build-spelling/*.aff
@@ -74,3 +86,33 @@ ai/data/processed/
 .env.*
 *.pfx
 *.key
+
+# Reranker training artefacts (the shipped model.onnx/vocab.txt/reranker.json stay tracked)
+models/writelight-reranker/hf/
+models/writelight-reranker/model.fp32.onnx
+models/writelight-reranker/model.inlined.onnx
+models/writelight-reranker/*.onnx.data
+ai/models/rubert-tiny2/
+ai/.wheels/
+
+# Locally cached NuGet packages and wheels (restore normally comes from nuget.org / PyPI)
+ai/.nupkgs/
+
+# Generated lexical intermediates: rebuilt by ai/scripts/extract_opencorpora_forms.py
+ai/data/lexical/opencorpora-forms.tsv
+ai/data/lexical/opencorpora-forms.tsv.stats.json
+ai/data/lexical/_smoke-forms.tsv
+
+# Downloaded frequency source (normalised result ships as resources/lexical/ru-frequency.tsv)
+ai/data/frequency/
+
+# Punctuation-model training checkpoints (PUNC-A/B/C, 371 MB). The weights are already
+# excluded by *.onnx / *.safetensors above, but the checkpoints also carry ~7 MB of
+# tokenizer.json and .npy validation arrays that nothing in the product reads.
+# The accepted model ships as models/writelite-punctuation/{punctuation.json,vocab.txt}
+# plus the ONNX file, which is built by ai/scripts and never committed.
+# Training evidence for all three runs is kept in experiments/PUNC-*/report.json.
+models/writelite-punctuation/PUNC-*/
+
+# Personal screenshot at repo root: a private Discord conversation, not project material.
+home.png

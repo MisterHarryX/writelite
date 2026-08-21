@@ -44,9 +44,38 @@ public sealed class WordRangeResolver(ILexicalLanguageDetector? languageDetector
 
         var sentence = ExtractSentence(text, start, end - start);
         var language = _languages.DetectWord(word);
-        return language == LexicalLanguage.Russian
-            ? new WordRange(start, end - start, word, sentence, language)
-            : null;
+        if (!IsLookupCandidate(word, language)) return null;
+        // "release-v1" stops the word scan at the digit, leaving "release-v";
+        // a token touching a digit or underscore is part of an identifier.
+        if (language == LexicalLanguage.English && TouchesIdentifierChar(text, start, end))
+            return null;
+
+        return new WordRange(start, end - start, word, sentence, language);
+    }
+
+    /// <summary>
+    /// Russian words are always looked up. English words are looked up only when
+    /// they read as prose rather than code: identifiers such as "release-v1" or
+    /// "API_TOKEN" must not open a dictionary card.
+    /// </summary>
+    private static bool IsLookupCandidate(string word, LexicalLanguage language)
+    {
+        if (language == LexicalLanguage.Russian) return true;
+        if (language != LexicalLanguage.English) return false;
+
+        foreach (var ch in word)
+        {
+            if (char.IsDigit(ch) || ch == '_') return false;
+        }
+
+        return word.Length > 1;
+    }
+
+    private static bool TouchesIdentifierChar(string text, int start, int end)
+    {
+        if (start > 0 && (char.IsDigit(text[start - 1]) || text[start - 1] == '_')) return true;
+        if (end < text.Length && (char.IsDigit(text[end]) || text[end] == '_')) return true;
+        return false;
     }
 
     public WordRange? ResolveFromSelection(string text, int selectionStart, int selectionLength)
@@ -74,7 +103,7 @@ public sealed class WordRangeResolver(ILexicalLanguageDetector? languageDetector
         }
 
         var language = _languages.DetectWord(trimmed);
-        return language == LexicalLanguage.Russian
+        return IsLookupCandidate(trimmed, language)
             ? new WordRange(start, trimmed.Length, trimmed, ExtractSentence(text, start, trimmed.Length), language)
             : null;
     }

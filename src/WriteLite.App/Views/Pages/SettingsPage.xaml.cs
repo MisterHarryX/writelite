@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using WriteLite.Services.Ai;
@@ -30,7 +30,7 @@ public partial class SettingsPage : UserControl
         ChkIndicator.IsChecked = settings.ShowIndicator;
         ChkAutostart.IsChecked = settings.StartWithWindows && autostart.CanEnableForCurrentBinary;
         ChkAutostart.IsEnabled = autostart.CanEnableForCurrentBinary;
-        AutostartHint.Text = autostart.StatusMessage;
+        RowAutostart.Description = autostart.StatusMessage;
         ChkOpenMain.IsChecked = settings.OpenMainWindowOnStart;
         ChkTrayClose.IsChecked = settings.MinimizeToTrayOnClose;
         ChkExtended.IsChecked = settings.ExtendedChecking;
@@ -121,12 +121,12 @@ public partial class SettingsPage : UserControl
             _autostart?.SetEnabled(_settings.StartWithWindows);
             if (_autostart is not null)
             {
-                AutostartHint.Text = _autostart.StatusMessage;
+                RowAutostart.Description = _autostart.StatusMessage;
             }
         }
         catch
         {
-            AutostartHint.Text = "Не удалось изменить автозапуск.";
+            RowAutostart.Description = "Не удалось изменить автозапуск.";
         }
 
         SettingsChanged?.Invoke(_settings);
@@ -145,13 +145,13 @@ public partial class SettingsPage : UserControl
             return;
         }
 
-        var endpoint = _settings.QwenEndpoint ?? "http://127.0.0.1:8742";
-        LocalAiStatusHint.Text = _settings.LocalAiEnabled
-            ? $"Локальный ИИ включён. Endpoint: {endpoint}. Нажмите «Проверить подключение», чтобы узнать текущий backend."
-            : "Локальный ИИ отключён. Работают только правила WriteLite и LanguageTool.";
+        LocalAiStatusHint.Text = _settings.WriteAiEnabled
+            ? WriteAiStatus.DescribeWithHint(WriteAiState.Ready)
+              + " Нажмите «Проверить подключение», чтобы увидеть текущее состояние."
+            : WriteAiStatus.DescribeWithHint(WriteAiState.Disabled);
     }
 
-    private async void ProbeQwen_Click(object sender, RoutedEventArgs e)
+    private async void ProbeWriteAi_Click(object sender, RoutedEventArgs e)
     {
         if (LocalAiStatusHint is null)
         {
@@ -185,21 +185,27 @@ public partial class SettingsPage : UserControl
             });
 
             await provider.WarmupAsync();
-            if (!provider.QwenAvailable)
+            if (!provider.WriteAiAvailable)
             {
-                LocalAiStatusHint.Text = $"Qwen недоступен по адресу {endpoint}. Проверьте, что сервер запущен.";
+                LocalAiStatusHint.Text = WriteAiStatus.DescribeWithHint(WriteAiState.Unavailable);
                 return;
             }
 
             // Use a fixed non-sensitive test phrase to determine the actual backend.
             const string probeText = "Я сегодня небыл дома.";
             _ = await provider.AnalyzeAsync(probeText);
-            var backend = string.IsNullOrWhiteSpace(provider.LastBackend) ? "unknown" : provider.LastBackend;
-            LocalAiStatusHint.Text = $"Qwen доступен. Backend: {backend}. Endpoint: {provider.QwenEndpoint}.";
+            LocalAiStatusHint.Text =
+                WriteAiStatus.DescribeWithHint(WriteAiState.Ready)
+                + $" Режим: {WriteAiStatus.BackendLabel(provider.LastBackend, available: true)}.";
         }
         catch (Exception ex)
         {
-            LocalAiStatusHint.Text = $"Ошибка проверки Qwen: {ex.Message}";
+            // §54: the transport's own message — a refused socket, a JSON parse failure — is
+            // diagnostics, not something to put in front of someone who wanted to know
+            // whether the feature works.
+            WriteLite.Services.CompatibilityLogger.Technical(
+                "writeai-probe-failed", $"type={ex.GetType().Name} message={ex.Message}");
+            LocalAiStatusHint.Text = WriteAiStatus.DescribeWithHint(WriteAiState.Unavailable);
         }
     }
 }

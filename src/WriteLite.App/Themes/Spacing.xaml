@@ -1,19 +1,40 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+    <!--
+        Spacing on a 4 px grid and restrained radii.
+        The website tops out at 12 px (window-scale panels); 5–6 px covers
+        everything else. Nothing here is allowed to grow into the 24 px
+        "AI dashboard" look.
+    -->
     <Thickness x:Key="WlSpaceXs">4</Thickness>
     <Thickness x:Key="WlSpaceSm">8</Thickness>
     <Thickness x:Key="WlSpaceMd">12</Thickness>
     <Thickness x:Key="WlSpaceLg">16</Thickness>
     <Thickness x:Key="WlSpaceXl">24</Thickness>
-    <Thickness x:Key="WlPagePadding">32,28</Thickness>
-    <CornerRadius x:Key="WlRadius">12</CornerRadius>
-    <CornerRadius x:Key="WlRadiusSm">10</CornerRadius>
-    <CornerRadius x:Key="WlRadiusXs">8</CornerRadius>
-    <CornerRadius x:Key="WlRadiusLg">18</CornerRadius>
+    <Thickness x:Key="WlSpace2Xl">32</Thickness>
+
+    <!-- Page gutters. Generous horizontally so content breathes like the site. -->
+    <Thickness x:Key="WlPagePadding">36,30,36,32</Thickness>
+
+    <CornerRadius x:Key="WlRadiusXs">4</CornerRadius>
+    <CornerRadius x:Key="WlRadiusSm">5</CornerRadius>
+    <CornerRadius x:Key="WlRadius">6</CornerRadius>
+    <CornerRadius x:Key="WlRadiusMd">8</CornerRadius>
+    <CornerRadius x:Key="WlRadiusLg">12</CornerRadius>
+    <!-- Reserved for the floating indicator only, which must read as a dot. -->
     <CornerRadius x:Key="WlRadiusPill">999</CornerRadius>
+
     <sys:Double x:Key="WlIndicatorSize">30</sys:Double>
-    <sys:Double x:Key="WlPanelWidth">380</sys:Double>
-    <sys:Double x:Key="WlPanelMaxHeight">560</sys:Double>
-    <sys:Double x:Key="WlPenMenuWidth">210</sys:Double>
+    <sys:Double x:Key="WlPanelWidth">400</sys:Double>
+    <sys:Double x:Key="WlPanelMaxHeight">580</sys:Double>
+    <sys:Double x:Key="WlPenMenuWidth">220</sys:Double>
+
+    <!-- Shell metrics. -->
+    <sys:Double x:Key="WlTitleBarHeight">44</sys:Double>
+    <sys:Double x:Key="WlRailWidth">216</sys:Double>
+    <sys:Double x:Key="WlRailWidthCompact">60</sys:Double>
+    <!-- Measure of the writing column: long enough to read, short enough to scan. -->
+    <sys:Double x:Key="WlEditorMeasure">720</sys:Double>
+    <sys:Double x:Key="WlSuggestionsWidth">360</sys:Double>
 </ResourceDictionary>

@@ -1,0 +1,218 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:WriteLite.Controls"
+                    xmlns:wl="clr-namespace:WriteLite.Services">
+    <!--
+        The dictionary's own surfaces.
+
+        The word card is a reading surface, not a dashboard: a large lemma, quiet
+        mono labels over each block, and generous leading. The one interactive
+        element inside it is the chip, and chips are what turn the page from an
+        article into something you can move through.
+    -->
+
+    <wl:EditorialEase x:Key="WlEase" />
+
+    <!-- ── Related-word chip ───────────────────────────────────────────────── -->
+    <!--
+        2 px radius, matching the site's chips. Deliberately not a pill: the app
+        keeps exactly one pill shape, and it belongs to the floating indicator.
+
+        Hover raises the surface and warms the hairline toward the accent without
+        ever filling the chip orange — a screen holding twelve synonyms would
+        otherwise turn into a wall of accent colour the moment the pointer crossed
+        it. A chip with no article behind it (HasArticle=False) gets no hover at
+        all, so the difference between a link and a dead end is legible before the
+        click rather than after it.
+    -->
+    <Style TargetType="{x:Type controls:WordChip}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLine}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="10,5" />
+        <Setter Property="Margin" Value="0,0,7,7" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="wl:Motion.Press" Value="True" />
+        <Setter Property="wl:Motion.PressScale" Value="0.96" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:WordChip}">
+                    <Grid>
+                        <Border x:Name="Bd"
+                                Background="{DynamicResource WlBgSoft}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2"
+                                SnapsToDevicePixels="True" />
+                        <Border x:Name="Hover"
+                                Background="{DynamicResource WlSurfaceHi}"
+                                BorderBrush="{DynamicResource WlLineAccent}"
+                                BorderThickness="1"
+                                CornerRadius="2"
+                                Opacity="0" />
+                        <Border x:Name="Focus"
+                                BorderBrush="{DynamicResource WlBrand}"
+                                BorderThickness="1"
+                                CornerRadius="2"
+                                Opacity="0" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="HasArticle" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Foreground" Value="{DynamicResource WlBrand}" />
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.ExitActions>
+                        </MultiTrigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Focus" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <!-- A word the installed packs do not cover: still readable,
+                             visibly not a link. -->
+                        <Trigger Property="HasArticle" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource WlTextMuted}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource WlLineSoft}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── Word card blocks ────────────────────────────────────────────────── -->
+    <!-- A labelled block inside the article. No border and no fill: the mono
+         eyebrow and the space above it are the whole separation. -->
+    <Style x:Key="WlArticleBlock" TargetType="StackPanel">
+        <Setter Property="Margin" Value="0,26,0,0" />
+    </Style>
+
+    <!-- The lemma. The one place in the product that sets type this large. -->
+    <Style x:Key="WlWordTitle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFontDisplay}" />
+        <Setter Property="FontSize" Value="38" />
+        <Setter Property="LineHeight" Value="42" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- ── Disclosure ──────────────────────────────────────────────────────── -->
+    <!--
+        A mono block label that opens. Used for content that belongs to the article
+        but is rarely the reason someone opened it — a full noun paradigm is twenty
+        values, and printing them above the synonyms buries the answer.
+
+        The chevron turns rather than swapping glyphs, so the control shows the
+        direction the section is about to move.
+    -->
+    <Style x:Key="WlDisclosure" TargetType="ToggleButton">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextSubtle}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="wl:Motion.Settle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <StackPanel Orientation="Horizontal" Background="Transparent">
+                        <!-- Tracked, not Text: the wide uppercase mono eyebrow is the
+                             same device every other block label on the page uses, and
+                             an untracked one here would read as a different system. -->
+                        <TextBlock x:Name="Label"
+                                   Style="{DynamicResource WlMonoLabel}"
+                                   controls:Type.Tracked="{TemplateBinding Content}"
+                                   Foreground="{TemplateBinding Foreground}"
+                                   VerticalAlignment="Center" />
+                        <Path x:Name="Chevron"
+                              Style="{DynamicResource WlIconSm}"
+                              Width="11" Height="11"
+                              Data="{DynamicResource WlIconChevronRight}"
+                              Stroke="{TemplateBinding Foreground}"
+                              VerticalAlignment="Center"
+                              Margin="8,1,0,0"
+                              RenderTransformOrigin="0.5,0.5">
+                            <Path.RenderTransform>
+                                <RotateTransform x:Name="ChevronTurn" Angle="0" />
+                            </Path.RenderTransform>
+                        </Path>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="ChevronTurn"
+                                                         Storyboard.TargetProperty="Angle"
+                                                         To="90" Duration="0:0:0.20"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="ChevronTurn"
+                                                         Storyboard.TargetProperty="Angle"
+                                                         To="0" Duration="0:0:0.20"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── Skeleton ────────────────────────────────────────────────────────── -->
+    <!--
+        Loading placeholder. A dimmed bar rather than a spinner: it says how much
+        content is coming and where, which a spinner cannot, and it does not spin
+        forever if a lookup is slow.
+
+        It does not shimmer. A looping gradient sweep is a continuously running
+        animation on a machine that may be busy analysing text in another
+        application, and this app has a responsiveness watchdog for a reason.
+    -->
+    <Style x:Key="WlSkeletonBar" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource WlSurface}" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Height" Value="12" />
+        <Setter Property="Margin" Value="0,0,0,10" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+</ResourceDictionary>

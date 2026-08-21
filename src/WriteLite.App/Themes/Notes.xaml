@@ -1,0 +1,207 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:wl="clr-namespace:WriteLite.Services">
+    <!--
+        Notes board.
+
+        A sticky note without the stickiness. The reference for this surface is the
+        rest of WriteLite, not the yellow squares of the operating system: a card is
+        the standard WlCard raised half a step, with one warm accent reserved for the
+        thing the card is currently doing — pinned, overdue, or just finished. Colour
+        never encodes category here, because four categories would mean four hues and
+        the product has one.
+
+        Completion is the only place motion is spent. Ticking a box is the whole point
+        of a task card, so it gets a real mark-draw and a settle, and everything else
+        stays at the product's ordinary hover speeds.
+    -->
+
+    <wl:EditorialEase x:Key="WlEase" />
+
+    <!-- ── Card ────────────────────────────────────────────────────────────── -->
+
+    <Style x:Key="WlNoteCard" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource WlSurface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLine}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="16,14" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <!-- The one-pixel spine that says what kind of card this is without adding a hue. -->
+    <Style x:Key="WlNoteSpine" TargetType="Border">
+        <Setter Property="Width" Value="2" />
+        <Setter Property="CornerRadius" Value="1" />
+        <Setter Property="Background" Value="{DynamicResource WlLineStrong}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <!-- ── Checkbox ────────────────────────────────────────────────────────── -->
+    <!--
+        The tick is drawn rather than shown: the path's StrokeDashOffset runs from
+        "fully dashed" to zero over 190 ms, which reads as a hand marking the box.
+        The box itself dips to 0.88 and comes back, so the gesture has a physical
+        beat rather than a colour swap. Both animations use FillBehavior="Stop", so
+        the resting appearance stays owned by the triggers below and a card that is
+        already ticked when the board opens draws nothing.
+    -->
+    <Style x:Key="WlNoteCheckBox" TargetType="CheckBox">
+        <Setter Property="wl:Motion.Settle" Value="True" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Background="Transparent" Width="20" Height="20" RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <ScaleTransform x:Name="BoxScale" ScaleX="1" ScaleY="1" />
+                        </Grid.RenderTransform>
+
+                        <Border x:Name="Box"
+                                Width="17" Height="17"
+                                CornerRadius="4"
+                                BorderThickness="1.4"
+                                BorderBrush="{DynamicResource WlTextMuted}"
+                                Background="Transparent"
+                                SnapsToDevicePixels="True" />
+
+                        <Border x:Name="Fill"
+                                Width="17" Height="17"
+                                CornerRadius="4"
+                                Background="{DynamicResource WlBrand}"
+                                Opacity="0" />
+
+                        <Path x:Name="Tick"
+                              Data="M4.6,9.2 L7.9,12.5 L13.4,5.6"
+                              Stroke="{DynamicResource WlOnBrand}"
+                              StrokeThickness="2"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"
+                              StrokeLineJoin="Round"
+                              Width="18" Height="18"
+                              Stretch="None"
+                              Opacity="0"
+                              StrokeDashArray="14 14"
+                              StrokeDashOffset="14" />
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource WlTextSecondary}" />
+                        </Trigger>
+
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource WlBrand}" />
+                        </Trigger>
+
+                        <!-- Resting appearance. Owned by a plain trigger so it is correct
+                             the instant the card is created, before any animation runs. -->
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Fill" Property="Opacity" Value="1" />
+                            <Setter TargetName="Tick" Property="Opacity" Value="1" />
+                            <Setter TargetName="Tick" Property="StrokeDashOffset" Value="0" />
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource WlBrand}" />
+                        </Trigger>
+
+                        <!-- The gesture. Only when the user did it, never on load. -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="wl:Motion.IsSettled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard FillBehavior="Stop">
+                                        <DoubleAnimation Storyboard.TargetName="Fill"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.12"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="Tick"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.08"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="Tick"
+                                                         Storyboard.TargetProperty="StrokeDashOffset"
+                                                         From="14" To="0" Duration="0:0:0.19"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="BoxScale"
+                                                         Storyboard.TargetProperty="ScaleX"
+                                                         From="0.88" To="1" Duration="0:0:0.24"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                        <DoubleAnimation Storyboard.TargetName="BoxScale"
+                                                         Storyboard.TargetProperty="ScaleY"
+                                                         From="0.88" To="1" Duration="0:0:0.24"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <!-- Unticking is an undo, not an achievement: it fades, it
+                                     does not un-draw. -->
+                                <BeginStoryboard>
+                                    <Storyboard FillBehavior="Stop">
+                                        <DoubleAnimation Storyboard.TargetName="Fill"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="1" To="0" Duration="0:0:0.14"
+                                                         EasingFunction="{StaticResource WlEase}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.ExitActions>
+                        </MultiTrigger>
+
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Checklist line: struck through and dimmed once it is done. -->
+    <Style x:Key="WlChecklistText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextSecondary}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="WlChecklistTextDone" TargetType="TextBlock" BasedOn="{StaticResource WlChecklistText}">
+        <Setter Property="Foreground" Value="{DynamicResource WlTextMuted}" />
+        <Setter Property="TextDecorations" Value="Strikethrough" />
+    </Style>
+
+    <!-- ── Meta ────────────────────────────────────────────────────────────── -->
+
+    <!--
+        The mono voice, restated rather than inherited. A dictionary is parsed on its
+        own before it is merged, so `BasedOn="{StaticResource WlMonoLabel}"` across
+        files resolves against nothing and throws XamlParseException the first time a
+        card is built — the rest of the system only ever chains BasedOn within one
+        file, and this follows that rule. Keep the four values in step with
+        WlMonoLabel in Typography.xaml.
+    -->
+    <Style x:Key="WlNoteMeta" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFontMono}" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="LineHeight" Value="15" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextMuted}" />
+    </Style>
+
+    <Style x:Key="WlNoteBadge" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource WlBgSoft}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLineSoft}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Padding" Value="6,2" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="WlNoteBadgeAccent" TargetType="Border" BasedOn="{StaticResource WlNoteBadge}">
+        <Setter Property="Background" Value="{DynamicResource WlBrandSoft}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLineAccent}" />
+    </Style>
+</ResourceDictionary>

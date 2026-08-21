@@ -12,7 +12,25 @@ public interface IWriteLiteSettingsStore
 
 public sealed class WriteLiteSettingsStore : IWriteLiteSettingsStore
 {
-    public const int CurrentSchemaVersion = 3;
+    public const int CurrentSchemaVersion = 4;
+
+    /// <summary>
+    /// Persisted keys renamed in Phase 7, old name → new name.
+    /// </summary>
+    /// <remarks>
+    /// The product's local generative subsystem is called WriteAI from this release on, and
+    /// the settings keys follow. Users have existing files written under the old names, so the
+    /// old key is read when the new one is absent, written back under the new name once, and
+    /// never looked at again. Losing someone's «WriteAI off» preference to a rename would be a
+    /// worse outcome than the rename is worth.
+    /// </remarks>
+    private static readonly (string Old, string New)[] RenamedKeys =
+    [
+        ("localAiEnabled", "writeAiEnabled"),
+        ("aiCheckingEnabled", "writeAiEnabled"),
+        ("preferQwen", "preferWriteAi"),
+        ("qwenEndpoint", "writeAiEndpoint"),
+    ];
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -139,6 +157,15 @@ public sealed class WriteLiteSettingsStore : IWriteLiteSettingsStore
         var settings = JsonSerializer.Deserialize<WriteLiteAppSettings>(doc, JsonOptions)
                        ?? new WriteLiteAppSettings();
 
+        // Rename first, defaults second. A schema 1 file carries the old key names *and*
+        // pre-dates the local AI option semantics, so ApplyLegacyAiDefaults deliberately
+        // overrides whatever it says. Running the rename afterwards would copy the file's
+        // stale «off» back over the default that had just been chosen for it.
+        if (schemaVersion < 4)
+        {
+            MigrateRenamedKeys(root, settings);
+        }
+
         if (schemaVersion < 2)
         {
             // Schema 1 pre-dates the local AI option semantics.
@@ -153,6 +180,61 @@ public sealed class WriteLiteSettingsStore : IWriteLiteSettingsStore
         }
 
         return settings;
+    }
+
+    /// <summary>
+    /// Copies the pre-Phase-7 local-AI keys onto their WriteAI successors.
+    /// </summary>
+    /// <remarks>
+    /// Only when the new key is absent from the file: once a settings.json has been written by
+    /// this release it carries the new names, and a stale old key left over from a
+    /// hand-edited file must not overrule a preference the user has since changed. The
+    /// property setters are the aliases, so this is a one-line assignment per key rather than
+    /// a parallel model.
+    /// </remarks>
+    private static void MigrateRenamedKeys(JsonElement root, WriteLiteAppSettings settings)
+    {
+        foreach (var (oldKey, newKey) in RenamedKeys)
+        {
+            if (TryGetProperty(root, newKey, out _)) continue;
+            if (!TryGetProperty(root, oldKey, out var value)) continue;
+
+            switch (newKey)
+            {
+                case "writeAiEnabled" when value.ValueKind is JsonValueKind.True or JsonValueKind.False:
+                    settings.WriteAiEnabled = value.GetBoolean();
+                    break;
+                case "preferWriteAi" when value.ValueKind is JsonValueKind.True or JsonValueKind.False:
+                    settings.PreferWriteAi = value.GetBoolean();
+                    break;
+                case "writeAiEndpoint" when value.ValueKind == JsonValueKind.String:
+                    settings.WriteAiEndpoint = value.GetString() ?? settings.WriteAiEndpoint;
+                    break;
+            }
+
+            CompatibilityLogger.Technical("settings-key-renamed", $"from={oldKey} to={newKey}");
+        }
+    }
+
+    /// <summary>Property lookup that tolerates the casing of both writers of this file.</summary>
+    private static bool TryGetProperty(JsonElement root, string name, out JsonElement value)
+    {
+        if (root.TryGetProperty(name, out value)) return true;
+
+        foreach (var property in root.EnumerateObject())
+        {
+            if (!property.NameEquals(name)
+                && !string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            value = property.Value;
+            return true;
+        }
+
+        value = default;
+        return false;
     }
 
     private static void ApplyLegacyAiDefaults(WriteLiteAppSettings s)

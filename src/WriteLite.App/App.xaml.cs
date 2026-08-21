@@ -1,13 +1,19 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Threading;
 using System.Windows.Automation;
 using WriteLite.Models;
 using WriteLite.Services;
+using WriteLite.Services.Rules;
 using WriteLite.Services.Ai;
+using WriteLite.Services.Audio;
 using WriteLite.Services.Diagnostics;
+using WriteLite.Services.Grammar;
 using WriteLite.Services.LanguageEngine;
 using WriteLite.Services.Lexical;
+using WriteLite.Services.Notes;
+using WriteLite.Services.Reading;
+using WriteLite.Language.Core;
 using WriteLite.Language.Packs;
 using WriteLite.Services.Settings;
 using WriteLite.Services.Spelling;
@@ -22,6 +28,19 @@ public partial class App : System.Windows.Application
     private BubbleWindow? _bubble;
     private SuggestionsWindow? _suggestions;
     private CorrectionPopupWindow? _correctionPopup;
+
+    /// <summary>
+    /// The snapshot the open correction card was built from.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="_latestSnapshot"/> follows the focused field and is set to null the moment
+    /// focus leaves one — which is routine while a card is open, and which made pressing the
+    /// card's button report «Нет активного текстового поля» for a correction that was on
+    /// screen and perfectly valid. This holds the card's own context for as long as the card
+    /// is up. It is not a shortcut past staleness: the apply path still re-reads the target
+    /// and refuses if the text has moved on.
+    /// </remarks>
+    private TextSnapshot? _pinnedPopupSnapshot;
     private LexicalPopupWindow? _lexicalPopup;
     private InlineErrorOverlayController? _inlineOverlay;
     private MainWindow? _mainWindow;
@@ -29,10 +48,26 @@ public partial class App : System.Windows.Application
     private TextSnapshot? _latestSnapshot;
     private WriteLiteOrchestratingAnalyzer? _orchestrator;
     private HybridTextAnalysisService? _hybrid;
+
+    /// <summary>
+    /// The native deterministic lane, shared by the field monitor and the editor.
+    /// </summary>
+    /// <remarks>
+    /// One instance for both surfaces: it holds a rule catalogue and a reference to the form
+    /// index, and a second copy would parse the catalogue again to answer the same questions.
+    /// </remarks>
+    private CompositeTextAnalyzer? _fastAnalyzer;
+    private WritingAssistanceService? _writingAssistance;
+    private WritingAssistanceCoordinator? _writingCoordinator;
+    private LocalAiRoutingPolicy? _routingPolicy;
     private WriteLiteLanguageEngine? _languageEngine;
     private IAiTextProvider? _aiProvider;
     private LocalAiTextProvider? _localAiProvider;
     private OfflineLexicalKnowledgeService? _lexicalKnowledge;
+    private TranslationIndex? _translations;
+    private AmbiencePlayer? _ambience;
+    private NotesService? _notes;
+    private ReadingLibraryService? _readingLibrary;
     private ILexicalReplacementService? _lexicalReplacement;
     private DoubleClickWordObserver? _doubleClickObserver;
     private CancellationTokenSource? _lexicalLookupCts;
@@ -152,20 +187,39 @@ public partial class App : System.Windows.Application
             PreferJavaw = true,
             MaxTextLength = _settings.MaxTextLength
         };
+        var lexicalSignals = LexicalSignalService.TryCreate(spellChecker, dictionary);
         _languageEngine = new WriteLiteLanguageEngine(engineOptions);
         _orchestrator = new WriteLiteOrchestratingAnalyzer(
-            new RuleBasedAnalyzer(),
+            new RuleBasedAnalyzer(RuleCatalog.LoadDefault(), spellChecker.RussianFormIndex),
             new SpellTextAnalyzer(spellChecker),
             _languageEngine,
             dictionary,
-            ignore);
+            ignore,
+            isKnownWord: word => spellChecker.CheckWord(word, SpellingLanguage.Russian).IsKnown,
+            lexicalSignals: lexicalSignals,
+            // Loaded on first orchestrated analysis, not now: 400 ms of ONNX session
+            // construction has no business on the path to the first window, and nothing
+            // consults this layer until at least one debounce interval after typing starts.
+            punctuationModelFactory: () => PunctuationModelAnalyzer.TryLoad());
         _orchestrator.ApplySettings(_settings);
 
         // Hybrid: rules+spell+LanguageTool + local offline AI (Lite/Qwen).
         _localAiProvider = CreateLocalAiProvider(_settings);
         _aiProvider = _localAiProvider;
         var aiService = new AiTextAnalysisService(_aiProvider);
-        _hybrid = new HybridTextAnalysisService(_orchestrator, aiService);
+
+        // The measured routing policy, not the null one. With no policy the hybrid service
+        // consults the model on every sentence and merges everything it returns as a peer of
+        // dictionary-backed findings — the "unrestricted Qwen" configuration the Phase 3
+        // benchmark measured at precision 0.945 → 0.713 with 5.3× the false positives and no
+        // gain in corrections made. The policy is also what applies SemanticEditGuard and the
+        // register protections to model output; without it they were never on this path.
+        _routingPolicy = new LocalAiRoutingPolicy(
+            lexicalSignals: lexicalSignals,
+            // §29: the same form index the agreement rules use, reading the sentence a
+            // model correction would leave behind before it is ever shown.
+            morphologyGuard: MorphologicalAcceptanceGuard.TryCreate(spellChecker.RussianFormIndex));
+        _hybrid = new HybridTextAnalysisService(_orchestrator, aiService, _routingPolicy);
         _hybrid.ApplySettings(_settings);
         CompatibilityLogger.Technical(
             "hybrid-analysis-configured",
@@ -197,9 +251,14 @@ public partial class App : System.Windows.Application
         _languageEngine.StatusChanged += OnLanguageEngineStatusChanged;
 
         // Fast rules/spell publish first; LanguageTool/Qwen publish a validated replacement snapshot later.
+        // The contextual reranker is deliberately off on this path: it is a neural model,
+        // this analyzer runs against every keystroke burst, and its findings arrive a
+        // moment later on the orchestrated path anyway. Keeping it here would put an ONNX
+        // session on the typing hot path to publish the same result twice.
         var fastAnalyzer = new CompositeTextAnalyzer(
-            new RuleBasedAnalyzer(),
-            new SpellTextAnalyzer(spellChecker));
+            new RuleBasedAnalyzer(RuleCatalog.LoadDefault(), spellChecker.RussianFormIndex),
+            new SpellTextAnalyzer(spellChecker) { ContextualRefinementEnabled = false });
+        _fastAnalyzer = fastAnalyzer;
         _monitor = new TextFieldMonitor(
             Dispatcher,
             fastAnalyzer,
@@ -234,6 +293,9 @@ public partial class App : System.Windows.Application
         {
             // non-fatal diagnostics
         }
+        // Opening the translation index is a file handle, not a parse, so it can stay
+        // inline; absence is normal and simply removes the dictionary's English column.
+        _translations = TranslationIndex.TryOpen();
         _lexicalReplacement = new LexicalReplacementService();
         _inlineOverlay = new InlineErrorOverlayController(new InlineErrorOverlayWindow(), new TextPatternRangeGeometryProvider());
         _inlineOverlay.IssueClicked += OnInlineIssueClicked;
@@ -285,10 +347,12 @@ public partial class App : System.Windows.Application
         _correctionPopup.ApplyRequested += async (_, issue) => await ApplyIssueAsync(issue);
         _correctionPopup.IgnoreRequested += (_, issue) => OnIgnoreIssue(issue);
         _correctionPopup.AddToDictionaryRequested += (_, issue) => OnAddToDictionary(issue);
+        _correctionPopup.CopyRequested += (_, issue) => CopyReplacementToClipboard(issue.Replacement);
         _correctionPopup.IsVisibleChanged += (_, _) =>
         {
             if (_correctionPopup is { IsVisible: false })
             {
+                _pinnedPopupSnapshot = null;
                 _monitor?.SetPopupInteractionOpen(false);
             }
         };
@@ -363,6 +427,8 @@ public partial class App : System.Windows.Application
                 _doubleClickObserver?.Dispose();
                 _lexicalLookupCts?.Cancel();
                 (_lexicalKnowledge as IDisposable)?.Dispose();
+                _translations?.Dispose();
+                _ambience?.Dispose();
                 _languageEngine?.Dispose();
             }
             catch
@@ -409,15 +475,112 @@ public partial class App : System.Windows.Application
             _diagnostics,
             RestartEngineAsync);
 
+        // Word lookup on the dictionary page reuses the already-warmed offline pack.
+        if (_lexicalKnowledge is not null)
+        {
+            _mainWindow.BindLexical(_lexicalKnowledge, _translations);
+        }
+
+        // The editor's AI actions and word panel run on exactly the services that
+        // already exist in this process: the loopback model the corrections pipeline
+        // uses, and the lexical packs the dictionary page reads. Nothing new is
+        // started, and nothing here can reach the network.
+        var editorAi = _localAiProvider is null ? null : new TextRewriteService(_localAiProvider.Backend);
+
+        // The editor checks with the same stack the field monitor uses: rules and spelling
+        // over the shared form index, the language engine, the user dictionary and ignore
+        // list, the punctuation model, and WriteAI under its routing policy. It used to
+        // check with a private rules+spelling analyzer instead, which is why «Согласно
+        // нового плана» could reach the sidebar unremarked — the rule that catches it needs
+        // the form index the page never had, and the model was never asked at all.
+        // Writing assistance runs on the same loopback model as the corrections pipeline and
+        // the Smart Actions — one runtime in the process, asked a different question. Absent a
+        // model the editor simply never shows a continuation.
+        _writingAssistance = new WritingAssistanceService(_localAiProvider?.Backend);
+        _writingCoordinator = new WritingAssistanceCoordinator(_writingAssistance);
+
+        _mainWindow.BindEditorServices(
+            _hybrid,
+            editorAi,
+            _lexicalKnowledge is null ? null : new LexicalLookupService(_lexicalKnowledge, _translations),
+            _writingAssistance,
+            // §11: the editor gets the same two lanes the field monitor has had. Without this
+            // it bound the hybrid alone, whose task completes only when the model does — 53 s
+            // on a 480-word document, for findings the deterministic layers had in 1.2 s.
+            _fastAnalyzer);
+
+        // Notes and reading projects. Both keep their own file under the WriteLite
+        // application-data folder and both autosave, so they are created once here and
+        // handed to the pages rather than constructed per view — two services writing
+        // the same file is how a board loses a card.
+        //
+        // Card drafting reuses the editor's rewrite service. There is one local model in
+        // WriteLite and the reader asks it a different question; it does not start a
+        // second runtime, and it stays optional when no model is bound.
+        _notes = new NotesService();
+        _readingLibrary = new ReadingLibraryService();
+        _mainWindow.BindWorkspaces(_notes, _readingLibrary, new StudyCardDraftService(editorAi));
+
         _mainWindow.SettingsChanged += OnSettingsChanged;
         _mainWindow.DictionaryChanged += () => _ = _monitor?.RefreshOnceAfterSuppressionAsync();
         _mainWindow.ExceptionsChanged += () => _ = _monitor?.RefreshOnceAfterSuppressionAsync();
+
+        // The ambience player. Volume and whether it was playing are persisted, but
+        // through the plain save path only — nothing about audio touches the analyzer
+        // or the monitor, so it deliberately does not go through ApplyRuntimeSettings.
+        _ambience = new AmbiencePlayer();
+        _mainWindow.BindAmbience(_ambience, _settings);
+        _mainWindow.AmbienceStateChanged += SaveSettingsQuietly;
+
         _servicesBound = true;
+    }
+
+    /// <summary>
+    /// Prepares a continuation for the field the user is typing in.
+    /// </summary>
+    /// <remarks>
+    /// Fire-and-forget with supersession: the coordinator cancels the previous request, and a
+    /// completion whose snapshot has been replaced is dropped before it is ever offered. The
+    /// suggestion arrives as an ordinary insertion issue, so the suggestions panel, the apply
+    /// path and the write telemetry need to know nothing about completions.
+    /// </remarks>
+    private void QueueFieldContinuation(TextSnapshot? snapshot)
+    {
+        if (_writingCoordinator is not { IsAvailable: true } coordinator) return;
+
+        if (snapshot is null
+            || string.IsNullOrWhiteSpace(snapshot.Text)
+            || !snapshot.Target.IsEditable
+            || !snapshot.ShowMainUi)
+        {
+            coordinator.Dismiss();
+            return;
+        }
+
+        var caret = snapshot.Text.Length;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await coordinator.RequestAsync(snapshot.Text, caret).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                CompatibilityLogger.Technical("field-continuation-failed", $"type={ex.GetType().Name}");
+            }
+        });
     }
 
     private void OnSettingsChanged(WriteLiteAppSettings settings)
     {
         _settings = settings;
+        SaveSettingsQuietly(settings);
+        ApplyRuntimeSettings(settings);
+    }
+
+    /// <summary>Persists settings without re-applying runtime behaviour.</summary>
+    private void SaveSettingsQuietly(WriteLiteAppSettings settings)
+    {
         try
         {
             _settingsStore?.Save(settings);
@@ -426,8 +589,6 @@ public partial class App : System.Windows.Application
         {
             CompatibilityLogger.State("settings-save-failed");
         }
-
-        ApplyRuntimeSettings(settings);
     }
 
     private void ApplyRuntimeSettings(WriteLiteAppSettings settings)
@@ -517,9 +678,16 @@ public partial class App : System.Windows.Application
 
     private void OnAddToDictionary(TextIssue issue)
     {
-        var word = issue.Original.Trim();
-        if (string.IsNullOrEmpty(word))
+        // §18: never a diff fragment, never punctuation, never part of a word.
+        var word = DictionaryWordPolicy.ResolveWord(issue);
+        if (word is null)
         {
+            CompatibilityLogger.Technical("dictionary-add-rejected", $"rule={issue.RuleId} length={issue.Length}");
+            _correctionPopup?.ShowApplyFeedback(
+                "Это не отдельное слово — в словарь можно добавить только слово целиком.",
+                isError: true,
+                offerCopy: false,
+                offerRetry: false);
             return;
         }
 
@@ -581,6 +749,12 @@ public partial class App : System.Windows.Application
     private void OnSnapshotChanged(object? sender, TextSnapshot? snapshot)
     {
         _latestSnapshot = snapshot;
+
+        // §39/§81: the field path runs the same writing-assistance service the editor runs,
+        // through the same bounded context and the same never-insert-without-acceptance rule.
+        // The text has already been captured off the UIA callback by the monitor, so nothing
+        // here touches the target application.
+        QueueFieldContinuation(snapshot);
 
         // Do not leave an old dictionary result on screen while the user has
         // moved to another editable field or changed the text that was looked
@@ -714,6 +888,11 @@ public partial class App : System.Windows.Application
 
         _bubble?.ClearUserHide();
         _monitor?.SetPopupInteractionOpen(true);
+        // §10: the card outlives the monitor's idea of "the current field". Whatever happens
+        // to focus between now and the click on «Исправить», the correction belongs to this
+        // target, this text and this range — so the apply path is given them rather than
+        // whatever the monitor happens to be looking at by then.
+        _pinnedPopupSnapshot = snapshot;
         CompatibilityLogger.Technical("correction-popup-open-requested", $"rule={args.Issue.RuleId} generation={snapshot.GenerationId} request={snapshot.RequestId}");
         try
         {
@@ -899,14 +1078,35 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        await ReplaceTargetTextAsync(snapshot, _ => (true, outcome.NewText, outcome.CaretIndex));
+        await ReplaceTargetTextAsync(snapshot, liveText => CanonicalCorrection.TryBind(
+                liveText, args.Start, args.Length, args.OriginalWord, args.Replacement, out var correction)
+                    == CorrectionBindingStatus.Bound && correction is not null
+            ? correction
+            : null);
         _lexicalPopup?.Hide();
+    }
+
+    /// <summary>Puts a replacement on the clipboard, at the user's explicit request.</summary>
+    private void CopyReplacementToClipboard(string? replacement)
+    {
+        if (string.IsNullOrEmpty(replacement)) return;
+        try
+        {
+            System.Windows.Clipboard.SetText(replacement);
+            _correctionPopup?.ShowApplyFeedback(
+                "Исправление скопировано в буфер обмена.", isError: false, offerCopy: false, offerRetry: false);
+        }
+        catch (Exception exception)
+        {
+            CompatibilityLogger.Technical("clipboard-copy-failed", $"type={exception.GetType().Name}");
+        }
     }
 
     private async Task ApplyIssueAsync(TextIssue issue)
     {
         CompatibilityLogger.State("apply-issue-requested");
-        var snapshot = _latestSnapshot;
+        // The card's own snapshot first: it is the one the user is looking at.
+        var snapshot = _pinnedPopupSnapshot ?? _latestSnapshot;
         if (snapshot is null || _monitor is null || _correctionApplication is null)
         {
             NotifyCorrectionFailure("Нет активного текстового поля.");
@@ -935,6 +1135,21 @@ public partial class App : System.Windows.Application
         await Dispatcher.InvokeAsync(() => HandleCorrectionOutcome(outcome, null));
     }
 
+    /// <summary>
+    /// Puts the result of a correction where the user is already looking.
+    /// </summary>
+    /// <remarks>
+    /// <para>§12: a correction that did not apply is an ordinary outcome, not an error
+    /// condition, and it used to be reported with a modal <c>MessageBox</c> — which takes the
+    /// keyboard away from the field being corrected, hides the card that names the word, and
+    /// has to be dismissed before anything else can happen. Everything short of "there is no
+    /// card to put this on" now goes on the card, with the recovery actions the outcome
+    /// actually supports.</para>
+    ///
+    /// <para>The clipboard is written only when the card is offering a copy, and only after
+    /// the user asks for it — a failed correction is not a reason to overwrite what they had
+    /// copied.</para>
+    /// </remarks>
     private void HandleCorrectionOutcome(CorrectionApplicationOutcome outcome, string? replacementForCopy)
     {
         if (outcome.Succeeded)
@@ -949,41 +1164,51 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        _correctionPopup?.ShowApplyFeedback(outcome.UserMessage, isError: true);
-        if (outcome.OfferCopy && !string.IsNullOrEmpty(replacementForCopy))
+        CompatibilityLogger.Technical(
+            "correction-ui-failed",
+            $"status={outcome.Status} offerCopy={(outcome.OfferCopy ? 1 : 0)} offerRefresh={(outcome.OfferRefresh ? 1 : 0)}");
+
+        var canCopy = outcome.OfferCopy && !string.IsNullOrEmpty(replacementForCopy);
+        if (_correctionPopup is { IsVisible: true })
         {
-            try { System.Windows.Clipboard.SetText(replacementForCopy); }
-            catch { /* ignore */ }
-            MessageBox.Show(
-                outcome.UserMessage + (outcome.OfferCopy ? "\n\nВариант скопирован в буфер обмена." : string.Empty),
-                "WriteLite",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            _correctionPopup.ShowApplyFeedback(
+                outcome.UserMessage,
+                isError: true,
+                offerCopy: canCopy,
+                offerRetry: outcome.OfferRefresh);
             return;
         }
 
-        if (!string.IsNullOrWhiteSpace(outcome.UserMessage))
-        {
-            MessageBox.Show(
-                outcome.UserMessage,
-                "WriteLite",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
-        }
+        // No card on screen — the panel path, or a popup the user has already closed.
+        _suggestions?.ShowApplyFeedback(outcome.UserMessage, canCopy ? replacementForCopy : null);
     }
 
     private void NotifyCorrectionFailure(string message)
     {
         CompatibilityLogger.Technical("correction-apply-failed", "reason=no-context");
-        _correctionPopup?.ShowApplyFeedback(message, isError: true);
-        MessageBox.Show(message, "WriteLite", MessageBoxButton.OK, MessageBoxImage.Warning);
+        if (_correctionPopup is { IsVisible: true })
+        {
+            _correctionPopup.ShowApplyFeedback(message, isError: true, offerCopy: false, offerRetry: false);
+            return;
+        }
+
+        _suggestions?.ShowApplyFeedback(message, replacementForCopy: null);
     }
 
+    /// <summary>
+    /// Applies a lexical (dictionary card) replacement through the same verified write path
+    /// as a correction card.
+    /// </summary>
+    /// <remarks>
+    /// This used to compose a whole new value and push it with <c>ValuePattern.SetValue</c>,
+    /// which is a second write path with none of the range validation, none of the strategy
+    /// fallback and none of the read-back the correction path has. A word swap from the
+    /// dictionary popup is the same kind of edit as a correction and now takes the same route.
+    /// </remarks>
     private async Task ReplaceTargetTextAsync(
         TextSnapshot snapshot,
-        Func<string, (bool CanApply, string NewText, int Caret)> compose)
+        Func<string, CanonicalCorrection?> bind)
     {
-        // Lexical replace path still uses full-text compose.
         if (!_correctionGate.TryEnter())
         {
             NotifyCorrectionFailure("Предыдущая правка ещё выполняется.");
@@ -1003,23 +1228,19 @@ public partial class App : System.Windows.Application
                 return;
             }
 
-            var composed = compose(read.Text);
-            if (!composed.CanApply)
+            var correction = bind(read.Text);
+            if (correction is null)
             {
                 CompatibilityLogger.State("correction-failed");
                 NotifyCorrectionFailure("Текст изменился. Обновите предложение.");
                 return;
             }
 
-            var result = await snapshot.Target.TryReplaceAllAsync(composed.NewText, composed.Caret);
-            if (!result.Succeeded)
+            var write = await snapshot.Target.TryApplyCorrectionAsync(correction, read.Text);
+            if (!write.Succeeded)
             {
                 CompatibilityLogger.State("correction-failed");
-                MessageBox.Show(
-                    result.Error,
-                    "WriteLite не смог применить правку",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                NotifyCorrectionFailure("WriteLite не удалось изменить текст в этом поле.");
                 return;
             }
 
@@ -1057,41 +1278,29 @@ public partial class App : System.Windows.Application
         return local;
     }
 
+    /// <summary>
+    /// The backend tag shown beside the engine status, in WriteAI vocabulary.
+    /// </summary>
+    /// <remarks>
+    /// The branching this replaced produced six different strings from three transport
+    /// identifiers and two booleans, and four of the six said «Qwen» to the user.
+    /// <see cref="WriteAiStatus.BackendLabel"/> is now the single place that decides.
+    /// </remarks>
     private string ResolveActiveBackendLabel()
     {
-        if (_settings.LocalAiEnabled && _localAiProvider is { IsConfigured: true })
+        if (_settings.WriteAiEnabled && _localAiProvider is { IsConfigured: true })
         {
             var last = _localAiProvider.LastBackend;
-            if (string.Equals(last, "writelight-qwen", StringComparison.OrdinalIgnoreCase)
-                || (_localAiProvider.QwenAvailable
-                    && _settings.PreferQwen
-                    && !_settings.LocalAiProfile.Equals("Lite", StringComparison.OrdinalIgnoreCase)))
+            var available = _localAiProvider.WriteAiAvailable;
+            if (!string.IsNullOrEmpty(last))
             {
-                var qwenTag = _localAiProvider.QwenAvailable ? "Qwen" : "Qwen (offline)";
-                if (string.Equals(last, "writelight-qwen", StringComparison.OrdinalIgnoreCase))
-                {
-                    return qwenTag;
-                }
-
-                if (string.Equals(last, "lite-fallback", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "Lite fallback";
-                }
-
-                if (string.Equals(last, "lite", StringComparison.OrdinalIgnoreCase))
-                {
-                    return _localAiProvider.QwenAvailable ? "Lite (Qwen idle)" : "Lite";
-                }
+                return WriteAiStatus.BackendLabel(last, available);
             }
 
-            if (string.Equals(last, "lite-fallback", StringComparison.OrdinalIgnoreCase))
+            if (available && _settings.PreferWriteAi
+                && !_settings.LocalAiProfile.Equals("Lite", StringComparison.OrdinalIgnoreCase))
             {
-                return "Lite fallback";
-            }
-
-            if (string.Equals(last, "writelight-qwen", StringComparison.OrdinalIgnoreCase))
-            {
-                return "Qwen";
+                return WriteAiStatus.ProductName;
             }
         }
 
@@ -1199,7 +1408,11 @@ public partial class App : System.Windows.Application
             // shows OnStartup → WarmupAsync → ProbeHealth → GetResult parking
             // the UI thread ~10 s at every launch while llama-server was not up
             // yet. The worker thread eats that wait instead.
-            await Task.Run(() => _localAiProvider.WarmupAsync()).ConfigureAwait(true);
+            // Availability only. Starting the model server here would hold ~481 MB
+            // resident for every session, including the many in which no Smart Action is
+            // ever invoked — §34. It starts on the first request that needs it.
+            await Task.Run(() => _localAiProvider.WarmupAsync(startBackend: false))
+                .ConfigureAwait(true);
             CompatibilityLogger.Technical(
                 "local-ai-warmup-done",
                 $"qwenAvailable={(_localAiProvider.QwenAvailable ? 1 : 0)} endpoint={_localAiProvider.QwenEndpoint}");
@@ -1265,6 +1478,29 @@ public partial class App : System.Windows.Application
     protected override void OnExit(ExitEventArgs e)
     {
         CompatibilityLogger.State("application-stopping");
+
+        // First, before anything else is torn down: both workspaces coalesce their
+        // writes, so an edit made in the last half-second is still only in memory.
+        // Flushing here is what makes "it was there when I closed it" true.
+        try
+        {
+            _notes?.Dispose();
+            _notes = null;
+        }
+        catch (Exception exception)
+        {
+            CompatibilityLogger.Technical("notes-flush-failed", $"type={exception.GetType().Name}");
+        }
+
+        try
+        {
+            _readingLibrary?.Dispose();
+            _readingLibrary = null;
+        }
+        catch (Exception exception)
+        {
+            CompatibilityLogger.Technical("reading-flush-failed", $"type={exception.GetType().Name}");
+        }
 
         try
         {
@@ -1333,6 +1569,18 @@ public partial class App : System.Windows.Application
 
         _monitor?.BeginShutdown();
         _monitor?.Dispose();
+
+        // Silence the ambience before anything slower: leaving audio playing through
+        // a multi-second teardown is the one part of shutdown a user can hear.
+        try
+        {
+            _ambience?.Dispose();
+        }
+        catch
+        {
+            // best effort
+        }
+
         try
         {
             if (_languageEngine is not null)
@@ -1387,20 +1635,47 @@ public partial class App : System.Windows.Application
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        CompatibilityLogger.AccessError("dispatcher-unhandled", null, e.Exception);
         var disposition = ApplicationExceptionPolicy.Classify(
             e.Exception,
             Volatile.Read(ref _shutdownRequested) != 0);
-        CompatibilityLogger.Technical("dispatcher-failure-policy", $"disposition={disposition}");
+
+        // Logged with the page it happened on and the stack that produced it: an
+        // unhandled exception is a defect in WriteLite, and a line that only names the
+        // exception type cannot be acted on. The disposition is part of the same record
+        // so the log says both what happened and what was decided about it.
+        CompatibilityLogger.Unhandled(
+            "dispatcher",
+            e.Exception,
+            $"page={CurrentPageName()} disposition={disposition}");
+
         // Only known transient automation/cancellation failures may continue. Unknown
         // dispatcher failures can leave WPF state corrupted and must follow the normal
         // fatal path instead of being silently swallowed.
         e.Handled = disposition == ApplicationFailureDisposition.Recoverable;
     }
 
+    /// <summary>Which section was on screen, for the crash record. Never throws.</summary>
+    private string CurrentPageName()
+    {
+        try
+        {
+            return _mainWindow?.CurrentSection ?? "none";
+        }
+        catch (Exception)
+        {
+            return "unknown";
+        }
+    }
+
     private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
-        CompatibilityLogger.AccessError("task-unobserved", null, e.Exception);
+        // Every inner failure, not just the first: an unobserved AggregateException from
+        // a Task.WhenAll can carry several, and the one that matters is rarely first.
+        foreach (var inner in e.Exception.Flatten().InnerExceptions)
+        {
+            CompatibilityLogger.Unhandled("background-task", inner);
+        }
+
         e.SetObserved();
     }
 
@@ -1408,11 +1683,14 @@ public partial class App : System.Windows.Application
     {
         if (e.ExceptionObject is Exception exception)
         {
-            CompatibilityLogger.AccessError("appdomain-unhandled", null, exception);
+            CompatibilityLogger.Unhandled(
+                "appdomain",
+                exception,
+                $"terminating={(e.IsTerminating ? 1 : 0)}");
         }
         else
         {
-            CompatibilityLogger.State("appdomain-unhandled");
+            CompatibilityLogger.State("appdomain-unhandled-nonexception");
         }
     }
 }

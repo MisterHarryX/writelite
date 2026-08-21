@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using WriteLite.Language.Core;
+using WriteLite.Language.Russian;
 
 namespace WriteLite.Services.Spelling;
 
@@ -113,6 +114,21 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
     private readonly ConcurrentDictionary<string, SpellCheckResult> _cache = new(StringComparer.Ordinal);
     private readonly SpellDictionaryStats _stats;
     private readonly HunspellSpellingLexicon? _ruHunspell;
+    private readonly RussianFormIndexLexicon? _ruForms;
+    private readonly Lazy<EnglishLayoutLexicon> _englishLayout = new(
+        static () => new EnglishLayoutLexicon(),
+        LazyThreadSafetyMode.ExecutionAndPublication);
+
+    /// <summary>
+    /// The Russian form index, or null when it is not deployed.
+    /// </summary>
+    /// <remarks>
+    /// Exposed so correction decisions can read the register and morphology the index
+    /// already carries — slang, obscenity, proper names, abbreviations, borrowings, POS,
+    /// lemma and corpus frequency — rather than reducing all of it to "is this a word".
+    /// See <see cref="Lexical.LexicalSignalService"/>.
+    /// </remarks>
+    public RussianFormIndex? RussianFormIndex { get; }
 
     public LocalSpellChecker()
         : this(SeedSpellDictionary.Load())
@@ -124,22 +140,31 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
         var sw = Stopwatch.StartNew();
         _seed = seed;
         _ruHunspell = HunspellSpellingLexicon.LoadRussian();
-        _russian = new CompositeSpellingLexicon(_ruHunspell, seed, SpellingLanguage.Russian);
+        _ruForms = RussianFormIndexLexicon.TryLoad();
+        _russian = new CompositeSpellingLexicon(_ruHunspell, seed, SpellingLanguage.Russian, _ruForms);
+        RussianFormIndex = _ruForms?.Index;
+
         sw.Stop();
 
         var ruCount = Math.Max(_russian.ApproximateWordCount, seed.Stats.RussianWordCount);
         var full = _russian.PrimaryReady;
+        var withIndex = _ruForms is not null;
         _stats = new SpellDictionaryStats(
             ruCount,
             0,
             sw.Elapsed + seed.Stats.InitialLoadTime,
-            full
-                ? "LibreOffice ru_RU Hunspell + WriteLite Russian seed"
-                : "WriteLite seed (Hunspell not loaded)",
+            (full, withIndex) switch
+            {
+                (true, true) => "WriteLite Russian form index + LibreOffice ru_RU Hunspell + seed",
+                (true, false) => "LibreOffice ru_RU Hunspell + WriteLite Russian seed",
+                (false, true) => "WriteLite Russian form index + seed",
+                _ => "WriteLite seed (Hunspell not loaded)",
+            },
             full
                 ? "BSD-like ru_RU license (Alexander I. Lebedev); project-local seed"
+                  + (withIndex ? "; CC BY-SA OpenCorpora forms; CC0 WriteLite modern pack" : string.Empty)
                 : seed.Stats.License,
-            IsFullDictionaryLoaded: full);
+            IsFullDictionaryLoaded: full || withIndex);
 
         CompatibilityLogger.State(
             $"spelling-dictionaries-loaded lang=ru words={ruCount} full={(full ? 1 : 0)} ms={_stats.InitialLoadTime.TotalMilliseconds:F0}");
@@ -174,6 +199,18 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
         // itself present in the Russian lexicon (for example ghbdtn -> привет).
         if (word.All(IsLatinLayoutCharacter))
         {
+            // A real English word is not evidence of a wrong keyboard layout. This gate is
+            // deliberately before conversion: without it "The Verge" produced "Еру Verge"
+            // because the same keys also happen to spell a Russian token. The compact
+            // shipped membership list is lazy, so Russian-only text pays nothing for it.
+            if (_englishLayout.Value.Contains(word.ToLowerInvariant()))
+            {
+                // The spelling contract currently has one language value; "known" is the
+                // important result here and prevents the analyzer from manufacturing an
+                // orthography issue for out-of-scope English prose.
+                return new SpellCheckResult(word, SpellingLanguage.Russian, true, []);
+            }
+
             var layoutCandidate = ConvertLatinKeyboardToRussian(word.ToLowerInvariant());
             if (!string.IsNullOrEmpty(layoutCandidate) && _russian.ContainsExact(layoutCandidate))
             {
@@ -195,7 +232,8 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
         // some common typos are present there as rare names or variants.
         if (StableCorrections.TryGetValue(folded, out var stable))
         {
-            var filteredStable = CorrectionCandidateValidityPolicy.FilterSuggestions(word, [PreserveCase(word, stable)], 1);
+            var filteredStable = CorrectionCandidateValidityPolicy.FilterCuratedSuggestions(
+                word, [PreserveCase(word, stable)], 1);
             if (filteredStable.Count > 0)
             {
                 return new SpellCheckResult(word, language, false, filteredStable);
@@ -213,8 +251,29 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
             return new SpellCheckResult(word, language, true, []);
         }
 
-        // Suggestions when full lexicon available (avoid tiny-seed false positives).
+        // The form index ranks on Russian-specific signals — key adjacency,
+        // corpus frequency, the vowel and voicing confusions Russians actually
+        // make — so it is asked first. Hunspell remains the fallback for the
+        // cases the index has no candidate for.
         IReadOnlyList<string> suggestions = [];
+        if (_ruForms is not null)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var ranked = _ruForms.RankCandidates(word, 5, cancellationToken);
+            if (ranked.Count > 0)
+            {
+                suggestions = CorrectionCandidateValidityPolicy.FilterSuggestions(
+                    word,
+                    ranked.Select(c => PreserveCase(word, c.Word)),
+                    5,
+                    isKnownWord: _russian.ContainsExact);
+                if (suggestions.Count > 0)
+                {
+                    return new SpellCheckResult(word, language, false, suggestions);
+                }
+            }
+        }
+
         if (lexicon.PrimaryReady)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -230,7 +289,8 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
                 raw = raw.Select(s => PreserveCase(word, s)).ToArray();
             }
 
-            suggestions = CorrectionCandidateValidityPolicy.FilterSuggestions(word, raw, 5);
+            suggestions = CorrectionCandidateValidityPolicy.FilterSuggestions(
+                word, raw, 5, isKnownWord: _russian.ContainsExact);
         }
         else
         {
@@ -238,7 +298,7 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
             if (transposition is not null)
             {
                 suggestions = CorrectionCandidateValidityPolicy.FilterSuggestions(
-                    word, [PreserveCase(word, transposition)], 1);
+                    word, [PreserveCase(word, transposition)], 1, isKnownWord: _russian.ContainsExact);
             }
         }
 
@@ -297,5 +357,6 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
     public void Dispose()
     {
         _ruHunspell?.Dispose();
+        _ruForms?.Dispose();
     }
 }

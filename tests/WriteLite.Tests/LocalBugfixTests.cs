@@ -116,13 +116,13 @@ public sealed class LocalBugFixTests
     }
 
     [TestMethod]
-    public void Merger_DedupsSameRangeOriginal()
+    public void Merger_PreservesDifferentCorrectionsForSameRange()
     {
         var merger = new WriteLiteIssueMerger();
         var a = new TextIssue(0, 4, "test", "Test", "t1", "e", IssueCategory.Orthography, IssueSeverity.Error, true, "local");
         var b = new TextIssue(0, 4, "test", "TEST", "t2", "e", IssueCategory.Orthography, IssueSeverity.Error, true, "spell");
         var merged = merger.Merge([a], [b], []);
-        Assert.HasCount(1, merged.Issues);
+        Assert.HasCount(2, merged.Issues);
     }
 
     [TestMethod]

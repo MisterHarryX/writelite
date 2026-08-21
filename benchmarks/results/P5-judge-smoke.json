@@ -1,0 +1,52 @@
+{
+  "RunUtc": "2026-08-14T11:08:54.0984231Z",
+  "ScoredTargets": 0,
+  "ReachableTargets": 0,
+  "NoChangeTargets": 40,
+  "CandidateGenerationFailures": 0,
+  "CandidateGenerationFailureRate": 0,
+  "Selectors": {
+    "deterministic": {
+      "SelectionAttempts": 0,
+      "SelectionCorrect": 0,
+      "NoChangeAttempts": 40,
+      "NoChangeCorrect": 40,
+      "ModelCalls": 0,
+      "RejectedAnswers": 0,
+      "Latencies": [],
+      "SelectionAccuracy": 0,
+      "NoChangeAccuracy": 1,
+      "LatencyP50Ms": 0,
+      "LatencyP95Ms": 0
+    },
+    "reranker": {
+      "SelectionAttempts": 0,
+      "SelectionCorrect": 0,
+      "NoChangeAttempts": 40,
+      "NoChangeCorrect": 40,
+      "ModelCalls": 0,
+      "RejectedAnswers": 0,
+      "Latencies": [],
+      "SelectionAccuracy": 0,
+      "NoChangeAccuracy": 1,
+      "LatencyP50Ms": 0,
+      "LatencyP95Ms": 0
+    },
+    "candidate-judge": {
+      "SelectionAttempts": 0,
+      "SelectionCorrect": 0,
+      "NoChangeAttempts": 40,
+      "NoChangeCorrect": 40,
+      "ModelCalls": 0,
+      "RejectedAnswers": 0,
+      "Latencies": [],
+      "SelectionAccuracy": 0,
+      "NoChangeAccuracy": 1,
+      "LatencyP50Ms": 0,
+      "LatencyP95Ms": 0
+    }
+  },
+  "RejectionReasons": {},
+  "CandidateGenerationFailureExamples": [],
+  "FailuresByCategory": {}
+}

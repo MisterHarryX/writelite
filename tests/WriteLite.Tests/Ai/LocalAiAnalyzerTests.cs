@@ -26,7 +26,12 @@ public sealed class LocalAiAnalyzerTests
             && string.Equals(text.Substring(i.Start, i.Length), i.Original, StringComparison.Ordinal)));
     }
 
+    // LocalAiDiagnostics.Log is a process-wide static sink. Any test that asserts on its
+    // contents must not run beside another test that writes to it, or it observes the other
+    // test's events. Kept on the individual methods rather than the class so the rest of the
+    // file still parallelises.
     [TestMethod]
+    [DoNotParallelize]
     public async Task LocalAi_LatinOnlyText_IsOutsideScopeAndUnchanged()
     {
         var logs = new List<string>();
@@ -237,6 +242,7 @@ public sealed class LocalAiAnalyzerTests
     }
 
     [TestMethod]
+    [DoNotParallelize]
     public async Task Provider_Disabled_DoesNotCallQwen()
     {
         var logs = new List<string>();
@@ -257,6 +263,7 @@ public sealed class LocalAiAnalyzerTests
     }
 
     [TestMethod]
+    [DoNotParallelize]
     public async Task Provider_UnreachableServer_UsesFallback()
     {
         var logs = new List<string>();
@@ -274,10 +281,18 @@ public sealed class LocalAiAnalyzerTests
         var response = await provider.AnalyzeAsync("Я сегодня небыл дома.");
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(response.CorrectedText));
-        Assert.AreNotEqual("writelight-qwen", provider.LastBackend);
+
+        // LastBackend deliberately stays "writelight-qwen" when the neural route was
+        // attempted, so that a rejected answer is still attributable. What must hold here
+        // is that nothing the model produced reached the text — the deterministic engine did.
+        Assert.IsFalse(
+            provider.LastNeuralOutputUsed,
+            "an unreachable server must not contribute text to the result");
+        StringAssert.Contains(response.CorrectedText, "не был");
     }
 
     [TestMethod]
+    [DoNotParallelize]
     public void Provider_LogsDoNotContainUserText()
     {
         const string userText = "Уникальный пользовательский текст про небыл дома";

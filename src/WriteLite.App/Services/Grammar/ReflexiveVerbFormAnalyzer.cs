@@ -53,6 +53,95 @@ public static partial class ReflexiveVerbFormAnalyzer
 
     public static void Collect(string text, IReadOnlyList<(int Start, int End)> protectedSpans, ICollection<TextIssue> issues)
     {
+        CollectInfinitiveWrittenAsFinite(text, protectedSpans, issues);
+        CollectFiniteWrittenAsInfinitive(text, protectedSpans, issues);
+    }
+
+    /// <summary>
+    /// «Он хочет учится» → «учиться». A finite form where the sentence requires an infinitive.
+    /// </summary>
+    /// <remarks>
+    /// <para>The direction this analyzer was missing. The other half of the file asks whether
+    /// an infinitive is standing where a predicate belongs, and needs a subject hint and the
+    /// absence of a governor to decide it. This half has the opposite and much easier problem:
+    /// a modal or phase verb <em>directly</em> governs an infinitive in Russian, with no
+    /// alternative reading, so an adjacent governor is the whole evidence. «хочет учится» is
+    /// not ambiguous, it is ungrammatical.</para>
+    ///
+    /// <para>Adjacency is the entire safety property and is why this is not simply the
+    /// existing <see cref="ModalLeft"/> window run backwards. That window looks five tokens
+    /// back, and at that distance «Он должен, кажется, уйти» puts «должен» behind «кажется» —
+    /// a correct parenthetical third-person form that the rule would rewrite into
+    /// «казаться». Requiring the governor to be the immediately preceding token with nothing
+    /// but spaces between them removes that reading structurally rather than by exception
+    /// list: a comma, a conjunction or any other word ends the government relation.</para>
+    ///
+    /// <para>The replacement is exact rather than looked up. Inserting the soft sign is a
+    /// total orthographic relation on this ending, so unlike <see cref="FiniteMap"/> — which
+    /// carries pairs such as «казаться»/«кажется» that also change the stem — it needs no
+    /// table and covers every reflexive verb in the language.</para>
+    /// </remarks>
+    private static void CollectFiniteWrittenAsInfinitive(
+        string text,
+        IReadOnlyList<(int Start, int End)> protectedSpans,
+        ICollection<TextIssue> issues)
+    {
+        foreach (Match m in ReflexiveFiniteRegex().Matches(text))
+        {
+            if (ProtectedTextSpans.Overlaps(m.Index, m.Length, protectedSpans))
+            {
+                continue;
+            }
+
+            if (!HasAdjacentInfinitiveGovernor(text, m.Index))
+            {
+                continue;
+            }
+
+            var word = m.Value;
+            var infinitive = PreserveCase(word, word[..^3] + "ться");
+
+            issues.Add(new TextIssue(
+                m.Index,
+                m.Length,
+                word,
+                infinitive,
+                "Форма сказуемого",
+                "После модального глагола требуется инфинитив: «что делать?»",
+                IssueCategory.Grammar,
+                IssueSeverity.Error,
+                CanApplyAutomatically: true,
+                RuleId: "ru.grammar.reflexive-infinitive",
+                LinguisticCategory: LinguisticIssueCategory.EndingError));
+        }
+    }
+
+    /// <summary>
+    /// True when the token immediately before <paramref name="verbIndex"/> governs an
+    /// infinitive, with nothing but whitespace between the two.
+    /// </summary>
+    private static bool HasAdjacentInfinitiveGovernor(string text, int verbIndex)
+    {
+        var cursor = verbIndex - 1;
+        while (cursor >= 0 && char.IsWhiteSpace(text[cursor])) cursor--;
+        if (cursor < 0 || !char.IsLetter(text[cursor])) return false;
+
+        var end = cursor + 1;
+        while (cursor >= 0 && char.IsLetter(text[cursor])) cursor--;
+        var previous = text[(cursor + 1)..end];
+
+        // «Он должен» and «нужно» govern an infinitive; so does another infinitive
+        // («решил остановиться»). Both readings are the same relation.
+        return ModalLeft.Contains(previous)
+               || previous.EndsWith("ть", StringComparison.OrdinalIgnoreCase)
+               || previous.EndsWith("чь", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void CollectInfinitiveWrittenAsFinite(
+        string text,
+        IReadOnlyList<(int Start, int End)> protectedSpans,
+        ICollection<TextIssue> issues)
+    {
         foreach (Match m in ReflexiveInfinitiveRegex().Matches(text))
         {
             var word = m.Value;
@@ -225,6 +314,10 @@ public static partial class ReflexiveVerbFormAnalyzer
 
     [GeneratedRegex(@"\b\p{L}+ться\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex ReflexiveInfinitiveRegex();
+
+    /// <summary>A reflexive form ending in -тся, which -ться would have written with a soft sign.</summary>
+    [GeneratedRegex(@"\b\p{L}+тся\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex ReflexiveFiniteRegex();
 
     [GeneratedRegex(@"\p{L}+", RegexOptions.CultureInvariant)]
     private static partial Regex LeftTokenRegex();

@@ -1,0 +1,85 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Correction presentation — the strongest visual element in the product, and
+        the piece the website shows most often. The hierarchy is fixed:
+
+            1  category      mono, uppercase, tracked, category colour
+            2  change        mono  становиться → становится
+            3  explanation   why the rule applies
+            4  actions       apply / ignore
+
+        WriteLite teaches the language, so the explanation is never truncated to a
+        single line and never demoted below the buttons.
+    -->
+
+    <Style x:Key="WlCorrectionCard" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource WlSurface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLine}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="14,12" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <!-- Category eyebrow. Pair with controls:Type.Tracked so the label is spaced
+         like the website's uppercase mono labels. -->
+    <Style x:Key="WlCategoryLabel" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFontMono}" />
+        <Setter Property="FontSize" Value="9" />
+        <Setter Property="LineHeight" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource WlBrand}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- становиться → -->
+    <Style x:Key="WlOriginalText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFontMono}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextMuted}" />
+        <Setter Property="TextDecorations" Value="Strikethrough" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- → становится -->
+    <Style x:Key="WlReplacementText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFontMono}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource WlBrand}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="WlChangeArrow" TargetType="TextBlock">
+        <Setter Property="Text" Value="&#x2192;" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextMuted}" />
+        <Setter Property="Margin" Value="7,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="WlExplanation" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="LineHeight" Value="19" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextSecondary}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- Replacement chip inside the click-to-correct popover. -->
+    <Style x:Key="WlSuggestionChip" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource WlBrandDim}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLineAccent}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="7,3" />
+    </Style>
+
+    <!-- Marks a word WriteLite has just rewritten automatically; fades out. -->
+    <Style x:Key="WlAutoCorrectedMark" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource WlBrandSoft}" />
+        <Setter Property="CornerRadius" Value="3" />
+    </Style>
+</ResourceDictionary>

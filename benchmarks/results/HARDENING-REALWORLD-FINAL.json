@@ -1,0 +1,535 @@
+{
+  "ExpectedIssues": 60,
+  "Fixed": 51,
+  "DetectedNotFixed": 4,
+  "Missed": 5,
+  "Dangerous": 0,
+  "ByCategory": {
+    "punctuation": {
+      "Total": 44,
+      "Fixed": 37,
+      "Seen": 4
+    },
+    "spelling": {
+      "Total": 4,
+      "Fixed": 4,
+      "Seen": 0
+    },
+    "morphology": {
+      "Total": 8,
+      "Fixed": 8,
+      "Seen": 0
+    },
+    "style": {
+      "Total": 3,
+      "Fixed": 1,
+      "Seen": 0
+    },
+    "grammar": {
+      "Total": 1,
+      "Fixed": 1,
+      "Seen": 0
+    }
+  },
+  "Items": [
+    {
+      "Id": "live-01",
+      "Category": "multi-error",
+      "Findings": 5,
+      "Fixed": [
+        {
+          "Original": "Привет дорогой",
+          "Replacement": "Привет, дорогой",
+          "RuleId": "ru.punctuation.vocative-comma"
+        },
+        {
+          "Original": "Честно говоря я",
+          "Replacement": "Честно говоря, я",
+          "RuleId": "WL-PUNCT-6961FB8EED0A"
+        },
+        {
+          "Original": "написать но постоянно",
+          "Replacement": "написать, но",
+          "RuleId": "WL-PUNCT-0958EA14803E"
+        },
+        {
+          "Original": "потом а теперь",
+          "Replacement": "потом, а",
+          "RuleId": "ru.punctuation.adversative-comma"
+        },
+        {
+          "Original": "обо всем что произошло",
+          "Replacement": ", что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        }
+      ],
+      "Missed": [
+        {
+          "Original": "друг как твои дела",
+          "Category": "punctuation",
+          "Want": "друг! Как твои дела?"
+        },
+        {
+          "Original": "надеюсь у тебя",
+          "Category": "punctuation",
+          "Want": "надеюсь, у тебя"
+        }
+      ],
+      "Dangerous": []
+    },
+    {
+      "Id": "live-02",
+      "Category": "multi-error",
+      "Findings": 6,
+      "Fixed": [
+        {
+          "Original": "Во первых",
+          "Replacement": "Во-первых",
+          "RuleId": "ru.spelling.hyphenated-adverb"
+        },
+        {
+          "Original": "проектом который",
+          "Replacement": ", который",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        },
+        {
+          "Original": "на то что времени",
+          "Replacement": ", что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        },
+        {
+          "Original": "было мало мы",
+          "Replacement": "мало,",
+          "RuleId": "ru.punctuation.subordinate-clause-end"
+        },
+        {
+          "Original": "всё таки",
+          "Replacement": "всё-таки",
+          "RuleId": "ru.spelling.hyphenated-adverb"
+        },
+        {
+          "Original": "работы однако некоторые",
+          "Replacement": ",",
+          "RuleId": "ru.punctuation.adversative-comma"
+        }
+      ],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "live-03",
+      "Category": "multi-error",
+      "Findings": 7,
+      "Fixed": [
+        {
+          "Original": "послушай пожалуйста я",
+          "Replacement": "послушай, пожалуйста,",
+          "RuleId": "WL-PUNCT-BC426AE533A1"
+        },
+        {
+          "Original": "думаю что нам",
+          "Replacement": ", что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        },
+        {
+          "Original": "завтра потому что",
+          "Replacement": ", потому что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        },
+        {
+          "Original": "преувеличиваю но всё",
+          "Replacement": "преувеличиваю, но",
+          "RuleId": "WL-PUNCT-0958EA14803E"
+        },
+        {
+          "Original": "кажется что лучше",
+          "Replacement": ", что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        }
+      ],
+      "Missed": [
+        {
+          "Original": "откладывать решение ситуация",
+          "Category": "punctuation",
+          "Want": "откладывать решение, ситуация"
+        }
+      ],
+      "Dangerous": []
+    },
+    {
+      "Id": "live-04",
+      "Category": "morphology-heavy",
+      "Findings": 4,
+      "Fixed": [
+        {
+          "Original": "нового плана",
+          "Replacement": "новому плану",
+          "RuleId": "ru.grammar.case-government-dative"
+        },
+        {
+          "Original": "должна закончится",
+          "Replacement": "закончиться",
+          "RuleId": "ru.grammar.reflexive-infinitive"
+        },
+        {
+          "Original": "сентябре а вопреки",
+          "Replacement": "сентябре, а",
+          "RuleId": "ru.punctuation.adversative-comma"
+        },
+        {
+          "Original": "прошлых договоренностей",
+          "Replacement": "прошлым договорённостям",
+          "RuleId": "ru.grammar.case-government-dative"
+        }
+      ],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "family-vocative-01",
+      "Category": "punctuation-heavy",
+      "Findings": 3,
+      "Fixed": [
+        {
+          "Original": "Здравствуйте коллеги",
+          "Replacement": "Здравствуйте,",
+          "RuleId": "ru.punctuation.vocative-comma"
+        },
+        {
+          "Original": "коллеги как ваши дела",
+          "Replacement": "! Как ваши дела?",
+          "RuleId": "ru.punctuation.greeting-sentence-boundary"
+        },
+        {
+          "Original": "послушай пожалуйста это",
+          "Replacement": "послушай, пожалуйста,",
+          "RuleId": "WL-PUNCT-BC426AE533A1"
+        }
+      ],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "family-clause-01",
+      "Category": "punctuation-heavy",
+      "Findings": 5,
+      "Fixed": [
+        {
+          "Original": "на то что задача",
+          "Replacement": ", что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        },
+        {
+          "Original": "задача сложная мы",
+          "Replacement": "сложная,",
+          "RuleId": "ru.punctuation.subordinate-clause-end"
+        },
+        {
+          "Original": "уверен что если",
+          "Replacement": "уверен, что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        },
+        {
+          "Original": "сегодня то успеем",
+          "Replacement": "я,",
+          "RuleId": "ru.punctuation.paired-conjunction-to"
+        }
+      ],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "family-government-01",
+      "Category": "morphology-heavy",
+      "Findings": 2,
+      "Fixed": [
+        {
+          "Original": "нового графика",
+          "Replacement": "новому графику",
+          "RuleId": "ru.grammar.case-government-dative"
+        },
+        {
+          "Original": "прежних решений",
+          "Replacement": "прежним решениям",
+          "RuleId": "ru.grammar.case-government-dative"
+        }
+      ],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "family-tsya-01",
+      "Category": "morphology-heavy",
+      "Findings": 2,
+      "Fixed": [
+        {
+          "Original": "хочет учится",
+          "Replacement": "учиться",
+          "RuleId": "ru.grammar.reflexive-infinitive"
+        },
+        {
+          "Original": "должна начатся",
+          "Replacement": "начаться",
+          "RuleId": "ru.spelling.typo"
+        }
+      ],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "family-intro-01",
+      "Category": "punctuation-heavy",
+      "Findings": 4,
+      "Fixed": [
+        {
+          "Original": "К сожалению поезд",
+          "Replacement": "К сожалению,",
+          "RuleId": "ru.punctuation.intro-word-comma"
+        },
+        {
+          "Original": "Во первых",
+          "Replacement": "Во-первых",
+          "RuleId": "ru.spelling.hyphenated-adverb"
+        },
+        {
+          "Original": "По моему это",
+          "Replacement": "По-моему",
+          "RuleId": "ru.spelling.hyphenated-adverb"
+        },
+        {
+          "Original": "Кстати я",
+          "Replacement": "Кстати,",
+          "RuleId": "ru.punctuation.intro-word-comma"
+        }
+      ],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "style-01",
+      "Category": "style-heavy",
+      "Findings": 1,
+      "Fixed": [
+        {
+          "Original": "На данный момент времени",
+          "Replacement": "Сейчас",
+          "RuleId": "ru.style.redundant-moment"
+        }
+      ],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "style-02",
+      "Category": "style-heavy",
+      "Findings": 0,
+      "Fixed": [],
+      "Missed": [
+        {
+          "Original": "Приложение не отправляет",
+          "Category": "style",
+          "Want": "Приложение не отправляет"
+        }
+      ],
+      "Dangerous": []
+    },
+    {
+      "Id": "style-03",
+      "Category": "style-heavy",
+      "Findings": 1,
+      "Fixed": [
+        {
+          "Original": "более удобнее",
+          "Replacement": "удобнее",
+          "RuleId": "ru.style.double-comparative"
+        }
+      ],
+      "Missed": [
+        {
+          "Original": "очень сильно",
+          "Category": "style",
+          "Want": ""
+        }
+      ],
+      "Dangerous": []
+    },
+    {
+      "Id": "slang-01",
+      "Category": "informal-slang",
+      "Findings": 1,
+      "Fixed": [],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "slang-02",
+      "Category": "informal-slang",
+      "Findings": 0,
+      "Fixed": [],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "slang-03",
+      "Category": "informal-slang",
+      "Findings": 0,
+      "Fixed": [],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "clean-01",
+      "Category": "clean",
+      "Findings": 0,
+      "Fixed": [],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "clean-02",
+      "Category": "clean",
+      "Findings": 0,
+      "Fixed": [],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "clean-03",
+      "Category": "clean",
+      "Findings": 0,
+      "Fixed": [],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "clean-04",
+      "Category": "clean",
+      "Findings": 0,
+      "Fixed": [],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "technical-01",
+      "Category": "technical",
+      "Findings": 0,
+      "Fixed": [],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "mixed-01",
+      "Category": "mixed-script",
+      "Findings": 0,
+      "Fixed": [],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "mixed-02",
+      "Category": "mixed-script",
+      "Findings": 2,
+      "Fixed": [
+        {
+          "Original": "WriteLite то",
+          "Replacement": "WriteLite,",
+          "RuleId": "ru.punctuation.model-comma"
+        },
+        {
+          "Original": "быстро поэтому",
+          "Replacement": "о,",
+          "RuleId": "ru.punctuation.consequence-comma"
+        }
+      ],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "student-01",
+      "Category": "student-essay",
+      "Findings": 5,
+      "Fixed": [
+        {
+          "Original": "показывает что человек",
+          "Replacement": ", что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        },
+        {
+          "Original": "общества потому что",
+          "Replacement": ", потому что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        },
+        {
+          "Original": "на то что герой",
+          "Replacement": ", что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        },
+        {
+          "Original": "пытается уйти он",
+          "Replacement": "уйти,",
+          "RuleId": "ru.punctuation.subordinate-clause-end"
+        }
+      ],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "business-01",
+      "Category": "business-message",
+      "Findings": 3,
+      "Fixed": [
+        {
+          "Original": "Добрый день коллеги",
+          "Replacement": "Добрый день,",
+          "RuleId": "ru.punctuation.vocative-comma"
+        },
+        {
+          "Original": "внимание что часть",
+          "Replacement": "внимание, что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        },
+        {
+          "Original": "нового регламента",
+          "Replacement": "новому регламенту",
+          "RuleId": "ru.grammar.case-government-dative"
+        }
+      ],
+      "Missed": [],
+      "Dangerous": []
+    },
+    {
+      "Id": "punctuation-01",
+      "Category": "punctuation-heavy",
+      "Findings": 7,
+      "Fixed": [
+        {
+          "Original": "сказал что придет",
+          "Replacement": ", что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        },
+        {
+          "Original": "завтра но я",
+          "Replacement": "завтра, но",
+          "RuleId": "WL-PUNCT-0958EA14803E"
+        },
+        {
+          "Original": "знаю что он",
+          "Replacement": ", что",
+          "RuleId": "ru.punctuation.subordinate-comma"
+        },
+        {
+          "Original": "пришел он уже",
+          "Replacement": "пришел,",
+          "RuleId": "ru.punctuation.subordinate-clause-end"
+        },
+        {
+          "Original": "время я позвоню",
+          "Replacement": "время,",
+          "RuleId": "ru.punctuation.subordinate-clause-end"
+        }
+      ],
+      "Missed": [],
+      "Dangerous": []
+    }
+  ]
+}

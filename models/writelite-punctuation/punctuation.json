@@ -1,0 +1,15 @@
+{
+  "version": "PUNC-B",
+  "task": "punctuation_decision",
+  "baseModel": "cointegrated/rubert-tiny2",
+  "baseModelLicense": "MIT",
+  "maxLength": 64,
+  "encoding": "marker",
+  "lowercase": false,
+  "labels": {
+    "0": "NO_CHANGE",
+    "1": "COMMA"
+  },
+  "commaLabelIndex": 1,
+  "acceptanceThreshold": 0.996
+}

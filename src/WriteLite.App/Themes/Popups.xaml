@@ -1,11 +1,90 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Style x:Key="WlPopupSurface" TargetType="Border">
+    <!--
+        Menus and floating surfaces.
+
+        These styles are keyed rather than implicit on purpose: a global
+        ContextMenu override would also reach the tray icon's menu and the
+        TextBox editing menu inside host applications, where replacing native
+        chrome is not wanted.
+    -->
+
+    <Style x:Key="WlContextMenu" TargetType="ContextMenu">
         <Setter Property="Background" Value="{DynamicResource WlSurface}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource WlBorder}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLineStrong}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="14" />
-        <Setter Property="Padding" Value="16" />
-        <Setter Property="Effect" Value="{DynamicResource WlShadowPanel}" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{DynamicResource WlSurface}"
+                            BorderBrush="{DynamicResource WlLineStrong}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="4"
+                            MinWidth="220"
+                            Effect="{DynamicResource WlShadowMenu}">
+                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="WlMenuItem" TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="9,7" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="5"
+                            Padding="{TemplateBinding Padding}"
+                            Margin="0,1">
+                        <DockPanel>
+                            <ContentPresenter x:Name="Icon"
+                                              DockPanel.Dock="Left"
+                                              ContentSource="Icon"
+                                              Width="16" Height="16"
+                                              Margin="0,0,11,0"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True" />
+                            <ContentPresenter ContentSource="Header"
+                                              RecognizesAccessKey="True"
+                                              VerticalAlignment="Center" />
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource WlHover}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource WlDisabled}" />
+                            <Setter Property="Opacity" Value="0.55" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="WlMenuSeparator" TargetType="Separator">
+        <Setter Property="Margin" Value="0,3" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Separator">
+                    <Border Height="1" Background="{DynamicResource WlLine}" Margin="8,3" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>

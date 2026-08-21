@@ -1,45 +1,50 @@
 <UserControl x:Class="WriteLite.Views.Pages.DiagnosticsPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WriteLite.Controls"
              Background="{DynamicResource WlBgBase}"
              FontFamily="{DynamicResource WlFont}">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,24">
-        <StackPanel MaxWidth="760">
-            <TextBlock Text="Диагностика" Style="{DynamicResource WlPageTitle}" />
-            <TextBlock Text="Безопасные технические сведения без текста пользователя."
-                       Style="{DynamicResource WlPageSubtitle}" Margin="0,6,0,18" />
+    <!--
+        Technical read-out. Values are set in the mono face because they are data, not
+        prose — the same treatment the website gives version strings and checksums.
+        No user text ever appears here.
+    -->
+    <ScrollViewer Style="{DynamicResource WlScrollViewer}">
+        <StackPanel MaxWidth="780" HorizontalAlignment="Left" Margin="36,30,36,40">
 
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                <Button Style="{DynamicResource WlPrimaryButton}" Content="Обновить" Click="Refresh_Click" Margin="0,0,8,0" />
-                <Button Style="{DynamicResource WlGhostButton}" Content="Копировать отчёт" Click="Copy_Click" Margin="0,0,8,0" />
-                <Button Style="{DynamicResource WlGhostButton}" Content="Открыть папку логов" Click="OpenLogs_Click" Margin="0,0,8,0" />
-                <Button Style="{DynamicResource WlGhostButton}" Content="Перезапустить проверку" Click="RestartEngine_Click" />
-            </StackPanel>
+            <controls:SectionHeader Index="08"
+                                    Title="Диагностика"
+                                    Description="Безопасные технические сведения. Проверяемый текст в отчёт не попадает." />
 
-            <TextBlock Text="ПРИЛОЖЕНИЕ" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WlTextSecondary}" Margin="0,0,0,8" />
-            <Border Style="{DynamicResource WlCard}" Margin="0,0,0,16">
-                <TextBlock x:Name="AppBlock" Foreground="{DynamicResource WlText}" FontSize="13" LineHeight="22" TextWrapping="Wrap" />
-            </Border>
+            <WrapPanel Margin="0,18,0,0">
+                <Button Style="{DynamicResource WlSecondaryButton}" Content="Обновить" Click="Refresh_Click" Margin="0,0,8,8" />
+                <Button Style="{DynamicResource WlTextButton}" Content="Копировать отчёт" Click="Copy_Click" Margin="0,0,8,8" />
+                <Button Style="{DynamicResource WlTextButton}" Content="Открыть папку логов" Click="OpenLogs_Click" Margin="0,0,8,8" />
+                <Button Style="{DynamicResource WlTextButton}" Content="Перезапустить проверку" Click="RestartEngine_Click" Margin="0,0,8,8" />
+            </WrapPanel>
 
-            <TextBlock Text="АКТИВНОЕ ПОЛЕ" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WlTextSecondary}" Margin="0,0,0,8" />
-            <Border Style="{DynamicResource WlCard}" Margin="0,0,0,16">
-                <TextBlock x:Name="FieldBlock" Foreground="{DynamicResource WlText}" FontSize="13" LineHeight="22" TextWrapping="Wrap" />
-            </Border>
+            <controls:SectionHeader Title="Приложение" ShowRule="True" Margin="0,26,0,0" />
+            <TextBlock x:Name="AppBlock" Style="{DynamicResource WlMonoValue}" LineHeight="22" Margin="0,14,0,0" />
 
-            <TextBlock Text="ЯЗЫКОВОЙ ДВИЖОК" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WlTextSecondary}" Margin="0,0,0,8" />
-            <Border Style="{DynamicResource WlCard}" Margin="0,0,0,16">
-                <TextBlock x:Name="EngineBlock" Foreground="{DynamicResource WlText}" FontSize="13" LineHeight="22" TextWrapping="Wrap" />
-            </Border>
+            <controls:SectionHeader Title="Активное поле" Margin="0,30,0,0" />
+            <TextBlock x:Name="FieldBlock" Style="{DynamicResource WlMonoValue}" LineHeight="22" Margin="0,14,0,0" />
 
-            <TextBlock Text="СИСТЕМА" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WlTextSecondary}" Margin="0,0,0,8" />
-            <Border Style="{DynamicResource WlCard}" Margin="0,0,0,16">
-                <TextBlock x:Name="SystemBlock" Foreground="{DynamicResource WlText}" FontSize="13" LineHeight="22" TextWrapping="Wrap" />
-            </Border>
+            <controls:SectionHeader Title="Языковой движок" Margin="0,30,0,0" />
+            <TextBlock x:Name="EngineBlock" Style="{DynamicResource WlMonoValue}" LineHeight="22" Margin="0,14,0,0" />
 
-            <TextBlock Text="ПОСЛЕДНИЕ СОБЫТИЯ" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WlTextSecondary}" Margin="0,0,0,8" />
-            <Border Style="{DynamicResource WlCard}" Padding="8" MaxHeight="240">
-                <ListBox x:Name="EventsList" Background="Transparent" BorderThickness="0"
-                         Foreground="{DynamicResource WlTextSecondary}" FontSize="11" FontFamily="Consolas" />
+            <controls:SectionHeader Title="Система" Margin="0,30,0,0" />
+            <TextBlock x:Name="SystemBlock" Style="{DynamicResource WlMonoValue}" LineHeight="22" Margin="0,14,0,0" />
+
+            <controls:SectionHeader Title="Последние события" Margin="0,30,0,0" />
+            <Border Style="{DynamicResource WlInsetPanel}" Margin="0,14,0,0" MaxHeight="260">
+                <ListBox x:Name="EventsList"
+                         Style="{DynamicResource WlListBox}"
+                         ItemContainerStyle="{DynamicResource WlListRow}"
+                         FontFamily="{DynamicResource WlFontMono}"
+                         FontSize="11"
+                         Foreground="{DynamicResource WlTextSecondary}"
+                         Margin="0,4"
+                         AutomationProperties.Name="Последние технические события" />
             </Border>
         </StackPanel>
     </ScrollViewer>

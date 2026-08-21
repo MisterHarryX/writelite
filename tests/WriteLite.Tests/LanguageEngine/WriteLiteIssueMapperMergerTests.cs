@@ -341,7 +341,19 @@ public sealed class WriteLiteIssueMapperMergerTests
         var a = Issue(0, 3, "abc", "x", IssueCategory.Orthography, "r1");
         var b = Issue(0, 3, "abc", "y", IssueCategory.Grammar, "r2");
         var merged = _merger.Merge([a, b]);
-        Assert.IsGreaterThanOrEqualTo(1, merged.Issues.Count);
+        Assert.HasCount(2, merged.Issues);
+    }
+
+    [TestMethod]
+    public void Merger_SameRangeSameCategoryDifferentReplacement_KeepsBoth()
+    {
+        var a = Issue(0, 3, "abc", "x", IssueCategory.Orthography, "r1");
+        var b = Issue(0, 3, "abc", "y", IssueCategory.Orthography, "r2");
+
+        var merged = _merger.Merge([a, b]);
+
+        Assert.HasCount(2, merged.Issues);
+        CollectionAssert.AreEquivalent(new[] { "x", "y" }, merged.Issues.Select(i => i.Replacement).ToArray());
     }
 
     [TestMethod]
@@ -352,6 +364,22 @@ public sealed class WriteLiteIssueMapperMergerTests
         var merged = _merger.Merge([builtIn], engineMappedIssues: [engine]);
         Assert.HasCount(1, merged.Issues);
         Assert.AreEqual("local-spell", merged.Issues[0].RuleId);
+    }
+
+    [TestMethod]
+    public void Merger_DuplicatePreservesStrongestMetadata()
+    {
+        var builtIn = Issue(0, 3, "abc", "abd", IssueCategory.Orthography, "local")
+            with { Explanation = "Кратко.", Confidence = .8 };
+        var supplementary = Issue(0, 3, "abc", "abd", IssueCategory.Orthography, "WL-SPELL")
+            with { Explanation = "Более точное и полезное объяснение правила.", Confidence = .96 };
+
+        var merged = _merger.Merge([builtIn], engineMappedIssues: [supplementary]);
+
+        Assert.HasCount(1, merged.Issues);
+        Assert.AreEqual("local", merged.Issues[0].RuleId);
+        Assert.AreEqual(supplementary.Explanation, merged.Issues[0].Explanation);
+        Assert.AreEqual(.96, merged.Issues[0].Confidence);
     }
 
     [TestMethod]

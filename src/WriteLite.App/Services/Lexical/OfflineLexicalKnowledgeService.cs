@@ -23,6 +23,16 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
         new Dictionary<string, LexicalEntry>(StringComparer.OrdinalIgnoreCase);
     private LexicalPackManifest? _manifest;
 
+    // Secondary language packs, keyed by language. Russian stays in _index so the
+    // existing Russian behaviour, status reporting and tests are untouched.
+    private IReadOnlyDictionary<string, LexicalEntry> _englishIndex =
+        new Dictionary<string, LexicalEntry>(StringComparer.OrdinalIgnoreCase);
+    private LexicalPackManifest? _englishManifest;
+
+    // Primary runtime storage. When present, entries are read on demand and the
+    // JSON packs are never parsed; the JSON path remains as the fallback.
+    private SqliteLexicalStore? _store;
+
     public OfflineLexicalKnowledgeService(
         IContextualLexicalRanker? ranker = null,
         IWordMorphologyService? morphology = null,
@@ -40,28 +50,43 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
     }
 
     public string? PackVersion => _manifest?.PackVersion;
-    public bool IsPackLoaded => _manifest is not null && _index.Count > 0;
+    public bool IsPackLoaded => _manifest is not null && (_store is not null || _index.Count > 0);
+
+    /// <summary>True when lookups are served from SQLite rather than in-memory JSON.</summary>
+    public bool IsDatabaseBacked => _store is not null;
     public bool IsDemoPack => _manifest?.IsDemo == true;
     public string? License => _manifest?.License;
     public string? LoadError { get; private set; }
     public bool OzhegovAvailable => _ozhegov.IsAvailable;
     public bool HistoricalAvailable => _historical.IsAvailable;
 
+    public bool IsEnglishPackLoaded =>
+        _englishManifest is not null && (_store is not null || _englishIndex.Count > 0);
+
     public LexicalEntry? LookupEntry(string word, LexicalLanguage language)
     {
         if (string.IsNullOrWhiteSpace(word)) return null;
 
-        if (_index.Count == 0) return null;
-        if (_index.TryGetValue(word.Trim(), out var entry)
-            || _index.TryGetValue(FoldYo(word.Trim()), out entry))
+        var store = _store;
+        if (store is not null)
+        {
+            var resolved = store.Lookup(word, language);
+            if (resolved is not null) return resolved;
+            // Fall through: the JSON packs may still be loaded as a fallback.
+        }
+
+        var index = language == LexicalLanguage.English ? _englishIndex : _index;
+        if (index.Count == 0) return null;
+        if (index.TryGetValue(word.Trim(), out var entry)
+            || index.TryGetValue(FoldYo(word.Trim()), out entry))
         {
             if (language == LexicalLanguage.Unknown || entry.Language == language || entry.Language == LexicalLanguage.Unknown)
                 return entry;
         }
 
         var lemma = word.Trim().ToLowerInvariant();
-        if (_index.TryGetValue(lemma, out entry)
-            || _index.TryGetValue(FoldYo(lemma), out entry)) return entry;
+        if (index.TryGetValue(lemma, out entry)
+            || index.TryGetValue(FoldYo(lemma), out entry)) return entry;
         return null;
     }
 
@@ -81,6 +106,10 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
     {
         directory ??= Path.Combine(AppContext.BaseDirectory, "resources", "lexical");
 
+        // Primary path: the SQLite database. Loading it is opening a file handle
+        // rather than parsing ~108 MB of JSON into the heap.
+        if (TryLoadDatabase(directory)) return;
+
         var preferred = new[]
         {
             Path.Combine(directory, "writelight-lexical-open.json"),
@@ -99,6 +128,20 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
             }
         }
 
+        // Optional English pack; absence is not an error, English lookups simply
+        // report that no English pack is installed.
+        var englishPath = Path.Combine(directory, "writelight-lexical-en.json");
+        if (File.Exists(englishPath))
+        {
+            LoadPack(englishPath);
+            if (IsEnglishPackLoaded)
+            {
+                CompatibilityLogger.Technical(
+                    "lexical-json-loaded",
+                    $"path={Path.GetFileName(englishPath)} entries={_englishIndex.Count} lang=en");
+            }
+        }
+
         if (!IsPackLoaded)
         {
             LoadError ??= "lexical pack not found";
@@ -114,6 +157,11 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
     public void LoadBootstrapFromDirectory(string? directory = null)
     {
         directory ??= Path.Combine(AppContext.BaseDirectory, "resources", "lexical");
+
+        // The database opens fast enough to serve the first double-click directly,
+        // so no separate bootstrap pack is needed when it is present.
+        if (TryLoadDatabase(directory)) return;
+
         foreach (var fileName in new[] { "writelight-lexical-core.json" })
         {
             var path = Path.Combine(directory, fileName);
@@ -127,6 +175,40 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
                 return;
             }
         }
+    }
+
+    /// <summary>
+    /// Opens the runtime lexical database. Returns false -- without side effects --
+    /// when it is absent or unusable, so the JSON packs still load and a broken
+    /// database can never leave the dictionary unavailable.
+    /// </summary>
+    private bool TryLoadDatabase(string directory)
+    {
+        var path = Path.Combine(directory, "writelight-lexical.db");
+        var store = SqliteLexicalStore.TryOpen(path);
+        if (store is null) return false;
+
+        var russian = store.GetManifest(LexicalLanguage.Russian);
+        if (russian is null)
+        {
+            store.Dispose();
+            return false;
+        }
+
+        lock (_gate)
+        {
+            _store?.Dispose();
+            _store = store;
+            _manifest = russian;
+            _englishManifest = store.GetManifest(LexicalLanguage.English);
+            _cache.Clear();
+            LoadError = null;
+        }
+
+        CompatibilityLogger.Technical(
+            "lexical-sqlite-loaded",
+            $"entries={store.EntryCount} pack={russian.PackId} en={(_englishManifest is not null ? 1 : 0)}");
+        return true;
     }
 
     private void ApplyLoadResult(LexicalPackLoadResult result)
@@ -144,8 +226,17 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
 
         lock (_gate)
         {
-            _index = result.Index;
-            _manifest = result.Manifest;
+            if (result.Language == LexicalLanguage.English)
+            {
+                _englishIndex = result.Index;
+                _englishManifest = result.Manifest;
+            }
+            else
+            {
+                _index = result.Index;
+                _manifest = result.Manifest;
+            }
+
             _cache.Clear();
             LoadError = null;
         }
@@ -167,12 +258,15 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
         }
 
         var lang = _languages.DetectWord(request.Word);
+        if (lang == LexicalLanguage.English)
+            return Task.FromResult(LookupEnglish(request));
+
         if (lang != LexicalLanguage.Russian)
         {
             return Task.FromResult(LexicalLookupResult.Empty(
                 request.Word,
                 request.RequestId,
-                "Справочный словарь WriteLite поддерживает только русские слова."));
+                "Справочный словарь WriteLite поддерживает только русские и английские слова."));
         }
 
         var cacheKey = BuildCacheKey(request.Word, lang, request.Sentence, request.Start);
@@ -285,6 +379,80 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
         return Task.FromResult(result);
     }
 
+    /// <summary>
+    /// English lookup: dictionary data only. The Russian morphology and syntax
+    /// analysers are rule-based for Russian and are deliberately not applied to
+    /// English words, so no inflected forms or syntactic roles are invented.
+    /// </summary>
+    private LexicalLookupResult LookupEnglish(LexicalLookupRequest request)
+    {
+        if (!IsEnglishPackLoaded)
+        {
+            return LexicalLookupResult.Empty(
+                request.Word,
+                request.RequestId,
+                "Английский словарный пакет не установлен.");
+        }
+
+        var cacheKey = BuildCacheKey(request.Word, LexicalLanguage.English, request.Sentence, request.Start);
+        if (_cache.TryGetValue(cacheKey, out var cached))
+            return cached with { RequestId = request.RequestId };
+
+        var entry = LookupEntry(request.Word, LexicalLanguage.English);
+        if (entry is null)
+        {
+            var empty = LexicalLookupResult.Empty(
+                request.Word,
+                request.RequestId,
+                "Слово не найдено в установленных словарных пакетах.") with
+            {
+                Language = LexicalLanguage.English,
+                PackVersion = _englishManifest?.PackVersion,
+                PackLicense = _englishManifest?.License,
+                PackSource = _englishManifest?.Source
+            };
+            Remember(cacheKey, empty);
+            return empty;
+        }
+
+        var pos = entry.PartOfSpeech;
+        var synonyms = _ranker
+            .RankSynonyms(entry.Synonyms, request.Word, request.Sentence, pos)
+            .Select(s => s with { CanReplace = true })
+            .ToArray();
+        var antonyms = _ranker
+            .RankSynonyms(entry.Antonyms, request.Word, request.Sentence, pos)
+            .Select(s => s with { CanReplace = true })
+            .ToArray();
+
+        var result = new LexicalLookupResult(
+            request.Word,
+            entry.Lemma,
+            LexicalLanguage.English,
+            pos,
+            synonyms,
+            entry.Definitions,
+            entry.Examples.Select(e => e with { HighlightWord = request.Word }).ToArray(),
+            request.RequestId,
+            IsEmpty: entry.Definitions.Count == 0 && synonyms.Length == 0,
+            StatusMessage: null,
+            PackVersion: _englishManifest?.PackVersion,
+            Morphology: null,
+            Syntax: null,
+            Antonyms: antonyms,
+            Relations: [],
+            SurfaceFormNote: null,
+            PackLicense: _englishManifest?.License,
+            PackSource: _englishManifest?.Source);
+
+        Remember(cacheKey, result);
+        CompatibilityLogger.Technical(
+            "lexical-lookup",
+            $"request={request.RequestId} lang=en found=1 " +
+            $"syn={synonyms.Length} def={entry.Definitions.Count}");
+        return result;
+    }
+
     private static string BuildSurfaceNote(string word, string lemma, MorphologicalFeatures morphology)
     {
         var feats = string.Join(", ", morphology.ToDisplayList());
@@ -323,6 +491,12 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
 
     public void Dispose()
     {
-        // The immutable JSON index is managed memory and needs no external cleanup.
+        // The immutable JSON index is managed memory and needs no external cleanup;
+        // the SQLite connection does.
+        lock (_gate)
+        {
+            _store?.Dispose();
+            _store = null;
+        }
     }
 }

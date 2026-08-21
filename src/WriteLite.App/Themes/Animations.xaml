@@ -1,7 +1,71 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
-    <Duration x:Key="WlMotionFast">0:0:0.10</Duration>
-    <Duration x:Key="WlMotionNormal">0:0:0.16</Duration>
-    <sys:Boolean x:Key="WlReducedMotion">False</sys:Boolean>
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+                    xmlns:wl="clr-namespace:WriteLite.Services">
+    <!--
+        Motion tokens.
+
+        The website animates on cubic-bezier(0.22, 1, 0.36, 1) — a fast start that
+        settles without overshoot. WPF has no cubic-bezier easing, so the same curve
+        is expressed twice: as a KeySpline for storyboards that can use one, and as
+        Services/Motion.Editorial for everything driven from code. Both describe the
+        identical curve; change one and change the other.
+
+        Durations are grouped by what the user is waiting for, not by size:
+
+            Press    90 ms   contact, felt rather than seen
+            Release 150 ms   deliberately slower than the press
+            Hover   140 ms   colour settling under the cursor
+            Popover 160 ms   a surface arriving
+            Micro   200 ms   content and navigation changing
+
+        Nothing here exceeds 220 ms. Nothing loops except the player equalizer,
+        which stops when playback stops. Only Opacity and RenderTransform are
+        animated anywhere in the product, so no transition can trigger a layout
+        pass — the UI responsiveness watchdog would see it if one did.
+
+        Reduced motion is honoured in Services/Motion.cs: when Windows reports that
+        animation is off, transitions are skipped and the final value is set
+        directly, rather than being played slowly.
+    -->
+
+    <!-- ── Durations ───────────────────────────────────────────────────────── -->
+    <Duration x:Key="WlDurPress">0:0:0.09</Duration>
+    <Duration x:Key="WlDurRelease">0:0:0.15</Duration>
+    <Duration x:Key="WlDurHover">0:0:0.14</Duration>
+    <Duration x:Key="WlDurPopover">0:0:0.16</Duration>
+    <Duration x:Key="WlDurMicro">0:0:0.20</Duration>
+
+    <!-- ── Easing ──────────────────────────────────────────────────────────── -->
+    <KeySpline x:Key="WlEaseEditorial">0.22,1 0.36,1</KeySpline>
+    <KeySpline x:Key="WlEaseOut">0.16,1 0.3,1</KeySpline>
+
+    <!-- The same curve as an easing function, for animations driven from XAML.
+         Control templates cannot reference it from here — an animation inside a
+         template cannot reach a sibling merged dictionary — so each dictionary that
+         animates declares its own `<wl:EditorialEase x:Key="WlEase" />`. This entry
+         serves views and code that resolve it through the theme. -->
+    <wl:EditorialEase x:Key="WlEase" />
+
+    <!-- ── Reveal distance ─────────────────────────────────────────────────── -->
+    <!-- 6 px. Large enough to read as arrival, small enough that the eye does not
+         track the movement instead of the content. -->
+    <sys:Double x:Key="WlRevealOffset">6</sys:Double>
+
+    <!-- Popover / dialog entry: 160 ms fade with a 4 px rise. Reused by every
+         floating surface so they all arrive the same way. -->
+    <Storyboard x:Key="WlPopoverIn">
+        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                         From="0" To="1" Duration="0:0:0.16">
+            <DoubleAnimation.EasingFunction>
+                <CubicEase EasingMode="EaseOut" />
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                         From="4" To="0" Duration="0:0:0.16">
+            <DoubleAnimation.EasingFunction>
+                <CubicEase EasingMode="EaseOut" />
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+    </Storyboard>
 </ResourceDictionary>

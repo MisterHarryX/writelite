@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>inferstress</AssemblyName>
+    <RootNamespace>InferStress</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Deliberately references only the inference assembly. The cancellation contract
+         lives entirely here, so this tool can verify it without the WPF app in the way. -->
+    <ProjectReference Include="..\..\src\WriteLite.AI.Local\WriteLite.AI.Local.csproj" />
+  </ItemGroup>
+</Project>

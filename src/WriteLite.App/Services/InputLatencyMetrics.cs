@@ -22,8 +22,13 @@ public sealed class InputLatencyMetrics
     {
         var values = _samples.ToArray();
         Array.Sort(values);
-        if (values.Length == 0) return new InputLatencySnapshot(0, 0, 0, 0);
-        return new InputLatencySnapshot(values.Length, Percentile(values, 0.50), Percentile(values, 0.95), values[^1]);
+        if (values.Length == 0) return new InputLatencySnapshot(0, 0, 0, 0, 0);
+        return new InputLatencySnapshot(
+            values.Length,
+            Percentile(values, 0.50),
+            Percentile(values, 0.95),
+            Percentile(values, 0.99),
+            values[^1]);
     }
 
     private static double Percentile(double[] values, double percentile)
@@ -36,7 +41,12 @@ public sealed class InputLatencyMetrics
     }
 }
 
-public readonly record struct InputLatencySnapshot(int Count, double P50Milliseconds, double P95Milliseconds, double MaxMilliseconds);
+public readonly record struct InputLatencySnapshot(
+    int Count,
+    double P50Milliseconds,
+    double P95Milliseconds,
+    double P99Milliseconds,
+    double MaxMilliseconds);
 
 public static class InputSignalScheduler
 {

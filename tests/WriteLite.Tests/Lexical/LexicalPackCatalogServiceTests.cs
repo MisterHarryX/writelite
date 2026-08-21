@@ -34,6 +34,62 @@ public sealed class LexicalPackCatalogServiceTests
         Assert.IsTrue(open.IsValid);
     }
 
+    /// <summary>
+    /// The user-facing list must never contain a WriteLite pack.
+    /// </summary>
+    /// <remarks>
+    /// The old dictionary screen listed the built-in packs — with their file sizes,
+    /// licence strings and paths — and offered Delete and Disable on them. The service
+    /// refused both, so the buttons could only ever produce an error dialog. Built-in
+    /// dictionaries are application infrastructure; «Мои словари» is fed by
+    /// <see cref="LexicalPackCatalogService.UserPacks"/>, and this is the guarantee
+    /// that keeps them out of it.
+    /// </remarks>
+    [TestMethod]
+    public void UserPacks_ExcludesEveryBuiltInPack()
+    {
+        var lexicalRoot = Path.Combine(AppContext.BaseDirectory, "resources", "lexical");
+        var userRoot = NewTempDirectory();
+        try
+        {
+            var service = new LexicalPackCatalogService(lexicalRoot, userRoot, lexicalRoot);
+
+            // Snapshot sees the bundled packs; the user-facing list must not.
+            Assert.IsTrue(
+                service.Snapshot().Any(pack => pack.IsBuiltIn),
+                "The fixture has no built-in packs, so this test would prove nothing.");
+
+            var visible = service.UserPacks();
+
+            Assert.IsEmpty(visible, "A built-in WriteLite pack reached the user-facing dictionary list.");
+        }
+        finally
+        {
+            Directory.Delete(userRoot, recursive: true);
+        }
+    }
+
+    /// <summary>Built-ins stay refused even if something does reach them.</summary>
+    [TestMethod]
+    public void BuiltInPacks_CannotBeDisabledOrRemoved()
+    {
+        var lexicalRoot = Path.Combine(AppContext.BaseDirectory, "resources", "lexical");
+        var userRoot = NewTempDirectory();
+        try
+        {
+            var service = new LexicalPackCatalogService(lexicalRoot, userRoot, Path.Combine(userRoot, "engine-empty"));
+            var builtIn = service.Snapshot().First(pack => pack.IsBuiltIn);
+
+            Assert.ThrowsExactly<InvalidOperationException>(() => service.SetEnabled(builtIn, false));
+            Assert.ThrowsExactly<InvalidOperationException>(() => service.Remove(builtIn));
+            Assert.IsTrue(File.Exists(builtIn.Path), "A built-in pack file was removed.");
+        }
+        finally
+        {
+            Directory.Delete(userRoot, recursive: true);
+        }
+    }
+
     [TestMethod]
     public async Task Import_UsesValidatedUserPackAndCanDisableIt()
     {

@@ -26,7 +26,13 @@ public static class PunctuationRuleCatalog
         new("ru.punctuation.comma-before-chtoby", "ru", true),
         new("ru.punctuation.intro-comma.info", "ru", false),
         new("ru.punctuation.subordinate-comma", "ru", false),
-        new("ru.punctuation.subordinate-comma.info", "ru", false)
+        new("ru.punctuation.subordinate-comma.info", "ru", false),
+
+        // Phase 5. Both carry a replacement and both auto-apply, which the older comma
+        // heuristics deliberately do not: their conditions are closed lists rather than
+        // guesses about sentence structure. See docs/language-engine-phase5-report.md §5.
+        new("ru.punctuation.intro-word-comma", "ru", true),
+        new("ru.punctuation.adversative-comma", "ru", true)
     ];
 
     public static int CountRu => All.Count;

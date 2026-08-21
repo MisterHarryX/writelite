@@ -1,0 +1,159 @@
+<UserControl x:Class="WriteLite.Controls.NoteCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WriteLite.Controls"
+             xmlns:wl="clr-namespace:WriteLite.Services"
+             FontFamily="{DynamicResource WlFont}"
+             Margin="0,0,14,14"
+             MinWidth="252"
+             MaxWidth="330"
+             VerticalAlignment="Top"
+             Focusable="True"
+             KeyDown="Card_KeyDown"
+             AutomationProperties.Name="Заметка">
+    <Border x:Name="Shell"
+            MouseLeftButtonUp="Card_Click"
+            RenderTransformOrigin="0.5,0.5">
+        <Border.RenderTransform>
+            <ScaleTransform x:Name="ShellScale" ScaleX="1" ScaleY="1" />
+        </Border.RenderTransform>
+
+        <Border.Style>
+            <Style TargetType="Border" BasedOn="{StaticResource WlNoteCard}">
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource WlSurfaceHi}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource WlLineStrong}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Kind spine. Two pixels of hairline, orange only when the card is
+                 pinned — the board's single accent at any moment. -->
+            <Border x:Name="Spine" Grid.Column="0" Style="{DynamicResource WlNoteSpine}" Margin="0,2,14,2" />
+
+            <StackPanel Grid.Column="1">
+
+                <!-- ═══ Header ═════════════════════════════════════════════ -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- No PreviewMouseLeftButtonUp handler here, deliberately. The
+                         tunnelling and bubbling mouse events share one Handled flag, so
+                         marking the preview handled to stop the click reaching the card
+                         also stopped ToggleButton from ever raising Click — the box
+                         could not be ticked with the mouse at all. It is not needed
+                         either: ButtonBase marks the bubbling event handled once it has
+                         processed the click, so the card's own handler never sees it. -->
+                    <CheckBox x:Name="DoneBox"
+                              Grid.Column="0"
+                              Style="{DynamicResource WlNoteCheckBox}"
+                              Margin="0,1,10,0"
+                              Visibility="Collapsed"
+                              Checked="Done_Changed"
+                              Unchecked="Done_Changed"
+                              AutomationProperties.Name="Отметить выполненной" />
+
+                    <TextBlock x:Name="TitleText"
+                               Grid.Column="1"
+                               Style="{DynamicResource WlCardTitle}"
+                               TextWrapping="Wrap"
+                               MaxHeight="46"
+                               TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" />
+
+                    <StackPanel x:Name="Actions"
+                                Grid.Column="2"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Top"
+                                Margin="8,-4,-6,0"
+                                Opacity="0">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                        <Setter Property="Opacity" Value="1" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                        <Setter Property="Opacity" Value="1" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+
+                        <Button x:Name="PinButton"
+                                Style="{DynamicResource WlIconButton}"
+                                Width="28" Height="28"
+                                Click="Pin_Click"
+                                ToolTip="Закрепить"
+                                AutomationProperties.Name="Закрепить заметку">
+                            <Path x:Name="PinIcon" Style="{DynamicResource WlIconSm}"
+                                  Data="{DynamicResource WlIconPin}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Button>
+
+                        <Button x:Name="MenuButton"
+                                Style="{DynamicResource WlIconButton}"
+                                Width="28" Height="28"
+                                Click="Menu_Click"
+                                ToolTip="Ещё"
+                                AutomationProperties.Name="Действия с заметкой">
+                            <Path Style="{DynamicResource WlIconSm}"
+                                  Data="{DynamicResource WlIconMenu}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- ═══ Body ═══════════════════════════════════════════════ -->
+                <TextBlock x:Name="BodyText"
+                           Style="{DynamicResource WlSecondary}"
+                           TextWrapping="Wrap"
+                           MaxHeight="76"
+                           TextTrimming="CharacterEllipsis"
+                           Margin="0,8,0,0"
+                           Visibility="Collapsed" />
+
+                <StackPanel x:Name="ChecklistPanel" Margin="0,10,0,0" Visibility="Collapsed" />
+
+                <TextBlock x:Name="MoreItemsText"
+                           Style="{DynamicResource WlCaption}"
+                           Foreground="{DynamicResource WlTextMuted}"
+                           Margin="0,6,0,0"
+                           Visibility="Collapsed" />
+
+                <!-- ═══ Footer ═════════════════════════════════════════════ -->
+                <StackPanel x:Name="MetaRow" Orientation="Horizontal" Margin="0,14,0,0">
+                    <TextBlock x:Name="KindText" Style="{DynamicResource WlNoteMeta}" VerticalAlignment="Center" />
+
+                    <Border x:Name="ProgressBadge" Style="{DynamicResource WlNoteBadge}" Margin="10,0,0,0" Visibility="Collapsed">
+                        <TextBlock x:Name="ProgressText" Style="{DynamicResource WlNoteMeta}" />
+                    </Border>
+
+                    <Border x:Name="DueBadge" Style="{DynamicResource WlNoteBadge}" Margin="10,0,0,0" Visibility="Collapsed">
+                        <TextBlock x:Name="DueText" Style="{DynamicResource WlNoteMeta}" />
+                    </Border>
+
+                    <Border x:Name="CategoryBadge" Style="{DynamicResource WlNoteBadge}" Margin="10,0,0,0" Visibility="Collapsed">
+                        <TextBlock x:Name="CategoryText" Style="{DynamicResource WlNoteMeta}" />
+                    </Border>
+                </StackPanel>
+
+                <TextBlock x:Name="ModifiedText"
+                           Style="{DynamicResource WlNoteMeta}"
+                           Margin="0,7,0,0" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

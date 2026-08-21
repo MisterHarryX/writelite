@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
@@ -10,32 +10,78 @@
     <RootNamespace>WriteLite</RootNamespace>
     <ApplicationIcon>..\..\assets\WriteLite.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The AI layer's prompt text and response cleaner are internal on purpose —
+         nothing outside the rewriting service should call them — but both encode
+         behaviour that has to stay pinned down, so the test assembly sees them
+         rather than the product growing public API just to be testable. -->
+    <InternalsVisibleTo Include="WriteLite.Tests" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\assets\WriteLite.ico" Link="assets\WriteLite.ico" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\resources\rules\**\*.json" Link="resources\rules\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-    <Content Include="..\..\resources\lexical\**\*" Link="resources\lexical\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <!-- Lexical resources, minus the raw source corpus under source/, which is build input.
+
+         NOT excluded, though measured as duplication in Phase 7 §58: writelight-lexical-open.json
+         (53 MB) and writelight-lexical-en.json (41 MB) hold content that writelight-lexical.db
+         already carries in full, and OfflineLexicalKnowledgeService opens the database first and
+         returns before it reads either of them. Removing them was tried and reverted:
+         LexicalPackCatalogService enumerates installed packs by reading those JSON files
+         directly, so dropping them also drops the packs — and their CC-BY-SA-4.0 and
+         CC-BY-4.0 attribution — from the dictionary UI. Reclaiming the 94 MB means teaching
+         the catalog to enumerate from the database, which is a change to a user-visible
+         surface and to licence display, and not one to make at the end of a release phase.
+         Recorded in docs/language-engine-phase7-release-report.md as fix-soon-after-1.0. -->
+    <Content Include="..\..\resources\lexical\**\*"
+             Exclude="..\..\resources\lexical\source\**\*"
+             Link="resources\lexical\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="..\..\resources\spelling\hunspell\**\*" Link="resources\spelling\hunspell\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <!-- The ambience track the website plays, bundled so the desktop player has
+         something to play out of the box and never reaches the network. -->
+    <Content Include="..\..\resources\audio\**\*" Link="resources\audio\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
 
     <!-- Local offline language-engine runtime (internal ThirdParty bundle; not embedded as Resource) -->
     <Content Include="ThirdParty\LanguageEngine\6.4\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="ThirdParty\THIRD_PARTY_NOTICES.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
 
     <!-- Runtime-only WriteLite-Qwen pack. Training checkpoints stay out of Release. -->
-    <Content Include="..\..\models\writelight-qwen\**\*"
-             Exclude="..\..\models\writelight-qwen\adapter\**\*;..\..\models\writelight-qwen\merged-hf\**\*"
-             Link="models\writelight-qwen\%(RecursiveDir)%(Filename)%(Extension)"
-             CopyToOutputDirectory="PreserveNewest"
-             CopyToPublishDirectory="PreserveNewest"
-             Condition="Exists('..\..\models\writelight-qwen')" />
+    <Content Include="..\..\models\writelight-qwen\**\*" Exclude="..\..\models\writelight-qwen\adapter\**\*;..\..\models\writelight-qwen\merged-hf\**\*" Link="models\writelight-qwen\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('..\..\models\writelight-qwen')" />
+
+    <!-- Russian contextual reranker: the quantised graph, its vocabulary and the
+         runtime config. The PyTorch checkpoint under hf/ and the fp32 export are
+         training artefacts and are deliberately not shipped. -->
+    <Content Include="..\..\models\writelight-reranker\model.onnx;..\..\models\writelight-reranker\vocab.txt;..\..\models\writelight-reranker\reranker.json" Link="models\writelight-reranker\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('..\..\models\writelight-reranker\model.onnx')" />
+
+    <!-- WriteLite-Punctuation-v1: the int8 graph, its vocabulary and the runtime config,
+         29.4 MB in total. Listed file by file rather than as a wildcard on purpose — the
+         PUNC-A/B/C training checkpoints sit in the same directory and are 342 MB between
+         them, and a recursive include would have shipped every one of them. -->
+    <Content Include="..\..\models\writelite-punctuation\model.onnx;..\..\models\writelite-punctuation\vocab.txt;..\..\models\writelite-punctuation\punctuation.json" Link="models\writelite-punctuation\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('..\..\models\writelite-punctuation\model.onnx')" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WriteLite.AI.Contracts\WriteLite.AI.Contracts.csproj" />
     <ProjectReference Include="..\WriteLite.AI.Local\WriteLite.AI.Local.csproj" />
+    <ProjectReference Include="..\WriteLite.Documents\WriteLite.Documents.csproj" />
     <ProjectReference Include="..\WriteLite.Language.Core\WriteLite.Language.Core.csproj" />
     <ProjectReference Include="..\WriteLite.Language.Packs\WriteLite.Language.Packs.csproj" />
     <ProjectReference Include="..\WriteLite.Language.Punctuation\WriteLite.Language.Punctuation.csproj" />
+    <ProjectReference Include="..\WriteLite.Language.Russian\WriteLite.Language.Russian.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+
+    <!--
+      Pinned above what Microsoft.Data.Sqlite 9.0.0 resolves (2.1.10), which carries
+      CVE-2025-6965 / GHSA-2m69-gcr7-jv3q: a high-severity SQLite memory-corruption bug.
+      The advisory's vulnerable range is "<= 2.1.11" with no first_patched_version
+      recorded, so the fix is to move past the range rather than to a nominated version.
+      2.1.12 is the smallest step that does that and stays on the same 2.1.x API, which
+      keeps Microsoft.Data.Sqlite 9.0.0 working unchanged; 3.x would be a runtime swap
+      this repository has no reason to take on for a lexical database it opens read-only.
+    -->
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
+
     <PackageReference Include="WeCantSpell.Hunspell" Version="5.0.1" />
   </ItemGroup>
 </Project>

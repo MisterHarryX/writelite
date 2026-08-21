@@ -37,6 +37,27 @@ public sealed class ApplicationExceptionPolicyTests
             ApplicationExceptionPolicy.Classify(new ObjectDisposedException("service"), shutdownRequested: true));
     }
 
+    /// <summary>
+    /// The exit button carries a hover transition, so its animation clock is live at
+    /// the moment the user clicks it. That clock throwing as the dispatcher tears down
+    /// must not be treated as the application failing.
+    /// </summary>
+    [TestMethod]
+    public void AnimationClock_IsOnlyRecoverableDuringShutdown()
+    {
+        // AnimationException has no public constructor — WPF only ever raises it from
+        // inside the animation system — and the policy classifies purely on type.
+        var animationFailure = (Exception)System.Runtime.CompilerServices.RuntimeHelpers
+            .GetUninitializedObject(typeof(System.Windows.Media.Animation.AnimationException));
+
+        Assert.AreEqual(
+            ApplicationFailureDisposition.RestartRecommended,
+            ApplicationExceptionPolicy.Classify(animationFailure, shutdownRequested: false));
+        Assert.AreEqual(
+            ApplicationFailureDisposition.Recoverable,
+            ApplicationExceptionPolicy.Classify(animationFailure, shutdownRequested: true));
+    }
+
     [TestMethod]
     public void CorruptedProcessState_IsFatal()
     {

@@ -1,0 +1,368 @@
+{
+  "name": "writelite-ru-error-corpus",
+  "builder_version": "ru-error-corpus-1.0.0",
+  "generator_version": "ru-errors-1.0.0",
+  "seed": 20260810,
+  "sources": {
+    "wiktionary": "ai\\data\\lexical\\ru-wiktionary-20260801.jsonl",
+    "chat": "ai\\data\\chat",
+    "confusion_sets": 405,
+    "records_by_origin": {
+      "chat": 230,
+      "wiktionary": 28091
+    }
+  },
+  "counts": {
+    "total": 28321,
+    "by_split": {
+      "train": 24344,
+      "validation": 1973,
+      "test": 2004
+    },
+    "source_sentences": 22000,
+    "source_sentences_by_split": {
+      "train": 18920,
+      "validation": 1540,
+      "test": 1540
+    }
+  },
+  "clean": {
+    "records": 12965,
+    "fraction": 0.457788,
+    "min_required": 0.35
+  },
+  "errors": {
+    "total": 22435,
+    "by_type": {
+      "caps_allcaps": 261,
+      "caps_proper_noun": 304,
+      "caps_sentence_start": 1046,
+      "char_delete": 1436,
+      "char_double": 726,
+      "char_insert": 906,
+      "char_replace": 741,
+      "char_transpose": 1218,
+      "char_undouble": 82,
+      "confusion_pair": 3823,
+      "homoglyph": 483,
+      "keyboard_neighbour": 1708,
+      "layout_partial": 261,
+      "layout_word": 412,
+      "morph_inflect": 1814,
+      "ortho_cha_shcha": 136,
+      "ortho_chu_shchu": 36,
+      "ortho_ne_ni": 158,
+      "ortho_nn": 507,
+      "ortho_pre_pri": 121,
+      "ortho_prefix_zs": 453,
+      "ortho_signs": 84,
+      "ortho_tsya": 196,
+      "ortho_unstressed_vowel": 1358,
+      "ortho_voicing": 1089,
+      "ortho_yo": 53,
+      "ortho_zhi_shi": 230,
+      "punct_dash": 171,
+      "punct_extra_comma": 879,
+      "punct_missing_comma": 285,
+      "punct_terminal": 46,
+      "space_delete": 824,
+      "space_insert": 588
+    },
+    "by_type_by_split": {
+      "train": {
+        "caps_allcaps": 223,
+        "caps_proper_noun": 262,
+        "caps_sentence_start": 902,
+        "char_delete": 1271,
+        "char_double": 615,
+        "char_insert": 796,
+        "char_replace": 632,
+        "char_transpose": 1061,
+        "char_undouble": 72,
+        "confusion_pair": 3280,
+        "homoglyph": 412,
+        "keyboard_neighbour": 1454,
+        "layout_partial": 233,
+        "layout_word": 346,
+        "morph_inflect": 1572,
+        "ortho_cha_shcha": 112,
+        "ortho_chu_shchu": 31,
+        "ortho_ne_ni": 137,
+        "ortho_nn": 434,
+        "ortho_pre_pri": 102,
+        "ortho_prefix_zs": 382,
+        "ortho_signs": 79,
+        "ortho_tsya": 172,
+        "ortho_unstressed_vowel": 1174,
+        "ortho_voicing": 944,
+        "ortho_yo": 47,
+        "ortho_zhi_shi": 198,
+        "punct_dash": 146,
+        "punct_extra_comma": 761,
+        "punct_missing_comma": 251,
+        "punct_terminal": 41,
+        "space_delete": 698,
+        "space_insert": 512
+      },
+      "validation": {
+        "caps_allcaps": 22,
+        "caps_proper_noun": 22,
+        "caps_sentence_start": 66,
+        "char_delete": 87,
+        "char_double": 59,
+        "char_insert": 57,
+        "char_replace": 62,
+        "char_transpose": 73,
+        "char_undouble": 5,
+        "confusion_pair": 267,
+        "homoglyph": 38,
+        "keyboard_neighbour": 127,
+        "layout_partial": 12,
+        "layout_word": 30,
+        "morph_inflect": 120,
+        "ortho_cha_shcha": 9,
+        "ortho_chu_shchu": 2,
+        "ortho_ne_ni": 14,
+        "ortho_nn": 42,
+        "ortho_pre_pri": 12,
+        "ortho_prefix_zs": 26,
+        "ortho_signs": 1,
+        "ortho_tsya": 10,
+        "ortho_unstressed_vowel": 85,
+        "ortho_voicing": 66,
+        "ortho_yo": 4,
+        "ortho_zhi_shi": 15,
+        "punct_dash": 10,
+        "punct_extra_comma": 60,
+        "punct_missing_comma": 16,
+        "punct_terminal": 3,
+        "space_delete": 66,
+        "space_insert": 44
+      },
+      "test": {
+        "caps_allcaps": 16,
+        "caps_proper_noun": 20,
+        "caps_sentence_start": 78,
+        "char_delete": 78,
+        "char_double": 52,
+        "char_insert": 53,
+        "char_replace": 47,
+        "char_transpose": 84,
+        "char_undouble": 5,
+        "confusion_pair": 276,
+        "homoglyph": 33,
+        "keyboard_neighbour": 127,
+        "layout_partial": 16,
+        "layout_word": 36,
+        "morph_inflect": 122,
+        "ortho_cha_shcha": 15,
+        "ortho_chu_shchu": 3,
+        "ortho_ne_ni": 7,
+        "ortho_nn": 31,
+        "ortho_pre_pri": 7,
+        "ortho_prefix_zs": 45,
+        "ortho_signs": 4,
+        "ortho_tsya": 14,
+        "ortho_unstressed_vowel": 99,
+        "ortho_voicing": 79,
+        "ortho_yo": 2,
+        "ortho_zhi_shi": 17,
+        "punct_dash": 15,
+        "punct_extra_comma": 58,
+        "punct_missing_comma": 18,
+        "punct_terminal": 2,
+        "space_delete": 60,
+        "space_insert": 32
+      }
+    },
+    "by_category": {
+      "non_word": 13195,
+      "not_lexical": 1381,
+      "real_word": 7859
+    },
+    "real_word": 7859,
+    "non_word": 13195,
+    "not_lexical": 1381
+  },
+  "domains": {
+    "labels": [
+      "chat",
+      "social",
+      "formal",
+      "school",
+      "technical",
+      "gaming",
+      "business",
+      "news",
+      "docs"
+    ],
+    "total": {
+      "business": 458,
+      "chat": 2920,
+      "docs": 139,
+      "formal": 9530,
+      "gaming": 1208,
+      "news": 10171,
+      "school": 468,
+      "social": 2417,
+      "technical": 1010
+    },
+    "by_split": {
+      "train": {
+        "business": 394,
+        "chat": 2521,
+        "docs": 119,
+        "formal": 8198,
+        "gaming": 1034,
+        "news": 8712,
+        "school": 403,
+        "social": 2077,
+        "technical": 886
+      },
+      "validation": {
+        "business": 36,
+        "chat": 199,
+        "docs": 9,
+        "formal": 653,
+        "gaming": 69,
+        "news": 732,
+        "school": 34,
+        "social": 181,
+        "technical": 60
+      },
+      "test": {
+        "business": 28,
+        "chat": 200,
+        "docs": 11,
+        "formal": 679,
+        "gaming": 105,
+        "news": 727,
+        "school": 31,
+        "social": 159,
+        "technical": 64
+      }
+    },
+    "evidence": {
+      "fallback": 20398,
+      "lexis": 7923
+    }
+  },
+  "hard_negatives": {
+    "confusion_hard_negative_pairs": 3820,
+    "forced_confusion_corruptions": 3423
+  },
+  "rerank": {
+    "total": 17136,
+    "by_split": {
+      "train": 14682,
+      "validation": 1214,
+      "test": 1240
+    },
+    "label_counts": {
+      "0": 8568,
+      "1": 8568
+    },
+    "negative_by_error_type": {
+      "caps_allcaps": 98,
+      "caps_proper_noun": 116,
+      "caps_sentence_start": 418,
+      "char_delete": 501,
+      "char_double": 241,
+      "char_insert": 344,
+      "char_replace": 270,
+      "char_transpose": 425,
+      "char_undouble": 37,
+      "confusion_pair": 2873,
+      "homoglyph": 163,
+      "keyboard_neighbour": 621,
+      "layout_partial": 79,
+      "layout_word": 119,
+      "morph_inflect": 681,
+      "ortho_cha_shcha": 58,
+      "ortho_chu_shchu": 10,
+      "ortho_ne_ni": 50,
+      "ortho_nn": 188,
+      "ortho_pre_pri": 46,
+      "ortho_prefix_zs": 147,
+      "ortho_signs": 31,
+      "ortho_tsya": 72,
+      "ortho_unstressed_vowel": 488,
+      "ortho_voicing": 397,
+      "ortho_yo": 17,
+      "ortho_zhi_shi": 78
+    },
+    "negative_by_category": {
+      "non_word": 4210,
+      "real_word": 4358
+    }
+  },
+  "contamination": {
+    "benchmark_path": "ai\\data\\benchmark\\ru_frozen_v1.jsonl",
+    "benchmark_present": true,
+    "benchmark_keys": 1283,
+    "removed": 0
+  },
+  "filter_stats": {
+    "seen": 149486,
+    "empty": 0,
+    "too_short": 5715,
+    "too_long": 6883,
+    "not_cyrillic": 7183,
+    "markup": 222,
+    "mojibake": 0,
+    "bad_chars": 1284,
+    "bad_start": 1589,
+    "no_verb_material": 0,
+    "duplicate": 10303,
+    "passed_cheap": 116307,
+    "unknown_tokens": 6642,
+    "contaminated": 0,
+    "accepted": 22000
+  },
+  "quality_thresholds": {
+    "min_tokens": 4,
+    "max_tokens": 30,
+    "min_cyrillic_letter_ratio": 0.9,
+    "max_unknown_ratio": 0.15,
+    "max_unknown_tokens": 2
+  },
+  "synthesis": {
+    "clean_only_p": 0.3,
+    "clean_twin_p": 0.22,
+    "force_confusion_p": 0.55,
+    "failed_corruptions": 0,
+    "verify_failures": 0,
+    "clean_records_topped_up": 0
+  },
+  "split_ratios": [
+    0.86,
+    0.07,
+    0.07
+  ],
+  "sha256": {
+    "train.jsonl": "02e5bc24ad9e5e8261d25d722126cd7819b0a83c4fdd2c6337592f7261c9e9e7",
+    "validation.jsonl": "0f65c926b60f43570d8a7f4526c43eb405e44fb0ae60753e82ddc667bbd0b9d2",
+    "test.jsonl": "ad0f315a54d728378e35c0743102da52a45d7201f61dbedc918f23ac754e8977",
+    "rerank_train.jsonl": "7b4a3f2199457d3b371bb4c74c49a8b74fc0e7cac0c747dce318445f981c58da",
+    "rerank_validation.jsonl": "449a29d7477a4cff0d8c155349344ff40a7c6ffd0ff8d2cfddfd64d5a121b28e",
+    "rerank_test.jsonl": "ca31d9c52ce82e6960a6f132a9453e59889693c52cc657a7a2abdb59c705cbe3"
+  },
+  "record_schema": {
+    "id": "str",
+    "source": "str -- model input (may contain errors)",
+    "target": "str -- correct sentence",
+    "errors": "[{start,end,original,replacement,type}] -- spans index `source`",
+    "domain": "one of ['chat', 'social', 'formal', 'school', 'technical', 'gaming', 'business', 'news', 'docs']",
+    "synthetic": "bool -- True when errors were synthesised"
+  },
+  "rerank_schema": {
+    "id": "str",
+    "sentence": "str",
+    "label": "1 = correct Russian sentence, 0 = one wrong word substituted",
+    "pair_id": "str -- links the two members of a minimal pair",
+    "error_type": "str",
+    "category": "real_word | non_word | not_lexical",
+    "domain": "str",
+    "split": "str"
+  }
+}

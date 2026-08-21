@@ -22,6 +22,7 @@ internal static class Win32TextEdit
     private const int EmCanUndo = 0x00C6;
     private const int WmGetTextLength = 0x000E;
     private const int WmGetText = 0x000D;
+    private const int EmExGetSel = 0x0400 + 52;
 
     public static bool TryGetHwnd(AutomationElement element, out IntPtr hwnd)
     {
@@ -123,6 +124,168 @@ internal static class Win32TextEdit
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Replaces a range only after proving the window agrees about where that range is.
+    /// </summary>
+    /// <remarks>
+    /// <para>Three things have to line up before a character is written: the window has to
+    /// hand back its text, the offsets computed against the text provider have to be
+    /// translatable into the window's own selection coordinates, and the text sitting at
+    /// those coordinates has to be the word the correction says it is replacing. Any one of
+    /// them failing returns a reason rather than a write, and the caller moves on to the next
+    /// strategy.</para>
+    ///
+    /// <para>The middle step is the one that used to be missing. <c>EM_SETSEL</c> was handed
+    /// the analyzer's offsets directly, which is right for a classic multiline <c>EDIT</c>
+    /// and wrong for RichEdit, where a line break costs one selection character and two text
+    /// characters. Instead of guessing from the window class, the convention is measured:
+    /// selecting everything and reading the end offset back says exactly how this window
+    /// counts, whatever it is called. The probe only runs when the text contains a line
+    /// break, so a single-line field pays nothing for it.</para>
+    /// </remarks>
+    public static Win32RangeWriteOutcome TryReplaceVerifiedRange(
+        IntPtr hwnd,
+        int start,
+        int length,
+        string expectedOriginal,
+        string replacement)
+    {
+        if (hwnd == IntPtr.Zero || start < 0 || length < 0)
+        {
+            return Win32RangeWriteOutcome.BadArguments;
+        }
+
+        try
+        {
+            if (!TryGetWindowText(hwnd, out var windowText))
+            {
+                return Win32RangeWriteOutcome.TextUnavailable;
+            }
+
+            if (start + length > windowText.Length)
+            {
+                return Win32RangeWriteOutcome.RangeOutsideText;
+            }
+
+            if (!string.Equals(
+                    windowText.Substring(start, length),
+                    expectedOriginal ?? string.Empty,
+                    StringComparison.Ordinal))
+            {
+                return Win32RangeWriteOutcome.OriginalMismatch;
+            }
+
+            var convention = DetectSelectionConvention(hwnd, windowText);
+            if (!Win32SelectionOffsets.TryMap(windowText, start, convention, out var selectionStart)
+                || !Win32SelectionOffsets.TryMap(windowText, start + length, convention, out var selectionEnd))
+            {
+                return Win32RangeWriteOutcome.OffsetsNotMappable;
+            }
+
+            var firstLine = GetFirstVisibleLine(hwnd);
+            NativeSetFocus(hwnd);
+
+            if (!TrySend(hwnd, EmSetSel, new IntPtr(selectionStart), new IntPtr(selectionEnd), out _)
+                || !TrySend(hwnd, EmReplaceSel, new IntPtr(1), replacement ?? string.Empty, out _))
+            {
+                return Win32RangeWriteOutcome.MessageRejected;
+            }
+
+            var caret = selectionStart + (replacement?.Length ?? 0);
+            _ = TrySend(hwnd, EmSetSel, new IntPtr(caret), new IntPtr(caret), out _);
+            RestoreFirstVisibleLine(hwnd, firstLine);
+            return Win32RangeWriteOutcome.Written;
+        }
+        catch
+        {
+            return Win32RangeWriteOutcome.MessageRejected;
+        }
+    }
+
+    /// <summary>Reads the window's text through <c>WM_GETTEXT</c>.</summary>
+    public static bool TryGetWindowText(IntPtr hwnd, out string text)
+    {
+        text = string.Empty;
+        if (!TrySend(hwnd, WmGetTextLength, IntPtr.Zero, IntPtr.Zero, out var lengthResult))
+        {
+            return false;
+        }
+
+        var length = (int)lengthResult;
+        if (length < 0 || length > 4_000_000) return false;
+        if (length == 0) return true;
+
+        var buffer = new StringBuilder(length + 1);
+        if (SendMessageTimeout(
+                hwnd, WmGetText, new IntPtr(buffer.Capacity), buffer,
+                SmtoBlock | SmtoAbortIfHung, MessageTimeoutMs, out _) == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        text = buffer.ToString();
+        return true;
+    }
+
+    /// <summary>
+    /// Asks the window how it counts characters, by selecting everything and reading back
+    /// where the selection ends.
+    /// </summary>
+    private static Win32SelectionConvention DetectSelectionConvention(IntPtr hwnd, string windowText)
+    {
+        if (!windowText.Contains('\n'))
+        {
+            // No line breaks: every model agrees, and the probe would disturb the selection
+            // for nothing.
+            return Win32SelectionConvention.MatchesWindowText;
+        }
+
+        var haveSelection = TryGetSelection(hwnd, out var restoreStart, out var restoreEnd);
+
+        if (!TrySend(hwnd, EmSetSel, IntPtr.Zero, new IntPtr(-1), out _)
+            || !TryGetSelection(hwnd, out _, out var end))
+        {
+            return Win32SelectionConvention.Unknown;
+        }
+
+        if (haveSelection)
+        {
+            _ = TrySend(hwnd, EmSetSel, new IntPtr(restoreStart), new IntPtr(restoreEnd), out _);
+        }
+
+        var convention = Win32SelectionOffsets.DetectConvention(windowText, end);
+        CompatibilityLogger.Technical(
+            "win32-selection-convention",
+            $"convention={convention} textLength={windowText.Length} selectAllEnd={end}");
+        return convention;
+    }
+
+    private static bool TryGetSelection(IntPtr hwnd, out int start, out int end)
+    {
+        start = 0;
+        end = 0;
+        var range = new CharRange();
+        if (SendMessageTimeout(
+                hwnd, EmExGetSel, IntPtr.Zero, ref range,
+                SmtoBlock | SmtoAbortIfHung, MessageTimeoutMs, out _) != IntPtr.Zero
+            && (range.Min != 0 || range.Max != 0))
+        {
+            start = range.Min;
+            end = range.Max;
+            return true;
+        }
+
+        if (!TrySend(hwnd, EmGetSel, IntPtr.Zero, IntPtr.Zero, out var packed))
+        {
+            return false;
+        }
+
+        var value = (long)packed;
+        start = (int)(value & 0xFFFF);
+        end = (int)((value >> 16) & 0xFFFF);
+        return true;
     }
 
     public static bool TryReplaceRange(IntPtr hwnd, int start, int length, string replacement)
@@ -278,4 +441,43 @@ internal static class Win32TextEdit
         uint flags,
         uint timeout,
         out IntPtr result);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern IntPtr SendMessageTimeout(
+        IntPtr hWnd,
+        int msg,
+        IntPtr wParam,
+        StringBuilder lParam,
+        uint flags,
+        uint timeout,
+        out IntPtr result);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern IntPtr SendMessageTimeout(
+        IntPtr hWnd,
+        int msg,
+        IntPtr wParam,
+        ref CharRange lParam,
+        uint flags,
+        uint timeout,
+        out IntPtr result);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct CharRange
+    {
+        public int Min;
+        public int Max;
+    }
+}
+
+/// <summary>Why a verified Win32 range replacement did or did not happen.</summary>
+internal enum Win32RangeWriteOutcome
+{
+    Written,
+    BadArguments,
+    TextUnavailable,
+    RangeOutsideText,
+    OriginalMismatch,
+    OffsetsNotMappable,
+    MessageRejected,
 }

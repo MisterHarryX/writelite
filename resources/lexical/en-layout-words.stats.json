@@ -1,0 +1,30 @@
+{
+  "totalWords": 79105,
+  "fromWordnet": 78831,
+  "fromFunctionWords": 127,
+  "fromTechnical": 365,
+  "curatedNotInWordnet": 274,
+  "minLength": 2,
+  "maxLength": 24,
+  "purpose": "Latin-target keyboard-layout recovery (membership only)",
+  "sources": [
+    {
+      "name": "Open English WordNet 2024",
+      "license": "CC BY 4.0",
+      "attribution": "Open English WordNet team; Princeton University WordNet",
+      "via": "resources/lexical/writelight-lexical-en.json"
+    },
+    {
+      "name": "WriteLite curated function words",
+      "license": "CC0-1.0",
+      "attribution": "WriteLite project",
+      "via": "resources/lexical/en-layout-function-words.txt"
+    },
+    {
+      "name": "WriteLite curated technical and product vocabulary",
+      "license": "CC0-1.0",
+      "attribution": "WriteLite project",
+      "via": "resources/lexical/en-layout-technical.txt"
+    }
+  ]
+}

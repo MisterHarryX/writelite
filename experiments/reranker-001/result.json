@@ -1,0 +1,28 @@
+{
+  "config": {
+    "base_model": "ai\\models\\rubert-tiny2",
+    "data_dir": "ai\\data\\errors",
+    "output_dir": "models\\writelight-reranker",
+    "experiment": "reranker-001",
+    "max_length": 64,
+    "epochs": 2.0,
+    "batch_size": 32,
+    "eval_batch_size": 64,
+    "learning_rate": 3e-05,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.06,
+    "seed": 20260809,
+    "max_train": 0,
+    "fp16": false
+  },
+  "startedAt": "2026-08-10T00:57:04",
+  "export": {
+    "onnx": "models\\writelight-reranker\\model.onnx",
+    "quantisedInt8": true,
+    "quantisationError": null,
+    "bytesFp32": 116853073,
+    "bytesFinal": 29354003,
+    "vocabTokens": 83828
+  },
+  "artifactSha256": "e35b2d2cafb0880000ce0cbd44b9316361587c1a1f8e9af20e2cc0187f2e6ca7"
+}

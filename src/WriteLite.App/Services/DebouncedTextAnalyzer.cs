@@ -112,7 +112,7 @@ public sealed class DebouncedTextAnalyzer
                 if (durationSnapshot.Count % 16 == 0)
                 {
                     CompatibilityLogger.Technical("analysis-latency-percentiles",
-                        $"samples={durationSnapshot.Count} p50={durationSnapshot.P50Milliseconds:F1} p95={durationSnapshot.P95Milliseconds:F1} max={durationSnapshot.MaxMilliseconds:F1}");
+                        $"samples={durationSnapshot.Count} p50={durationSnapshot.P50Milliseconds:F1} p95={durationSnapshot.P95Milliseconds:F1} p99={durationSnapshot.P99Milliseconds:F1} max={durationSnapshot.MaxMilliseconds:F1}");
                 }
 
                 if (requestId != Volatile.Read(ref _latestRequestId))

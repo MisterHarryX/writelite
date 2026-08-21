@@ -69,7 +69,54 @@ WriteLite authors do not claim authorship of these third-party components.
 
 
 
-3) Other WriteLite dependencies
+3) Document engine libraries (WriteLite.Documents)
+--------------------------------------------------
+
+  These are managed .NET libraries used to read and write document formats.
+  All run entirely in-process on the local machine; none of them opens a
+  network connection or transmits document content.
+
+  Component name: DocumentFormat.OpenXml
+  Version:        3.5.1
+  Homepage:       https://github.com/dotnet/Open-XML-SDK
+  Copyright:      Copyright (c) Microsoft Corporation
+  License:        MIT License
+  Used for:       Reading and writing .docx (WordprocessingML) packages.
+
+  Component name: PdfPig
+  Version:        0.1.15
+  Homepage:       https://github.com/UglyToad/PdfPig
+  Copyright:      Copyright (c) UglyToad and PdfPig contributors
+  License:        Apache License 2.0
+  Used for:       Extracting text and glyph positions from .pdf files.
+  Notes:          Fully managed; no native binaries are bundled.
+
+  Component name: PDFsharp
+  Version:        6.2.4
+  Homepage:       https://docs.pdfsharp.net/
+  Copyright:      Copyright (c) empira Software GmbH and PDFsharp contributors
+  License:        MIT License
+  Used for:       Generating .pdf output. Page layout is WriteLite's own code;
+                  only the drawing and PDF-writing surface of PDFsharp is used.
+
+  Transitive packages pulled in by the above (all MIT, from Microsoft):
+    System.IO.Packaging, Microsoft.Extensions.Logging.Abstractions,
+    Microsoft.Extensions.DependencyInjection.Abstractions,
+    System.Security.Cryptography.Pkcs
+
+  OpenDocument (.odt) support is implemented directly by WriteLite over the
+  .NET base class library (System.IO.Compression and System.Xml.Linq) and
+  introduces no third-party dependency.
+
+  Font embedding: PDF export embeds TrueType/OpenType faces found in the
+  operating system's font directories so that Cyrillic and other non-Latin
+  text renders correctly. WriteLite does not redistribute font files; it reads
+  the fonts already installed on the user's machine at export time. Any
+  redistribution of a resulting PDF is subject to the embedding terms of the
+  fonts the user selected.
+
+
+4) Other WriteLite dependencies
 -------------------------------
 
   Additional .NET packages used by WriteLite (if any) are declared in project
@@ -82,7 +129,7 @@ WriteLite authors do not claim authorship of these third-party components.
   content, not third-party model weights.
 
 
-4) Source of the bundled LanguageTool runtime
+5) Source of the bundled LanguageTool runtime
 ---------------------------------------------
 
   Bundled snapshot corresponds to upstream LanguageTool distribution version

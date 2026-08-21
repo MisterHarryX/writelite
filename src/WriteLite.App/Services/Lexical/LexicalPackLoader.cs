@@ -10,6 +10,9 @@ public sealed class LexicalPackLoadResult
     public string? Error { get; init; }
     public LexicalPackManifest? Manifest { get; init; }
     public IReadOnlyDictionary<string, LexicalEntry>? Index { get; init; }
+
+    /// <summary>Language every entry in the loaded pack belongs to.</summary>
+    public LexicalLanguage Language { get; init; } = LexicalLanguage.Russian;
 }
 
 /// <summary>
@@ -87,14 +90,22 @@ public static class LexicalPackLoader
             if (manifest.EntryCount != doc.Entries.Count)
                 return Fail("pack entryCount mismatch");
 
+            // A pack declares its language in the manifest. Packs written before
+            // multi-language support omit it and are Russian by definition.
+            var packLanguage = string.IsNullOrWhiteSpace(manifest.Language)
+                ? LexicalLanguage.Russian
+                : ParseLanguage(manifest.Language);
+            if (packLanguage == LexicalLanguage.Unknown)
+                return Fail("pack declares an unsupported language");
+
             var index = new Dictionary<string, LexicalEntry>(StringComparer.OrdinalIgnoreCase);
             var lemmas = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var dto in doc.Entries)
             {
                 if (string.IsNullOrWhiteSpace(dto.Lemma))
                     return Fail("pack contains an entry without lemma");
-                if (ParseLanguage(dto.Language) != LexicalLanguage.Russian)
-                    return Fail("pack contains a non-Russian entry");
+                if (ParseLanguage(dto.Language) != packLanguage)
+                    return Fail("pack contains an entry from another language");
                 if (!lemmas.Add(FoldYo(dto.Lemma.Trim())))
                     return Fail("pack contains duplicate lemmas");
                 var entry = MapEntry(dto);
@@ -110,7 +121,8 @@ public static class LexicalPackLoader
             {
                 Success = true,
                 Manifest = manifest,
-                Index = index
+                Index = index,
+                Language = packLanguage
             };
         }
         catch (JsonException)
@@ -182,7 +194,9 @@ public static class LexicalPackLoader
                 ParsePos(s.Pos ?? defaultPos),
                 s.Label,
                 Clamp01(s.Relevance),
-                canReplace))
+                canReplace,
+                SenseId: null,
+                SourceId: s.SourceId))
             .ToArray();
 
     public static LexicalLanguage ParseLanguage(string? value)
@@ -191,6 +205,7 @@ public static class LexicalPackLoader
         return value.Trim().ToLowerInvariant() switch
         {
             "ru" or "rus" or "russian" => LexicalLanguage.Russian,
+            "en" or "eng" or "english" => LexicalLanguage.English,
             _ => LexicalLanguage.Unknown
         };
     }

@@ -1,0 +1,110 @@
+<Window x:Class="WriteLite.Views.AnnotationEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:WriteLite.Controls"
+        Title="Пометка"
+        Width="560"
+        Height="470"
+        MinWidth="420"
+        MinHeight="360"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        Background="Transparent"
+        AllowsTransparency="False"
+        ShowInTaskbar="False"
+        FontFamily="{DynamicResource WlFont}"
+        TextOptions.TextFormattingMode="Ideal"
+        UseLayoutRounding="True"
+        AutomationProperties.Name="Добавить пометку">
+    <Border Background="{DynamicResource WlBgBase}"
+            BorderBrush="{DynamicResource WlLineStrong}"
+            BorderThickness="1"
+            CornerRadius="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="46" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="{DynamicResource WlBg}"
+                    BorderBrush="{DynamicResource WlLine}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="9,9,0,0"
+                    MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <StackPanel Orientation="Horizontal" Margin="18,0,0,0" VerticalAlignment="Center">
+                    <Path Style="{DynamicResource WlIconSm}"
+                          Data="{DynamicResource WlIconAnnotation}"
+                          Stroke="{DynamicResource WlBrand}"
+                          VerticalAlignment="Center" />
+                    <TextBlock Style="{DynamicResource WlMonoLabel}"
+                               controls:Type.Tracked="ПОМЕТКА"
+                               Margin="10,0,0,0"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <!-- The passage, quoted. Read-only: an annotation that could edit the book
+                 it annotates would be an editor, and this is a reader. -->
+            <Border Grid.Row="1" Style="{DynamicResource WlQuoteBlock}" Margin="24,20,24,0">
+                <ScrollViewer MaxHeight="120" VerticalScrollBarVisibility="Auto">
+                    <TextBlock x:Name="QuoteText" Style="{DynamicResource WlQuoteText}" />
+                </ScrollViewer>
+            </Border>
+
+            <StackPanel Grid.Row="2" Margin="24,20,24,0">
+                <TextBlock Style="{DynamicResource WlMonoLabel}"
+                           controls:Type.Tracked="ВАША МЫСЛЬ"
+                           Foreground="{DynamicResource WlTextMuted}" />
+
+                <TextBox x:Name="NoteBox"
+                         Style="{DynamicResource WlTextInput}"
+                         Margin="0,8,0,0"
+                         Height="110"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalContentAlignment="Top"
+                         Tag="Что вы об этом думаете"
+                         AutomationProperties.Name="Текст пометки" />
+
+                <Grid Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Style="{DynamicResource WlCaption}" Text="Цвет" />
+                        <StackPanel x:Name="TintPanel" Orientation="Horizontal" Margin="0,8,0,0" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="24,0,0,0">
+                        <TextBlock Style="{DynamicResource WlCaption}" Text="Метка" />
+                        <TextBox x:Name="TagBox"
+                                 Style="{DynamicResource WlSmallInput}"
+                                 Margin="0,6,0,0"
+                                 MaxLength="30"
+                                 Tag="Например: важное"
+                                 AutomationProperties.Name="Метка пометки" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <Border Grid.Row="3"
+                    Background="{DynamicResource WlBg}"
+                    BorderBrush="{DynamicResource WlLine}"
+                    BorderThickness="0,1,0,0"
+                    CornerRadius="0,0,9,9"
+                    Padding="20,12">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{DynamicResource WlSecondaryButton}" Content="Отмена" IsCancel="True" Click="Cancel_Click" />
+                    <Button Style="{DynamicResource WlPrimaryButton}" Content="Сохранить"
+                            Margin="10,0,0,0" IsDefault="True" Click="Save_Click" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

@@ -1,0 +1,180 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:wl="clr-namespace:WriteLite.Services">
+    <!--
+        Reading workspace.
+
+        The reader is the calmest surface in WriteLite. The editor earns its toolbar
+        because the user is changing things; a reader is changing nothing, so the
+        chrome recedes and the only bright element on screen is the marker the reader
+        put there themselves.
+
+        Highlight tints are washes, not fills — 22 % of a hue the product already uses,
+        with a slightly stronger underline so a marked passage is legible against the
+        near-black page without the text losing contrast. A yellow highlighter would
+        be the single most saturated thing in the entire application.
+    -->
+
+    <wl:EditorialEase x:Key="WlEase" />
+
+    <!-- ── Highlight tints ─────────────────────────────────────────────────── -->
+
+    <SolidColorBrush x:Key="WlMarkAmber" Color="#38EC6C08" />
+    <SolidColorBrush x:Key="WlMarkSage" Color="#386FB593" />
+    <SolidColorBrush x:Key="WlMarkCoral" Color="#38E3695A" />
+    <SolidColorBrush x:Key="WlMarkNeutral" Color="#22A09D98" />
+
+    <!-- Solid versions, for the dot beside an entry in the marks panel. -->
+    <SolidColorBrush x:Key="WlMarkAmberSolid" Color="#EC6C08" />
+    <SolidColorBrush x:Key="WlMarkSageSolid" Color="#6FB593" />
+    <SolidColorBrush x:Key="WlMarkCoralSolid" Color="#E3695A" />
+    <SolidColorBrush x:Key="WlMarkNeutralSolid" Color="#A09D98" />
+
+    <!-- The wash the reader sees while dragging, before choosing what to do with it. -->
+    <SolidColorBrush x:Key="WlMarkPending" Color="#26EC6C08" />
+
+    <!-- ── Reading canvas ──────────────────────────────────────────────────── -->
+
+    <Style x:Key="WlReadingCanvas" TargetType="RichTextBox">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="IsReadOnlyCaretVisible" Value="False" />
+        <Setter Property="IsDocumentEnabled" Value="True" />
+        <Setter Property="AcceptsReturn" Value="False" />
+        <Setter Property="AcceptsTab" Value="False" />
+        <Setter Property="SelectionOpacity" Value="0.28" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource WlBrand}" />
+        <Setter Property="VerticalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RichTextBox">
+                    <!-- No focus ring and no border: the page is the surface, and a box
+                         drawn around a book is exactly the sort of chrome a reading
+                         mode exists to remove. -->
+                    <ScrollViewer x:Name="PART_ContentHost" Focusable="False" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── Library card ────────────────────────────────────────────────────── -->
+
+    <Style x:Key="WlReadingCard" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource WlSurface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLine}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="18,16" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <!-- Progress: a hairline that fills. Two pixels, because the number beside it is
+         the precise value and the bar only has to give the shape of it. -->
+    <Style x:Key="WlProgressTrack" TargetType="Border">
+        <Setter Property="Height" Value="2" />
+        <Setter Property="Background" Value="{DynamicResource WlLine}" />
+        <Setter Property="CornerRadius" Value="1" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <Style x:Key="WlProgressFill" TargetType="Border">
+        <Setter Property="Height" Value="2" />
+        <Setter Property="Background" Value="{DynamicResource WlBrand}" />
+        <Setter Property="CornerRadius" Value="1" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <!-- The tint picker. A filled square that gains a ring when chosen, rather than a
+         tick: the swatch has to stay readable as a colour, and a mark drawn over it
+         would obscure the only thing it is showing. -->
+    <Style x:Key="WlTintSwatch" TargetType="RadioButton">
+        <Setter Property="Width" Value="26" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="wl:Motion.Press" Value="True" />
+        <Setter Property="wl:Motion.PressScale" Value="0.9" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Grid>
+                        <Border x:Name="Ring"
+                                CornerRadius="7"
+                                BorderThickness="1.5"
+                                BorderBrush="Transparent"
+                                SnapsToDevicePixels="True" />
+                        <Border x:Name="Swatch"
+                                Width="14" Height="14"
+                                CornerRadius="4"
+                                Background="{TemplateBinding Background}"
+                                SnapsToDevicePixels="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Ring" Property="BorderBrush" Value="{DynamicResource WlLineStrong}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Ring" Property="BorderBrush" Value="{DynamicResource WlText}" />
+                            <Setter TargetName="Swatch" Property="Width" Value="16" />
+                            <Setter TargetName="Swatch" Property="Height" Value="16" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Ring" Property="BorderBrush" Value="{DynamicResource WlBrand}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── Marks panel ─────────────────────────────────────────────────────── -->
+
+    <!-- A quote in the panel is set in the reading face, indented behind a rule, so
+         the reader's own note beneath it is visibly the reader's. -->
+    <Style x:Key="WlQuoteBlock" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLineStrong}" />
+        <Setter Property="BorderThickness" Value="2,0,0,0" />
+        <Setter Property="Padding" Value="10,1,0,1" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <Style x:Key="WlQuoteText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontStyle" Value="Italic" />
+        <Setter Property="Foreground" Value="{DynamicResource WlTextSecondary}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="LineHeight" Value="19" />
+    </Style>
+
+    <Style x:Key="WlNoteText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource WlFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="LineHeight" Value="20" />
+    </Style>
+
+    <!-- One entry in Пометки / Закладки / Карточки. Hover is a surface change only;
+         these lists are long and a moving element in each row would be noise. -->
+    <Style x:Key="WlMarkRow" TargetType="Border">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WlLineSoft}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Padding" Value="2,12" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource WlSurfaceHi}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

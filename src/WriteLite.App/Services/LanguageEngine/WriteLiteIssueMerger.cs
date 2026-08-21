@@ -59,13 +59,17 @@ public sealed class WriteLiteIssueMerger
             for (var i = 0; i < accepted.Count; i++)
             {
                 var existing = accepted[i];
+                if (IsSameCommaInsertion(existing.Issue, candidate.Issue))
+                {
+                    accepted[i] = MergeCommaInsertions(existing, candidate);
+                    duplicateCount++;
+                    drop = true;
+                    break;
+                }
+
                 if (IsExactOrSemanticDuplicate(existing.Issue, candidate.Issue))
                 {
-                    // Keep higher priority.
-                    if (Prefer(candidate, existing) > 0)
-                    {
-                        accepted[i] = candidate;
-                    }
+                    accepted[i] = MergeDuplicateMetadata(existing, candidate);
 
                     duplicateCount++;
                     drop = true;
@@ -215,6 +219,99 @@ public sealed class WriteLiteIssueMerger
         return new ScoredIssue(issue, scored.SourceRank);
     }
 
+    /// <summary>
+    /// The absolute offset at which a punctuation finding inserts a comma, or null when it is
+    /// not a pure comma insertion.
+    /// </summary>
+    /// <remarks>
+    /// Two layers proposing the same comma describe it with different spans. The rules layer
+    /// reports a zero-length insertion after the preceding word; LanguageTool reports the two
+    /// words around the boundary and rewrites them with the comma in the middle. Both are
+    /// legitimate shapes for the same edit, and comparing them by span — which is all
+    /// <see cref="IsExactOrSemanticDuplicate"/> can do — finds no duplicate at all. The user
+    /// then gets two cards for one comma.
+    ///
+    /// Reducing each to the position it inserts the comma at makes them comparable regardless
+    /// of how much context the span carries.
+    /// </remarks>
+    private static int? CommaInsertionPosition(TextIssue issue)
+    {
+        if (issue.Category != IssueCategory.Punctuation) return null;
+
+        var original = issue.Original ?? string.Empty;
+        var replacement = issue.Replacement;
+        if (replacement is null || replacement.Length != original.Length + 1) return null;
+
+        var i = 0;
+        while (i < original.Length && original[i] == replacement[i]) i++;
+        if (replacement[i] != ',') return null;
+        if (!string.Equals(original[i..], replacement[(i + 1)..], StringComparison.Ordinal)) return null;
+
+        return issue.Start + i;
+    }
+
+    private static bool IsSameCommaInsertion(TextIssue a, TextIssue b)
+    {
+        var position = CommaInsertionPosition(a);
+        return position is not null && position == CommaInsertionPosition(b);
+    }
+
+    /// <summary>
+    /// One card for one comma: the span that shows the most context, with the most specific
+    /// explanation available from either layer.
+    /// </summary>
+    /// <remarks>
+    /// The wider span wins because it is what the user reads — «дачу а» → «дачу, а» shows the
+    /// boundary, while a bare inserted comma renders as «[вставка]». The explanation is taken
+    /// from the built-in rule when one is involved, because those carry a curated reason
+    /// naming the construction, and the engine's mapped message is generic. §13 asks for the
+    /// former; keeping the engine's span costs nothing and keeps the exact-span shape the
+    /// benchmark scores.
+    /// </remarks>
+    private static ScoredIssue MergeCommaInsertions(ScoredIssue first, ScoredIssue second)
+    {
+        var (wider, narrower) = first.Issue.Length >= second.Issue.Length
+            ? (first, second)
+            : (second, first);
+
+        var builtIn = !narrower.Issue.RuleId.StartsWith("WL-", StringComparison.Ordinal)
+                      && wider.Issue.RuleId.StartsWith("WL-", StringComparison.Ordinal)
+            ? narrower.Issue
+            : null;
+
+        if (builtIn is null) return wider;
+
+        return new ScoredIssue(
+            wider.Issue with
+            {
+                Title = builtIn.Title,
+                Explanation = builtIn.Explanation,
+                RuleId = builtIn.RuleId,
+                LinguisticCategory = builtIn.LinguisticCategory,
+                Confidence = Math.Max(wider.Issue.Confidence, builtIn.Confidence),
+                CanApplyAutomatically = wider.Issue.CanApplyAutomatically && builtIn.CanApplyAutomatically,
+            },
+            Math.Min(wider.SourceRank, narrower.SourceRank));
+    }
+
+    private static ScoredIssue MergeDuplicateMetadata(ScoredIssue first, ScoredIssue second)
+    {
+        var winner = Prefer(second, first) > 0 ? second : first;
+        var other = ReferenceEquals(winner, first) ? second : first;
+        var strongestExplanation = other.Issue.Explanation.Length > winner.Issue.Explanation.Length
+            ? other.Issue.Explanation
+            : winner.Issue.Explanation;
+
+        return new ScoredIssue(
+            winner.Issue with
+            {
+                Explanation = strongestExplanation,
+                Confidence = Math.Max(first.Issue.Confidence, second.Issue.Confidence),
+                CanApplyAutomatically = first.Issue.CanApplyAutomatically || second.Issue.CanApplyAutomatically,
+            },
+            Math.Min(first.SourceRank, second.SourceRank));
+    }
+
     private static bool IsExactOrSemanticDuplicate(TextIssue a, TextIssue b)
     {
         if (a.Start == b.Start && a.Length == b.Length
@@ -225,9 +322,11 @@ public sealed class WriteLiteIssueMerger
             return true;
         }
 
-        // Same range + same original fragment → one card (prefer better replacement later via Prefer).
+        // A range alone is not an issue identity. Two analyzers may legitimately offer
+        // different corrections for the same fragment; those must remain separate cards.
         if (a.Start == b.Start && a.Length == b.Length
             && string.Equals(a.Original, b.Original, StringComparison.Ordinal)
+            && SameReplacement(a, b)
             && CategoriesClose(a.Category, b.Category))
         {
             return true;

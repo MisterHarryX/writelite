@@ -3,7 +3,8 @@ namespace WriteLite.Services.Lexical;
 public enum LexicalLanguage
 {
     Unknown,
-    Russian
+    Russian,
+    English
 }
 
 public enum LexicalPartOfSpeech
@@ -54,7 +55,8 @@ public sealed record LexicalSuggestion(
     string? Label,
     double Relevance,
     bool CanReplace,
-    string? SenseId = null);
+    string? SenseId = null,
+    string? SourceId = null);
 
 public sealed record LexicalDefinition(
     string Definition,

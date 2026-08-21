@@ -1,4 +1,5 @@
 using WriteLite.Models;
+using WriteLite.Services.Diagnostics;
 
 namespace WriteLite.Services.Ai;
 
@@ -28,8 +29,11 @@ public sealed class AiTextAnalysisService
         string text,
         CancellationToken cancellationToken = default)
     {
+        var trace = CheckPipelineTracing.Current;
+
         if (!_provider.IsConfigured || string.IsNullOrWhiteSpace(text))
         {
+            trace?.Note("ai-provider-not-configured");
             return [];
         }
 
@@ -42,9 +46,19 @@ public sealed class AiTextAnalysisService
         {
             throw;
         }
-        catch
+        catch (Exception exception)
         {
+            trace?.Note($"ai-provider-threw: {exception.GetType().Name}");
             return [];
+        }
+
+        if (trace is not null)
+        {
+            // "Raw" is what the model's transport handed back, before any of WriteLite's
+            // validation: the explicit issue list plus the whole-text rewrite, which is a
+            // separate channel and produces findings of its own through the diff.
+            trace.AiRawResults = (response.Issues?.Count ?? 0)
+                                 + (string.IsNullOrWhiteSpace(response.CorrectedText) ? 0 : 1);
         }
 
         // Text may have changed after await — caller must re-validate; we still validate against `text`.
@@ -55,7 +69,32 @@ public sealed class AiTextAnalysisService
         if (!string.IsNullOrWhiteSpace(corrected)
             && !string.Equals(text, corrected, StringComparison.Ordinal))
         {
-            issues.AddRange(_diff.BuildIssues(text, corrected));
+            var fromDiff = _diff.BuildIssues(text, corrected);
+
+            // §28: the span list has to be a description of the rewrite, not a mangling of it.
+            // Applying every span to the original must reproduce the corrected text exactly;
+            // when it does not, the list is discarded whole rather than partially trusted,
+            // because a span list whose provenance is in doubt is how «что то» → «, что»
+            // reaches the user. Discarding costs recall on that one sentence and nothing else.
+            if (fromDiff.Count > 0 && !IssueApplication.Reconstructs(text, corrected, fromDiff))
+            {
+                trace?.Note($"ai-corrected-text: diff rejected, {fromDiff.Count} spans do not reconstruct the rewrite");
+                CompatibilityLogger.Technical(
+                    "ai-diff-rejected",
+                    $"textLength={text.Length} spans={fromDiff.Count}");
+                fromDiff = [];
+            }
+
+            trace?.Note($"ai-corrected-text: diff produced {fromDiff.Count} findings");
+            issues.AddRange(fromDiff);
+        }
+        else if (trace is not null)
+        {
+            trace.Note(string.IsNullOrWhiteSpace(response.CorrectedText)
+                ? "ai-corrected-text: absent"
+                : corrected is null
+                    ? "ai-corrected-text: rejected by validator (unsane rewrite)"
+                    : "ai-corrected-text: identical to input");
         }
 
         // Merge explicit issue list when offsets are trustworthy.
@@ -71,7 +110,18 @@ public sealed class AiTextAnalysisService
             }
         }
 
-        return _validator.FilterValidIssues(text, issues);
+        var valid = _validator.FilterValidIssues(text, issues);
+
+        if (trace is not null)
+        {
+            trace.AiParsedFindings = valid.Count;
+            if (issues.Count != valid.Count)
+            {
+                trace.Note($"ai-validator-dropped: {issues.Count - valid.Count} of {issues.Count}");
+            }
+        }
+
+        return valid;
     }
 
     private TextIssue? MapDto(string text, AiTextIssueDto dto)

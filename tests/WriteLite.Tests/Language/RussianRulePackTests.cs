@@ -12,8 +12,12 @@ public sealed class RussianRulePackTests
     {
         var catalog = RuleCatalog.LoadDefault();
 
-        Assert.AreEqual("ru-1.0.0", catalog.PackVersion);
-        Assert.IsGreaterThan(20, catalog.Rules.Count);
+        // ru-1.3.0 adds the Phase 7 rules: ru.punctuation.vocative-comma,
+        // ru.punctuation.greeting-sentence-boundary and ru.grammar.case-government-dative.
+        // The pack version is pinned deliberately: every fragment must agree on it, so a rule
+        // added to one file without a version bump fails loudly here.
+        Assert.AreEqual("ru-1.6.0", catalog.PackVersion);
+        Assert.IsGreaterThan(80, catalog.Rules.Count);
         Assert.IsTrue(catalog.Rules.All(rule => rule.Language == "ru"));
         Assert.IsTrue(catalog.Rules.All(rule => rule.RuleId.StartsWith("ru.", StringComparison.Ordinal)));
         Assert.AreEqual(catalog.Rules.Count, catalog.Rules.Select(rule => rule.RuleId).Distinct(StringComparer.Ordinal).Count());

@@ -6,7 +6,10 @@ namespace WriteLite.Tests.Ai;
 /// <summary>
 /// Proves C# → Qwen loopback → C# when server is up. Skips if health is down.
 /// </summary>
+// Writes to the process-wide LocalAiDiagnostics.Log sink, so it must not run beside the
+// tests in LocalAiAnalyzerTests that assert on that sink's contents.
 [TestClass]
+[DoNotParallelize]
 public sealed class QwenLiveInferenceProofTests
 {
     private static bool ServerUp()
