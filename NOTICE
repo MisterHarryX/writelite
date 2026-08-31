@@ -1,0 +1,42 @@
+WriteLite
+Copyright 2026 MisterHarryX
+
+This product includes software developed as part of the WriteLite project,
+licensed under the Apache License, Version 2.0 (see LICENSE).
+
+--------------------------------------------------------------------------------
+Third-party components
+--------------------------------------------------------------------------------
+
+The Apache 2.0 licence above covers WriteLite's own source code. Bundled and
+referenced third-party components remain under their own licences, which are not
+changed by this file. The authoritative, complete lists are:
+
+  src/WriteLite.App/ThirdParty/THIRD_PARTY_NOTICES.txt
+  ai/data/licenses.json
+  docs/LEXICAL_SOURCES_AND_LICENSES.md
+  docs/SPELLING_DATA_LICENSES.md
+
+Summary of the principal components:
+
+  LanguageTool 6.4 .................. LGPL-2.1-or-later
+      Redistributed in compiled form under
+      src/WriteLite.App/ThirdParty/LanguageEngine/6.4/, together with the
+      upstream licence texts in that directory's third-party-licenses/ folder.
+      LGPL-2.1 obligations, including the right to obtain and replace this
+      component, apply to it rather than to WriteLite's own code.
+
+  Hunspell and the ru_RU / en_US dictionaries
+                                      .... LGPL / MPL / BSD, per dictionary;
+      see docs/SPELLING_DATA_LICENSES.md.
+
+  Qwen2.5 ........................... Apache-2.0
+  llama.cpp ......................... MIT
+
+  Lexical sources (Wiktionary, OpenCorpora and others)
+                                      .... CC-BY-4.0 / CC-BY-SA-4.0;
+      per-source attribution in docs/LEXICAL_SOURCES_AND_LICENSES.md.
+
+Model weights, generated lexical packs and build artefacts are not kept in this
+repository; they are rebuilt from the scripts under ai/scripts/. Their licences
+are recorded in the files listed above.
