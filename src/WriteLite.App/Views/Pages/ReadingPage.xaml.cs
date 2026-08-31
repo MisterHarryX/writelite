@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -34,6 +34,11 @@ public partial class ReadingPage : UserControl
 
     private ReadingLibraryService? _library;
 
+    /// <summary>
+    /// Cover pictures. Owned by the page because the shelf is the only place they are used.
+    /// </summary>
+    private readonly BookCoverStore _covers = new();
+
     public ReadingPage()
     {
         InitializeComponent();
@@ -64,6 +69,12 @@ public partial class ReadingPage : UserControl
 
     /// <summary>True while a book is open, so the shell knows Escape belongs to the reader.</summary>
     public bool IsReading => Reader.Visibility == Visibility.Visible;
+
+    /// <summary>Turns back one page, for the shell shortcut. Does nothing with no book open.</summary>
+    public void GoToPreviousPage() => Reader.GoToPreviousPage();
+
+    /// <summary>Turns forward one page, for the shell shortcut.</summary>
+    public void GoToNextPage() => Reader.GoToNextPage();
 
     public void Bind(ReadingLibraryService library, StudyCardDraftService? drafts)
     {
@@ -189,6 +200,11 @@ public partial class ReadingPage : UserControl
 
         var body = new StackPanel();
 
+        if (BuildCover(project) is { } cover)
+        {
+            body.Children.Add(cover);
+        }
+
         var format = new TextBlock { Style = (Style)FindResource("WlMonoLabel") };
         Controls.Type.SetTracked(format, project.SourceFormat);
         format.Foreground = (Brush)FindResource("WlTextMuted");
@@ -262,6 +278,16 @@ public partial class ReadingPage : UserControl
         menu.Items.Add(Item("Переименовать…", () => Rename(project)));
         menu.Items.Add(Item("Указать файл заново…", () => Relocate(project)));
         menu.Items.Add(new Separator { Style = TryFindResource("WlMenuSeparator") as Style });
+        menu.Items.Add(Item(
+            _covers.Has(project.Id) ? "Заменить обложку…" : "Выбрать обложку…",
+            () => ChooseCover(project)));
+
+        if (_covers.Has(project.Id))
+        {
+            menu.Items.Add(Item("Убрать обложку", () => RemoveCover(project)));
+        }
+
+        menu.Items.Add(new Separator { Style = TryFindResource("WlMenuSeparator") as Style });
         menu.Items.Add(Item("Удалить проект", () => DeleteProject(project)));
 
         return menu;
@@ -277,6 +303,108 @@ public partial class ReadingPage : UserControl
 
         item.Click += (_, _) => action();
         return item;
+    }
+
+    // ── Covers ───────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// The picture at the top of a shelf card, or nothing when this book has no cover.
+    /// </summary>
+    /// <remarks>
+    /// <para>A fixed 3:2 frame with <see cref="Stretch.UniformToFill"/> and a clip. Covers
+    /// come in every proportion there is — a scanned dust jacket is tall, a screenshot is
+    /// wide — and letting each card size itself to its own picture would make the shelf a
+    /// ragged wall of different heights. Filling the frame and cropping keeps the grid, and
+    /// crops from the centre, which is where the title of a book cover is.</para>
+    ///
+    /// <para>The version is appended as a fragment so that a replaced cover is a different
+    /// URI to WPF's image cache. The file path never changes, so without it the shelf would
+    /// go on drawing the previous picture for the rest of the session.</para>
+    /// </remarks>
+    private FrameworkElement? BuildCover(ReadingProjectSummary project)
+    {
+        if (_covers.Load(project.Id) is not { } image)
+        {
+            return null;
+        }
+
+        var frame = new Border
+        {
+            Height = 150,
+            CornerRadius = new CornerRadius(6),
+            Margin = new Thickness(0, 0, 0, 12),
+            ClipToBounds = true,
+            Background = (Brush)FindResource("WlRaised"),
+            Child = new System.Windows.Controls.Image
+            {
+                Source = image,
+                Stretch = Stretch.UniformToFill,
+                // The picture is decorative: the card already carries the title, and a
+                // screen reader announcing "image" after it adds nothing.
+                Focusable = false
+            }
+        };
+
+        AutomationProperties.SetName(frame, string.Empty);
+        frame.SetValue(AutomationProperties.IsOffscreenBehaviorProperty, IsOffscreenBehavior.Onscreen);
+        return frame;
+    }
+
+    private void ChooseCover(ReadingProjectSummary project)
+    {
+        if (_library is null)
+        {
+            return;
+        }
+
+        var dialog = new OpenFileDialog
+        {
+            Title = "Обложка книги",
+            Filter = "Изображения (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg|PNG (*.png)|*.png|JPEG (*.jpg;*.jpeg)|*.jpg;*.jpeg",
+            CheckFileExists = true
+        };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        if (_library.Load(project.Id) is not { } stored)
+        {
+            return;
+        }
+
+        var result = _covers.Set(project.Id, dialog.FileName, stored.CoverVersion);
+        if (!result.Succeeded)
+        {
+            MessageBox.Show(
+                result.Message,
+                "Обложка",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        stored.CoverVersion = result.Version;
+        _library.Save(stored);
+        RenderLibrary();
+    }
+
+    private void RemoveCover(ReadingProjectSummary project)
+    {
+        if (_library is null || !_covers.Remove(project.Id))
+        {
+            return;
+        }
+
+        if (_library.Load(project.Id) is { } stored)
+        {
+            // The counter is not reset. It is a cache key, and a book that gets a new cover
+            // after this one must not reuse a URI the image cache has already seen.
+            _library.Save(stored);
+        }
+
+        RenderLibrary();
     }
 
     // ── Opening ──────────────────────────────────────────────────────────────
@@ -443,6 +571,10 @@ public partial class ReadingPage : UserControl
         if (confirm == MessageBoxResult.Yes)
         {
             _library?.Delete(project.Id);
+
+            // The cover belongs to the project, so it goes with it. Left behind it would be
+            // an orphan under the data directory that nothing could ever name again.
+            _covers.Remove(project.Id);
             RenderLibrary();
         }
     }

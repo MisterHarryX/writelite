@@ -101,6 +101,37 @@ public static class CorrectionCardText
     public static bool IsInsertion(TextIssue issue) =>
         CorrectionPresentation.IsTerminalPunctuationInsert(issue) || issue.Length == 0;
 
+    /// <summary>
+    /// Whether this finding has nothing a card could honestly draw as a change.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Why a display-level test and not just the data-level one.</b>
+    /// <see cref="CorrectionCandidateValidityPolicy.IsIdenticalCorrection"/> compares the
+    /// strings the analyzer produced, and every rendering path already filters on it. It is
+    /// not sufficient, because this class deliberately transforms both sides before they
+    /// reach the user: emphasis markers an analyzer injected are stripped, CR/LF and tabs
+    /// collapse to one glyph each, and anything past
+    /// <see cref="MaxFragmentLength"/> characters is truncated to a common ellipsis. Two
+    /// strings that differ can therefore render as one and the same fragment — and the card
+    /// then shows «Проверяем → Проверяем» over an orange apply button, which tells the user
+    /// that pressing it will change the word when it will not.</para>
+    ///
+    /// <para>The rule is that the card is judged on what it draws. If both sides draw the
+    /// same, there is no correction to offer, whatever the underlying strings say.</para>
+    ///
+    /// <para>An insertion is never a no-op: it has no "before" side to compare against, and
+    /// its own guard is that <see cref="TextIssue.Replacement"/> is non-empty.</para>
+    /// </remarks>
+    public static bool IsNoOpForDisplay(TextIssue issue)
+    {
+        ArgumentNullException.ThrowIfNull(issue);
+        if (string.IsNullOrWhiteSpace(issue.Replacement)) return true;
+        if (CorrectionCandidateValidityPolicy.IsIdenticalCorrection(issue.Original, issue.Replacement)) return true;
+        if (IsInsertion(issue)) return false;
+
+        return string.Equals(OriginalDisplay(issue), ReplacementDisplay(issue), StringComparison.Ordinal);
+    }
+
     /// <summary>Where the issue came from, for the small provenance label on a card.</summary>
     public static string SourceLabel(TextIssue issue) =>
         issue.RuleId.StartsWith("ru.spelling", StringComparison.Ordinal)

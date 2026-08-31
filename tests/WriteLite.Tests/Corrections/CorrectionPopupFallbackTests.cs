@@ -131,25 +131,45 @@ public sealed class CorrectionPopupFallbackTests
         });
     }
 
-    private static TextIssue Spelling(string original, string replacement) => new(
+    internal static TextIssue Spelling(string original, string replacement) => new(
         0, original.Length, original, replacement,
         "Орфография", "Слово не найдено в русском орфографическом словаре.",
         IssueCategory.Orthography, IssueSeverity.Warning,
         CanApplyAutomatically: false, RuleId: "ru.spelling.typo");
 
-    private static List<string> TextOf(DependencyObject root) =>
+    internal static List<string> TextOf(DependencyObject root) =>
         Descendants(root).OfType<TextBlock>()
+            .Where(IsShown)
             .Select(t => t.Text.Length > 0 ? t.Text : string.Concat(t.Inlines.OfType<System.Windows.Documents.Run>().Select(r => r.Text)))
             .Where(t => !string.IsNullOrWhiteSpace(t))
             .ToList();
 
-    private static List<string> ButtonsOf(DependencyObject root) =>
+    /// <summary>
+    /// The buttons a user could actually press.
+    /// </summary>
+    /// <remarks>
+    /// Visibility is the assertion. The card keeps every action in the visual tree and shows
+    /// the ones its phase allows, so "is «Повторить» in the tree" is always true and answers
+    /// nothing; "can the user see «Повторить»" is the question these tests are about.
+    /// </remarks>
+    internal static List<string> ButtonsOf(DependencyObject root) =>
         Descendants(root).OfType<Button>()
+            .Where(IsShown)
             .Select(b => b.Content as string ?? string.Empty)
             .Where(t => t.Length > 0)
             .ToList();
 
-    private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
+    private static bool IsShown(DependencyObject element)
+    {
+        for (var current = element; current is not null; current = VisualTreeHelper.GetParent(current))
+        {
+            if (current is UIElement { Visibility: not Visibility.Visible }) return false;
+        }
+
+        return true;
+    }
+
+    internal static IEnumerable<DependencyObject> Descendants(DependencyObject root)
     {
         var count = VisualTreeHelper.GetChildrenCount(root);
         for (var i = 0; i < count; i++)

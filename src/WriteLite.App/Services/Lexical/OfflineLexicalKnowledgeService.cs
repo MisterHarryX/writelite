@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.IO;
 
 namespace WriteLite.Services.Lexical;
@@ -398,7 +398,7 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
         if (_cache.TryGetValue(cacheKey, out var cached))
             return cached with { RequestId = request.RequestId };
 
-        var entry = LookupEntry(request.Word, LexicalLanguage.English);
+        var entry = LookupEntry(request.Word, LexicalLanguage.English) ?? LookupEnglishByLemma(request.Word);
         if (entry is null)
         {
             var empty = LexicalLookupResult.Empty(
@@ -441,7 +441,9 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
             Syntax: null,
             Antonyms: antonyms,
             Relations: [],
-            SurfaceFormNote: null,
+            SurfaceFormNote: string.Equals(request.Word, entry.Lemma, StringComparison.OrdinalIgnoreCase)
+                ? null
+                : $"Форма слова; лемма: {entry.Lemma}.",
             PackLicense: _englishManifest?.License,
             PackSource: _englishManifest?.Source);
 
@@ -451,6 +453,98 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
             $"request={request.RequestId} lang=en found=1 " +
             $"syn={synonyms.Length} def={entry.Definitions.Count}");
         return result;
+    }
+
+    /// <summary>
+    /// Finds the article for an inflected English word by reducing it to forms the pack has.
+    /// </summary>
+    /// <remarks>
+    /// <para>The Russian path has resolved surface forms to lemmas since it was written; the
+    /// English path never did, so a card opened on "running", "boxes" or "carried" reported
+    /// that the word is not in the dictionary while the article for "run", "box" and "carry"
+    /// sat one lookup away. Double-clicking a word in running prose lands on an inflected form
+    /// most of the time, which made the English dictionary look far emptier than it is.</para>
+    ///
+    /// <para><b>Why this is not a stemmer.</b> Nothing here decides what the lemma is. Each
+    /// candidate is a mechanical undoing of one English suffix, and a candidate counts only if
+    /// the pack actually holds an article for it — so an over-eager reduction produces a miss
+    /// rather than the wrong entry, and "bus" can never be served the article for "bu". The
+    /// candidates are ordered from the most to the least likely so that a word which reduces
+    /// two ways gets the commoner reading.</para>
+    /// </remarks>
+    private LexicalEntry? LookupEnglishByLemma(string word)
+    {
+        foreach (var candidate in EnglishLemmaCandidates(word))
+        {
+            if (LookupEntry(candidate, LexicalLanguage.English) is { } entry)
+            {
+                return entry;
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> EnglishLemmaCandidates(string word)
+    {
+        var lower = word.Trim().ToLowerInvariant();
+
+        // Below this length a suffix rule removes most of the word and the remainder is
+        // more likely to collide with an unrelated entry than to be the lemma.
+        if (lower.Length < 4) yield break;
+
+        if (lower.EndsWith("ies", StringComparison.Ordinal))
+        {
+            yield return lower[..^3] + "y";          // carries → carry
+        }
+
+        if (lower.EndsWith("es", StringComparison.Ordinal))
+        {
+            yield return lower[..^2];                 // boxes → box
+        }
+
+        if (lower.EndsWith('s') && !lower.EndsWith("ss", StringComparison.Ordinal))
+        {
+            yield return lower[..^1];                 // runs → run
+        }
+
+        if (lower.EndsWith("ied", StringComparison.Ordinal))
+        {
+            yield return lower[..^3] + "y";           // carried → carry
+        }
+
+        if (lower.EndsWith("ed", StringComparison.Ordinal))
+        {
+            yield return lower[..^2];                 // walked → walk
+            yield return lower[..^1];                 // liked  → like
+            yield return Undouble(lower[..^2]);       // stopped → stop
+        }
+
+        if (lower.EndsWith("ing", StringComparison.Ordinal))
+        {
+            yield return lower[..^3];                 // walking → walk
+            yield return lower[..^3] + "e";           // liking  → like
+            yield return Undouble(lower[..^3]);       // running → run
+        }
+
+        if (lower.EndsWith("er", StringComparison.Ordinal) || lower.EndsWith("est", StringComparison.Ordinal))
+        {
+            var stem = lower.EndsWith("er", StringComparison.Ordinal) ? lower[..^2] : lower[..^3];
+            yield return stem;                        // taller  → tall
+            yield return stem + "e";                  // nicer   → nice
+            yield return Undouble(stem);              // bigger  → big
+        }
+
+        if (lower.EndsWith("ly", StringComparison.Ordinal))
+        {
+            yield return lower[..^2];                 // quickly → quick
+        }
+
+        // A doubled final consonant before a suffix — "stopp", "runn" — is spelling, not
+        // stem. Returns the input unchanged when there is nothing doubled, in which case
+        // the caller simply probes the same candidate twice and finds the same answer.
+        static string Undouble(string stem) =>
+            stem.Length > 2 && stem[^1] == stem[^2] ? stem[..^1] : stem;
     }
 
     private static string BuildSurfaceNote(string word, string lemma, MorphologicalFeatures morphology)

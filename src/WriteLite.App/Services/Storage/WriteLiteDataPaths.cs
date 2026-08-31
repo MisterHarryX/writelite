@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 
 namespace WriteLite.Services.Storage;
 
@@ -35,4 +35,7 @@ public static class WriteLiteDataPaths
 
     public static string ReadingProjectFile(string projectId) =>
         Path.Combine(ReadingProjectsRoot, $"{projectId}.json");
+
+    /// <summary>Cover images the reader chose, one file per project.</summary>
+    public static string ReadingCoversRoot => Path.Combine(ReadingRoot, "covers");
 }

@@ -21,9 +21,14 @@ namespace WriteLite.Services.Writing;
 /// way to reach an application's own editing model is to use the same input the user
 /// does.</para>
 ///
-/// <para><b>Why it is last.</b> It borrows the clipboard, which belongs to the user, and it
-/// synthesises a keystroke, which goes wherever the keyboard is pointing. Both are fine when
-/// nothing else works and unnecessary when something else does.</para>
+/// <para><b>Why it runs ahead of the value write.</b> It borrows the clipboard, which belongs
+/// to the user, and it synthesises a keystroke, which goes wherever the keyboard is pointing
+/// — so it was placed last, behind <c>ValuePattern.SetValue</c>. That was the wrong axis to
+/// rank on. This strategy changes the span the correction names and leaves the rest of the
+/// host's editing model alone; <c>SetValue</c> replaces the whole value and, in the very
+/// hosts this strategy exists for, leaves the field unable to edit itself afterwards. The
+/// clipboard is captured and put back either way; a broken composer is not recoverable that
+/// cheaply.</para>
 ///
 /// <para><b>What it refuses to do.</b> It will not press a key unless the window in the
 /// foreground belongs to the target's own process and the target has focus — otherwise the
@@ -75,19 +80,19 @@ public sealed class SelectionPasteWriteStrategy : IExternalWriteStrategy
             return ExternalWriteResult.NotApplicable(Name);
         }
 
-        if (!TryBuildRange(textPattern, correction, out var range) || range is null)
+        if (!TryBuildRange(textPattern, correction.Start, correction.Length, out var range) || range is null)
         {
             return ExternalWriteResult.Failed(Name, "range-not-addressable");
         }
 
         // The one check that makes an offset-built selection safe: the provider has to agree
         // that this range holds the word we are about to destroy.
-        var selectedText = range.GetText(-1) ?? string.Empty;
-        if (!string.Equals(selectedText, correction.Original, StringComparison.Ordinal))
+        if (!Holds(range, correction.Original)
+            && !TryRealignToProviderText(textPattern, correction, ref range))
         {
             CompatibilityLogger.Technical(
                 "selection-paste-mismatch",
-                $"expectedLength={correction.Original.Length} actualLength={selectedText.Length}");
+                $"expectedLength={correction.Original.Length} start={correction.Start}");
             return ExternalWriteResult.Failed(Name, "selection-original-mismatch");
         }
 
@@ -153,17 +158,20 @@ public sealed class SelectionPasteWriteStrategy : IExternalWriteStrategy
     /// </remarks>
     private static bool TryBuildRange(
         TextPattern textPattern,
-        CanonicalCorrection correction,
+        int start,
+        int length,
         out TextPatternRange? range)
     {
         range = null;
+        if (start < 0 || length < 0) return false;
+
         try
         {
             var built = textPattern.DocumentRange.Clone();
             built.MoveEndpointByRange(TextPatternRangeEndpoint.Start, built, TextPatternRangeEndpoint.Start);
             built.MoveEndpointByRange(TextPatternRangeEndpoint.End, built, TextPatternRangeEndpoint.Start);
 
-            var end = correction.Start + correction.Length;
+            var end = start + length;
             if (end > 0)
             {
                 var moved = built.MoveEndpointByUnit(
@@ -171,11 +179,11 @@ public sealed class SelectionPasteWriteStrategy : IExternalWriteStrategy
                 if (moved != end) return false;
             }
 
-            if (correction.Start > 0)
+            if (start > 0)
             {
                 var moved = built.MoveEndpointByUnit(
-                    TextPatternRangeEndpoint.Start, TextUnit.Character, correction.Start);
-                if (moved != correction.Start) return false;
+                    TextPatternRangeEndpoint.Start, TextUnit.Character, start);
+                if (moved != start) return false;
             }
 
             range = built;
@@ -188,6 +196,108 @@ public sealed class SelectionPasteWriteStrategy : IExternalWriteStrategy
         {
             return false;
         }
+    }
+
+    /// <summary>True when the provider agrees the range holds exactly this text.</summary>
+    private static bool Holds(TextPatternRange range, string expected)
+    {
+        try
+        {
+            return string.Equals(range.GetText(-1), expected, StringComparison.Ordinal);
+        }
+        catch (Exception exception) when (exception is ElementNotAvailableException
+                                              or InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Rebuilds the range from an offset measured in the text provider's own document, when
+    /// the offset the correction carries was measured somewhere else.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Why the two can disagree.</b> A correction's offsets are measured against the
+    /// text WriteLite read, and the adapter that read it may have used <c>ValuePattern</c>
+    /// while this strategy addresses <c>TextPattern</c>. Those are two strings from two
+    /// providers on the same control, and they are not obliged to match character for
+    /// character. Discord's composer is the case in hand: Slate keeps a zero-width no-break
+    /// space in the value, so the value read is <c>"﻿…"</c> and every offset taken from
+    /// it sits one character to the right of the same word in the document range. Built
+    /// blind, the selection covers the wrong span; the check above catches that and this
+    /// recovers from it rather than handing the correction to the whole-value write.</para>
+    ///
+    /// <para><b>Why it is not a text search with a shrug.</b> The word being corrected is
+    /// usually a common one and usually occurs more than once. The occurrence nearest the
+    /// offset the correction already carries is the one meant — the offset is wrong by a
+    /// marker or two, not by a sentence — so a tie between two equally near occurrences is
+    /// genuine ambiguity and is refused. The rebuilt range is then put through the same
+    /// verification as the first one, because an offset agreeing with the document text still
+    /// says nothing about a provider that counts its <c>Character</c> unit differently.</para>
+    /// </remarks>
+    private static bool TryRealignToProviderText(
+        TextPattern textPattern,
+        CanonicalCorrection correction,
+        ref TextPatternRange? range)
+    {
+        string document;
+        try
+        {
+            document = textPattern.DocumentRange.GetText(-1) ?? string.Empty;
+        }
+        catch (Exception exception) when (exception is ElementNotAvailableException
+                                              or InvalidOperationException)
+        {
+            return false;
+        }
+
+        var start = NearestOccurrence(document, correction.Original, correction.Start);
+        if (start < 0 || start == correction.Start) return false;
+
+        if (!TryBuildRange(textPattern, start, correction.Original.Length, out var rebuilt)
+            || rebuilt is null
+            || !Holds(rebuilt, correction.Original))
+        {
+            return false;
+        }
+
+        CompatibilityLogger.Technical(
+            "selection-paste-realigned",
+            $"from={correction.Start} to={start}");
+        range = rebuilt;
+        return true;
+    }
+
+    /// <summary>
+    /// The occurrence of <paramref name="needle"/> closest to <paramref name="preferred"/>,
+    /// or -1 when there is none or when two are equally close.
+    /// </summary>
+    internal static int NearestOccurrence(string haystack, string needle, int preferred)
+    {
+        if (needle.Length == 0 || haystack.Length < needle.Length) return -1;
+
+        var best = -1;
+        var bestDistance = int.MaxValue;
+        var tied = false;
+
+        for (var index = haystack.IndexOf(needle, StringComparison.Ordinal);
+             index >= 0;
+             index = haystack.IndexOf(needle, index + 1, StringComparison.Ordinal))
+        {
+            var distance = Math.Abs(index - preferred);
+            if (distance < bestDistance)
+            {
+                best = index;
+                bestDistance = distance;
+                tied = false;
+            }
+            else if (distance == bestDistance)
+            {
+                tied = true;
+            }
+        }
+
+        return tied ? -1 : best;
     }
 
     private static bool TryFocusTarget(AutomationElement element, out int processId)

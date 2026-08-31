@@ -1,4 +1,4 @@
-using System.Windows.Automation;
+﻿using System.Windows.Automation;
 using WriteLite.Language.Core;
 
 namespace WriteLite.Services.Writing;
@@ -61,9 +61,10 @@ public interface IExternalWriteStrategy
 /// <c>TextPattern</c> with no writable value, Win32 edit controls answer to a window message
 /// whether or not any pattern is present, and a WinUI box may offer both or neither.</para>
 ///
-/// <para><b>Order.</b> Least invasive first. A window message and a pattern call change only
-/// the control; a clipboard paste borrows a shared system resource and synthesises input, so
-/// it goes last and only when nothing else applies or nothing else worked.</para>
+/// <para><b>Order.</b> Chosen per control rather than fixed — see <c>PlanStrategies</c>.
+/// Cheapest first for a control whose value is its text; the whole-value route demoted to
+/// last for one that keeps a document model behind its value, because <c>SetValue</c> would
+/// rewrite what the model no longer describes.</para>
 ///
 /// <para><b>Verification is the contract.</b> A strategy reporting success is a claim, not
 /// evidence. <see cref="ApplyAsync"/> re-reads the control after every attempt and only stops
@@ -91,14 +92,57 @@ public sealed class ExternalTextWriter
 
     /// <summary>The strategies that would be tried for a control, in the order they run.</summary>
     public IReadOnlyList<string> PlanFor(in TextTargetCapabilities capabilities)
+        => [.. PlanStrategies(capabilities).Select(strategy => strategy.Name)];
+
+    /// <summary>
+    /// The routes available for one control, in the order they should be tried.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>The default order is by cost.</b> A window message and a pattern call change
+    /// the control directly; a clipboard paste borrows a shared system resource and
+    /// synthesises input, so it goes last. Measured through this path, a WPF text box takes a
+    /// pattern write in 28 ms and a selected paste in 241 ms, and a browser field 27 ms
+    /// against 1 152 ms — the difference between an apply that feels instant and one the user
+    /// waits for.</para>
+    ///
+    /// <para><b>The exception is by scope.</b> <c>EM_REPLACESEL</c> and a selected paste
+    /// replace the span the correction names; <c>ValuePattern.SetValue</c> replaces the whole
+    /// value. Those are the same thing for a control whose value is its text and very
+    /// different for one that keeps a document model behind it, where the whole-value write
+    /// leaves the model describing text that is no longer there — see
+    /// <see cref="TextTargetCapabilities.ValueIsProjectedFromDocumentModel"/>. For those
+    /// controls the whole-value route is demoted to last rather than removed, because for a
+    /// Chromium field with no selectable text it remains the only route there is, and a
+    /// correction that cannot be applied at all is worse than one applied bluntly.</para>
+    ///
+    /// <para>An earlier fix for the same defect demoted the whole-value route for every
+    /// control. It fixed Discord and made every ordinary text box in Windows pay a clipboard
+    /// round-trip: <c>FieldMonitorApplyTests</c> measured p50 apply latency rising from under
+    /// 300 ms to 384 ms. Ordering per control keeps both properties.</para>
+    /// </remarks>
+    private IReadOnlyList<IExternalWriteStrategy> PlanStrategies(TextTargetCapabilities capabilities)
     {
-        var plan = new List<string>(_strategies.Count);
+        var applicable = new List<IExternalWriteStrategy>(_strategies.Count);
         foreach (var strategy in _strategies)
         {
-            if (strategy.Applies(capabilities)) plan.Add(strategy.Name);
+            if (strategy.Applies(capabilities)) applicable.Add(strategy);
         }
 
-        return plan;
+        if (!capabilities.ValueIsProjectedFromDocumentModel || applicable.Count < 2)
+        {
+            return applicable;
+        }
+
+        var wholeValue = applicable.FindIndex(strategy => strategy is ValuePatternWriteStrategy);
+        if (wholeValue < 0 || wholeValue == applicable.Count - 1)
+        {
+            return applicable;
+        }
+
+        var demoted = applicable[wholeValue];
+        applicable.RemoveAt(wholeValue);
+        applicable.Add(demoted);
+        return applicable;
     }
 
     /// <summary>
@@ -115,11 +159,9 @@ public sealed class ExternalTextWriter
         var attempted = 0;
         var lastDetail = "no-strategy";
 
-        var caps = capabilities;
-        foreach (var strategy in _strategies)
+        foreach (var strategy in PlanStrategies(capabilities))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (!strategy.Applies(caps)) continue;
 
             attempted++;
             ExternalWriteResult attempt;

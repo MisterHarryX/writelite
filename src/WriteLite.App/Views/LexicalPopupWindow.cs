@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -55,11 +55,13 @@ public sealed class LexicalPopupWindow : Window
     private readonly StackPanel _examplesPanel = new();
     private readonly StackPanel _morphologyPanel = new();
     private readonly StackPanel _rolePanel = new();
+    private readonly StackPanel _translationsPanel = new();
     private readonly TabItem _wordTab;
     private readonly TabItem _synonymsTab;
     private readonly TabItem _definitionsTab;
     private readonly TabItem _examplesTab;
     private readonly TabItem _roleTab;
+    private readonly TabItem _translationsTab;
 
     private LexicalLookupResult? _result;
     private WordRange? _range;
@@ -113,11 +115,31 @@ public sealed class LexicalPopupWindow : Window
         Controls.Type.SetTracked(eyebrow, "СЛОВАРЬ");
         var titleRow = new StackPanel { Orientation = Orientation.Horizontal };
         titleRow.Children.Add(eyebrow);
+        // The card is a summary. This is the way out of it and into the full article, and it
+        // leads to the same dictionary page every other «Открыть в словаре» in the product
+        // leads to, rather than to a second reading surface built for popups.
+        var openFull = CreateGhostButton("В словаре", double.NaN, 26);
+        openFull.Padding = new Thickness(8, 0, 8, 0);
+        openFull.FontSize = 11;
+        openFull.ToolTip = "Открыть полную статью в WriteLite";
+        openFull.Click += (_, _) =>
+        {
+            var word = _result?.Lemma ?? _range?.Word;
+            if (!string.IsNullOrWhiteSpace(word))
+            {
+                FullArticleRequested?.Invoke(this, word);
+            }
+        };
+
         var close = CreateGhostButton("\u00d7", 26, 26);
         close.Click += (_, _) => Hide();
-        Grid.SetColumn(close, 1);
+
+        var actions = new StackPanel { Orientation = Orientation.Horizontal };
+        actions.Children.Add(openFull);
+        actions.Children.Add(close);
+        Grid.SetColumn(actions, 1);
         header.Children.Add(titleRow);
-        header.Children.Add(close);
+        header.Children.Add(actions);
 
         var headBlock = new StackPanel();
         headBlock.Children.Add(header);
@@ -144,7 +166,9 @@ public sealed class LexicalPopupWindow : Window
         _definitionsTab = CreateTab("Значения", _definitionsPanel);
         _examplesTab = CreateTab("Примеры", _examplesPanel);
         _roleTab = CreateTab("Роль", _rolePanel);
+        _translationsTab = CreateTab("Перевод", _translationsPanel);
         _tabs.Items.Add(_wordTab);
+        _tabs.Items.Add(_translationsTab);
         _tabs.Items.Add(_synonymsTab);
         _tabs.Items.Add(_definitionsTab);
         _tabs.Items.Add(_examplesTab);
@@ -158,6 +182,9 @@ public sealed class LexicalPopupWindow : Window
     public event EventHandler<LexicalReplaceRequestedEventArgs>? ReplaceRequested;
     public event EventHandler? ClosedByUser;
 
+    /// <summary>Raised with the headword when the user asks for the full dictionary article.</summary>
+    public event EventHandler<string>? FullArticleRequested;
+
     public long CurrentRequestId => _requestId;
 
     public void ShowLoading(
@@ -166,9 +193,11 @@ public sealed class LexicalPopupWindow : Window
         long requestId,
         string targetId,
         int generationId,
-        long textVersion)
+        long textVersion,
+        string fullText)
     {
         _range = range;
+        _fullText = fullText;
         _requestId = requestId;
         _targetId = targetId;
         _generationId = generationId;
@@ -187,16 +216,85 @@ public sealed class LexicalPopupWindow : Window
     }
 
     /// <summary>
-    /// A lexical card is only valid for the exact text generation that created
-    /// it.  The owner uses this to cancel a pending lookup as soon as focus or
-    /// text changes, instead of showing a result for an old field.
+    /// Whether a newly observed field state means this card no longer describes anything.
     /// </summary>
-    public bool IsBoundTo(string? targetId, int generationId, long textVersion) =>
-        !string.IsNullOrWhiteSpace(targetId)
-        && string.Equals(_targetId, targetId, StringComparison.Ordinal)
-        && _generationId == generationId
-        && _textVersion == textVersion;
+    /// <remarks>
+    /// <para><b>What actually makes a card stale.</b> Two things: the word it is about has
+    /// been edited, or the user has moved to a different field. Both are checked here against
+    /// the facts they are about — the field's identity, and the text the card was built from.
+    /// </para>
+    ///
+    /// <para><b>What used to be checked, and why it was wrong.</b> The card was invalidated
+    /// whenever the monitor's <c>(target, generation, textVersion)</c> triple stopped matching
+    /// the one captured when the card opened. Neither of the last two is a statement about the
+    /// text. The monitor restamps every republished snapshot with the live text version, and it
+    /// republishes whenever its interaction state changes — including on
+    /// <c>SetPopupInteractionOpen</c>, which is called to open this very card. It also
+    /// increments the version once when it first establishes a baseline for a field, which for
+    /// a field the user has only just clicked into happens after the card is already open. Each
+    /// of those made a card that nobody had touched disappear on its own, and in a Slate
+    /// composer — where clicking about is what the user does — it happened constantly.</para>
+    ///
+    /// <para>A <see langword="null"/> state is likewise not a dismissal. The monitor publishes
+    /// one when it stops tracking a field, which happens while switching between fields and
+    /// while the tracked window loses activation; it means "nothing is being watched", not
+    /// "the user is finished with this card". Dismissal by the user is handled where the user
+    /// actually performs it — see <c>DoubleClickWordObserver.PrimaryButtonPressed</c>.</para>
+    /// </remarks>
+    /// <param name="targetId">Runtime identifier of the field now being tracked, if any.</param>
+    /// <param name="text">That field's current text, if any.</param>
+    public bool IsStaleFor(string? targetId, string? text)
+    {
+        if (string.IsNullOrWhiteSpace(_targetId))
+        {
+            // Nothing was recorded to compare against; there is no evidence of staleness.
+            return false;
+        }
 
+        if (string.IsNullOrWhiteSpace(targetId))
+        {
+            return false;
+        }
+
+        if (!string.Equals(_targetId, targetId, StringComparison.Ordinal))
+        {
+            // A different field is being tracked. The card describes a word the user is no
+            // longer in.
+            return true;
+        }
+
+        // Same field. Only an actual change to its text can have moved the word.
+        return _fullText is not null
+               && text is not null
+               && !string.Equals(_fullText, text, StringComparison.Ordinal);
+    }
+
+    /// <summary>True when a screen point in physical pixels lands on this card.</summary>
+    /// <remarks>
+    /// The point comes from the low-level mouse hook and is therefore in physical pixels,
+    /// while <see cref="Window.Left"/> and <see cref="Window.Top"/> are device-independent —
+    /// the same mismatch <see cref="PositionForAnchor"/> resolves in the other direction, and
+    /// resolved here with the same DPI so the two agree.
+    /// </remarks>
+    public bool ContainsPhysicalPoint(System.Windows.Point physicalScreenPoint)
+    {
+        if (!IsVisible) return false;
+
+        var dpi = VisualTreeHelper.GetDpi(this);
+        var bounds = new Rect(
+            Left * dpi.DpiScaleX,
+            Top * dpi.DpiScaleY,
+            Math.Max(ActualWidth, Width) * dpi.DpiScaleX,
+            Math.Max(ActualHeight, MinHeight) * dpi.DpiScaleY);
+
+        return bounds.Contains(physicalScreenPoint);
+    }
+
+    /// <param name="translations">
+    /// Cross-language glosses for the word, from the index the dictionary page and the
+    /// editor's word panel already use. Empty when none are installed or none are known.
+    /// </param>
+    /// <inheritdoc cref="ShowLoading"/>
     public void ShowResult(
         LexicalLookupResult result,
         WordRange range,
@@ -206,7 +304,8 @@ public sealed class LexicalPopupWindow : Window
         long textVersion,
         bool supportsWrite,
         Rect physicalAnchor,
-        long requestId)
+        long requestId,
+        IReadOnlyList<string>? translations = null)
     {
         if (requestId != 0 && _requestId != 0 && requestId < _requestId)
         {
@@ -226,14 +325,21 @@ public sealed class LexicalPopupWindow : Window
 
         _titleWord.Text = result.Word;
         var pos = PosLabel(result.PartOfSpeech);
-        const string lang = "RU";
+
+        // The card serves both installed packs, so the label has to say which one answered.
+        // It was hard-coded to "RU", which meant an English word double-clicked in a chat
+        // was presented as a Russian entry — with an English headword, English definitions
+        // and Russian abbreviations for its part of speech.
+        var lang = LanguageLabel(result.Language, range.Word);
         _subtitle.Text = string.IsNullOrEmpty(pos)
             ? $"{lang} · {result.Lemma}"
             : $"{lang} · {pos} · {result.Lemma}";
 
         _status.Text = result.StatusMessage ?? "";
+        var glosses = translations ?? [];
         PopulateSource(result);
         PopulateMorphology(result);
+        PopulateTranslations(glosses);
         PopulateSynonyms(result);
         PopulateDefinitions(result);
         PopulateExamples(result);
@@ -243,7 +349,8 @@ public sealed class LexicalPopupWindow : Window
             synonyms: result.Synonyms.Count > 0 || result.Antonyms is { Count: > 0 },
             definitions: result.Definitions.Count > 0,
             examples: result.Examples.Count > 0,
-            role: result.Syntax is not null);
+            role: result.Syntax is not null,
+            translations: glosses.Count > 0);
 
         EnsureVisible();
         PositionForAnchor(_pendingAnchor, new Size(Width, Math.Max(MinHeight, 220)));
@@ -398,10 +505,7 @@ public sealed class LexicalPopupWindow : Window
             {
                 var copy = CreateGhostButton("Копировать", double.NaN, 28);
                 var capture = s.Value;
-                copy.Click += (_, _) =>
-                {
-                    try { System.Windows.Clipboard.SetText(capture); } catch { /* ignore */ }
-                };
+                copy.Click += (_, _) => CopyToClipboard(capture);
                 Grid.SetColumn(copy, 1);
                 grid.Children.Add(copy);
             }
@@ -571,18 +675,76 @@ public sealed class LexicalPopupWindow : Window
         bool synonyms,
         bool definitions,
         bool examples,
-        bool role)
+        bool role,
+        bool translations = false)
     {
         _wordTab.Visibility = word ? Visibility.Visible : Visibility.Collapsed;
+        _translationsTab.Visibility = translations ? Visibility.Visible : Visibility.Collapsed;
         _synonymsTab.Visibility = synonyms ? Visibility.Visible : Visibility.Collapsed;
         _definitionsTab.Visibility = definitions ? Visibility.Visible : Visibility.Collapsed;
         _examplesTab.Visibility = examples ? Visibility.Visible : Visibility.Collapsed;
         _roleTab.Visibility = role ? Visibility.Visible : Visibility.Collapsed;
 
+        // The order the tabs are offered in is the order they are considered in, so a card
+        // that has nothing else opens on whichever tab does have something.
+        var ordered = new[] { _wordTab, _translationsTab, _synonymsTab, _definitionsTab, _examplesTab, _roleTab };
         if (_tabs.SelectedItem is not TabItem selected || selected.Visibility != Visibility.Visible)
         {
-            _tabs.SelectedItem = new[] { _wordTab, _synonymsTab, _definitionsTab, _examplesTab, _roleTab }
-                .First(tab => tab.Visibility == Visibility.Visible);
+            _tabs.SelectedItem = Array.Find(ordered, tab => tab.Visibility == Visibility.Visible) ?? _wordTab;
+            _wordTab.Visibility = Visibility.Visible;
+        }
+    }
+
+    /// <summary>
+    /// Fills the translation tab, which is the whole point of the card for a foreign word.
+    /// </summary>
+    /// <remarks>
+    /// The values come from the same <c>TranslationIndex</c> the dictionary page and the
+    /// editor's word panel read — the card composes the existing services rather than
+    /// acquiring a dictionary of its own. Each translation is copyable, because the reason
+    /// someone double-clicks an English word mid-sentence is usually to put its Russian in
+    /// what they are writing.
+    /// </remarks>
+    private void PopulateTranslations(IReadOnlyList<string> translations)
+    {
+        _translationsPanel.Children.Clear();
+
+        if (translations.Count == 0)
+        {
+            _translationsPanel.Children.Add(Muted("Перевода нет в установленных словарях."));
+            return;
+        }
+
+        foreach (var value in translations.Take(12))
+        {
+            var row = new Border
+            {
+                Background = RaisedBackground,
+                CornerRadius = new CornerRadius(5),
+                Padding = new Thickness(10, 8, 10, 8),
+                Margin = new Thickness(0, 0, 0, 6)
+            };
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.Children.Add(new TextBlock
+            {
+                Text = value,
+                FontSize = 14,
+                Foreground = TextBrush,
+                TextWrapping = TextWrapping.Wrap,
+                VerticalAlignment = VerticalAlignment.Center
+            });
+
+            var copy = CreateGhostButton("Копировать", double.NaN, 28);
+            var captured = value;
+            copy.Click += (_, _) => CopyToClipboard(captured);
+            Grid.SetColumn(copy, 1);
+            grid.Children.Add(copy);
+
+            row.Child = grid;
+            _translationsPanel.Children.Add(row);
         }
     }
 
@@ -610,6 +772,26 @@ public sealed class LexicalPopupWindow : Window
             Content = scroll,
             Style = ThemeResource.Style("WlTabItem")
         };
+    }
+
+    /// <summary>
+    /// Puts a word on the clipboard, and does nothing visible when the clipboard refuses.
+    /// </summary>
+    /// <remarks>
+    /// <c>Clipboard.SetText</c> throws when another process is holding the clipboard open,
+    /// which on a desktop with a clipboard manager running is a normal transient condition
+    /// rather than a fault. Failing the copy silently is the right outcome: the alternative
+    /// is an error dialog over someone else's window because a synonym did not copy.
+    /// </remarks>
+    private static void CopyToClipboard(string value)
+    {
+        try
+        {
+            System.Windows.Clipboard.SetText(value);
+        }
+        catch (System.Runtime.InteropServices.ExternalException)
+        {
+        }
     }
 
     private static TextBlock Muted(string text) => new()
@@ -643,6 +825,29 @@ public sealed class LexicalPopupWindow : Window
         });
         if (idx + word.Length < text.Length)
             block.Inlines.Add(new System.Windows.Documents.Run(text[(idx + word.Length)..]) { Foreground = TextBrush });
+    }
+
+    /// <summary>
+    /// Which pack answered, or which language the word is in when nothing answered.
+    /// </summary>
+    /// <remarks>
+    /// A miss carries <see cref="LexicalLanguage.Unknown"/> because no entry was found to
+    /// carry a language, and labelling a plainly English word "—" is less useful than saying
+    /// what it evidently is. The script of the word itself is the fallback.
+    /// </remarks>
+    private static string LanguageLabel(LexicalLanguage language, string word)
+    {
+        if (language == LexicalLanguage.Unknown)
+        {
+            language = new LexicalLanguageDetector().DetectWord(word);
+        }
+
+        return language switch
+        {
+            LexicalLanguage.English => "EN",
+            LexicalLanguage.Russian => "RU",
+            _ => "—"
+        };
     }
 
     private static string PosLabel(LexicalPartOfSpeech pos) => pos switch

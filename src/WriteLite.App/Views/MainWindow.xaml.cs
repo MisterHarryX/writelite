@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
@@ -65,7 +65,7 @@ public partial class MainWindow : Window
         //
         // Escape is the opposite. It belongs to whatever is in front of it, and getting
         // here at all is the proof that no popup, dialog or text field wanted it.
-        PreviewKeyDown += OnFullScreenKey;
+        PreviewKeyDown += OnWindowShortcut;
         KeyDown += OnEscape;
 
         // Both new sections hand a selected word to the dictionary through the one
@@ -130,6 +130,9 @@ public partial class MainWindow : Window
 
     public event Action<WriteLiteAppSettings>? SettingsChanged;
 
+    /// <summary>Raised when a shortcut binding changes, so the shell can re-register it.</summary>
+    public event Action<ShortcutRegistry>? ShortcutsChanged;
+
     public event Action? DictionaryChanged;
 
     public event Action? ExceptionsChanged;
@@ -189,6 +192,7 @@ public partial class MainWindow : Window
     {
         _settingsPage.Bind(settings, autostart);
         _settingsPage.SettingsChanged += s => SettingsChanged?.Invoke(s);
+        _settingsPage.ShortcutsChanged += registry => ShortcutsChanged?.Invoke(registry);
         _wordManagerPage.Bind(dictionary, ignore);
         _wordManagerPage.DictionaryChanged += () => DictionaryChanged?.Invoke();
         _wordManagerPage.ExceptionsChanged += () => ExceptionsChanged?.Invoke();
@@ -358,15 +362,50 @@ public partial class MainWindow : Window
 
     public void ToggleFullScreen() => _windowBehavior.ToggleFullScreen();
 
-    private void OnFullScreenKey(object sender, KeyEventArgs e)
+    /// <summary>
+    /// The shortcuts that belong to the window rather than to whichever page is on screen.
+    /// </summary>
+    /// <remarks>
+    /// Reader page navigation is handled here, not in the reader, because a shortcut for
+    /// turning the page has to work while the reader has focus anywhere inside it — in the
+    /// text, in the marks panel, on a toolbar button — and the window is the one element
+    /// every one of those is inside. It is offered only while a book is actually open, so
+    /// the same keys stay free everywhere else.
+    /// </remarks>
+    private void OnWindowShortcut(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.F11)
-        {
-            return;
-        }
+        var shortcut = _shortcuts.Match(e.Key, Keyboard.Modifiers, ShortcutScope.Application);
 
-        e.Handled = true;
-        _windowBehavior.ToggleFullScreen();
+        switch (shortcut)
+        {
+            case ShortcutRegistry.FullScreen:
+                e.Handled = true;
+                _windowBehavior.ToggleFullScreen();
+                break;
+
+            case ShortcutRegistry.PreviousPage when _readingPage.IsReading:
+                e.Handled = true;
+                _readingPage.GoToPreviousPage();
+                break;
+
+            case ShortcutRegistry.NextPage when _readingPage.IsReading:
+                e.Handled = true;
+                _readingPage.GoToNextPage();
+                break;
+        }
+    }
+
+    /// <summary>
+    /// The shortcuts this window obeys. Replaced when the settings page changes them.
+    /// </summary>
+    private ShortcutRegistry _shortcuts = new();
+
+    /// <summary>Gives the shell and its pages the shortcut bindings the reader configured.</summary>
+    public void BindShortcuts(ShortcutRegistry shortcuts)
+    {
+        _shortcuts = shortcuts;
+        _editorPage.BindShortcuts(shortcuts);
+        _settingsPage.BindShortcuts(shortcuts);
     }
 
     private void OnEscape(object sender, KeyEventArgs e)

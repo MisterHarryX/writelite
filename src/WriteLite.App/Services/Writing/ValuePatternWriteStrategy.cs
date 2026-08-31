@@ -1,4 +1,4 @@
-using System.Windows.Automation;
+﻿using System.Windows.Automation;
 using WriteLite.Language.Core;
 
 namespace WriteLite.Services.Writing;
@@ -8,11 +8,14 @@ namespace WriteLite.Services.Writing;
 /// correction into it and setting it back.
 /// </summary>
 /// <remarks>
-/// <para>The route WriteLite always had, kept because it is the only one many WinForms, WPF
-/// and WinUI controls offer, and because it is a single cross-process call. Its cost is that
-/// <c>SetValue</c> replaces the entire value: undo history is usually lost, and the caret
-/// goes wherever the provider decides. That is why it now sits behind the window-message
-/// strategy rather than in front of it.</para>
+/// <para>The route WriteLite always had, kept because it is the only one some value providers
+/// offer, and because it is a single cross-process call — 28 ms against a selected paste's
+/// 241 ms on the same WPF text box. Its cost is that <c>SetValue</c> replaces the entire value
+/// rather than the corrected span: undo history is usually lost, the caret goes wherever the
+/// provider decides, and a host that keeps its own document model behind the value is left
+/// with a model that no longer matches its DOM. For that last class of control this strategy
+/// is demoted to the end of the chain rather than removed from it — see
+/// <c>ExternalTextWriter.PlanStrategies</c>.</para>
 ///
 /// <para>The splice is done through <see cref="CanonicalCorrection.ApplyTo"/> against the
 /// value read here and now, not against the snapshot the analysis was made from. If the

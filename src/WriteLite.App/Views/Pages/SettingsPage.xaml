@@ -296,7 +296,21 @@
             <TextBlock x:Name="LocalAiStatusHint" Style="{DynamicResource WlCaption}" Margin="0,10,0,0" />
 
             <!-- ═══ 06 Приватность ══════════════════════════════════════════ -->
-            <controls:SectionHeader Index="06" Title="Приватность" Margin="0,40,0,0" />
+            <controls:SectionHeader Index="06" Title="Сочетания клавиш"
+                                    Description="Щёлкните по сочетанию и нажмите новые клавиши. Escape — отмена."
+                                    Margin="0,40,0,0" />
+
+            <StackPanel x:Name="ShortcutList" Margin="0,4,0,0" />
+
+            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                <Button Style="{DynamicResource WlSecondaryButton}"
+                        Content="Сбросить все сочетания"
+                        Click="ResetShortcuts_Click"
+                        AutomationProperties.Name="Сбросить все сочетания клавиш" />
+            </StackPanel>
+            <TextBlock x:Name="ShortcutHint" Style="{DynamicResource WlCaption}" Margin="0,10,0,0" TextWrapping="Wrap" />
+
+            <controls:SectionHeader Index="07" Title="Приватность" Margin="0,40,0,0" />
             <TextBlock Style="{DynamicResource WlBody}"
                        Foreground="{DynamicResource WlTextSecondary}"
                        LineHeight="23"

@@ -1,4 +1,4 @@
-using System.Windows.Automation;
+﻿using System.Windows.Automation;
 
 namespace WriteLite.Services;
 
@@ -45,13 +45,42 @@ public readonly record struct TextTargetCapabilities(
     bool HasTextPattern,
     bool SupportsTextSelection,
     bool HasNativeEditWindow,
-    bool IsTextControlType)
+    bool IsTextControlType,
+    string? FrameworkId = null)
 {
     /// <summary>The unreadable control: every claim below is unknown rather than false.</summary>
     public static TextTargetCapabilities Unknown => default;
 
     /// <summary>ValuePattern is present and does not declare itself read-only.</summary>
     public bool HasWritableValuePattern => HasValuePattern && !ValueIsReadOnly;
+
+    /// <summary>
+    /// Whether this control's value is a rendering of a document it keeps somewhere else.
+    /// </summary>
+    /// <remarks>
+    /// <para>The distinction matters for exactly one decision: whether replacing the whole
+    /// value is a safe way to change part of it. For a native text box the value *is* the
+    /// text, and handing it a new string is both correct and the cheapest write available.
+    /// For a Chromium-hosted editor the value is a projection of a document model held by
+    /// the page — Slate, Quill, ProseMirror — and <c>ValuePattern.SetValue</c> rewrites the
+    /// projection while the model goes on describing what used to be there. The text reads
+    /// back correctly, so the write verifies; the caret then has no valid position and
+    /// Backspace and Delete stop removing what they point at. That was the reported Discord
+    /// defect.</para>
+    ///
+    /// <para><b>Why the framework and not the application.</b> Naming applications would be
+    /// the hack this codebase refuses. <c>FrameworkId</c> is not an application: every
+    /// Chromium embedding — Chrome, Edge, Electron, CEF, and so every app built on any of
+    /// them — reports <c>Chrome</c>, and reports it because of how the control is built,
+    /// which is precisely the fact the decision turns on. An application not yet heard of,
+    /// built on Electron tomorrow, is covered without being named.</para>
+    ///
+    /// <para>This does not decide whether a write happens, only what is tried first. A
+    /// Chromium control with no selectable text still falls back to the whole-value write,
+    /// because for that control it is the only route there is.</para>
+    /// </remarks>
+    public bool ValueIsProjectedFromDocumentModel =>
+        string.Equals(FrameworkId, "Chrome", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Reads a control's capabilities in one pass.</summary>
     public static TextTargetCapabilities Read(AutomationElement element)
@@ -90,7 +119,29 @@ public readonly record struct TextTargetCapabilities(
             HasTextPattern: hasText,
             SupportsTextSelection: supportsSelection,
             HasNativeEditWindow: Win32TextEdit.TryGetHwnd(element, out _),
-            IsTextControlType: isTextControl);
+            IsTextControlType: isTextControl,
+            FrameworkId: SafeFrameworkId(current));
+    }
+
+    /// <summary>
+    /// The control's UI framework, or null when the provider will not say.
+    /// </summary>
+    /// <remarks>
+    /// Every other property here comes from a member that a disconnected element throws on,
+    /// and the caller already handles that; this one is read separately because an absent
+    /// framework id must degrade to "unknown" rather than lose the whole capability read.
+    /// </remarks>
+    private static string? SafeFrameworkId(AutomationElement.AutomationElementInformation current)
+    {
+        try
+        {
+            var id = current.FrameworkId;
+            return string.IsNullOrWhiteSpace(id) ? null : id;
+        }
+        catch (Exception exception) when (exception is ElementNotAvailableException or InvalidOperationException)
+        {
+            return null;
+        }
     }
 }
 
@@ -135,6 +186,18 @@ public static class TextTargetCapabilityPolicy
     /// <para>Read-only is asserted only on positive evidence: the control exposes text and no
     /// way at all to change it. A control that answers nothing is
     /// <see cref="EditabilityVerdict.Unavailable"/>, not read-only.</para>
+    ///
+    /// <para><b>Why <c>IsOffscreen</c> is not consulted.</b> It answers "is this control
+    /// currently rendered", which is not a claim about editability and is not even reliably
+    /// a claim about visibility. Measured against Discord's composer: the field is on screen,
+    /// the user is typing into it, every ancestor reports <c>IsOffscreen=false</c>, and the
+    /// composer itself reports <c>true</c> — Chromium marks the whole composer bar offscreen
+    /// whenever its layout box extends past the client area, which for a maximised window it
+    /// routinely does. Treating that as read-only made WriteLite drop the field entirely: no
+    /// underlines, no lexical card, no corrections, in the one application the flag happens
+    /// to be wrong about. Geometry is checked where it belongs — the monitor rejects a
+    /// candidate with no usable rectangle — and this decision is left to the facts that are
+    /// actually about editing.</para>
     /// </remarks>
     public static EditabilityVerdict Evaluate(in TextTargetCapabilities capabilities)
     {
@@ -143,7 +206,7 @@ public static class TextTargetCapabilityPolicy
             return EditabilityVerdict.Unavailable;
         }
 
-        if (!capabilities.IsEnabled || capabilities.IsOffscreen || capabilities.IsPassword)
+        if (!capabilities.IsEnabled || capabilities.IsPassword)
         {
             return EditabilityVerdict.ReadOnly;
         }

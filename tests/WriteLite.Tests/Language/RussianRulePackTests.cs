@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using WriteLite.Services;
 using WriteLite.Services.Rules;
 
@@ -10,7 +10,12 @@ public sealed class RussianRulePackTests
     [TestMethod]
     public void DefaultPack_IsVersionedRussianOnlyAndHasEmbeddedInvariants()
     {
-        var catalog = RuleCatalog.LoadDefault();
+        // The validating entry point on purpose. LoadDefault serves the application a cached
+        // catalog and skips the rules' embedded test cases, because the shipped pack cannot
+        // change between the run that proved it and the run that uses it. This is that run:
+        // it is where a pattern that no longer matches its own example has to fail.
+        var catalog = RuleCatalog.LoadFromDirectory(
+            Path.Combine(AppContext.BaseDirectory, "resources", "rules", "ru"));
 
         // ru-1.3.0 adds the Phase 7 rules: ru.punctuation.vocative-comma,
         // ru.punctuation.greeting-sentence-boundary and ru.grammar.case-government-dative.

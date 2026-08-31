@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Text;
@@ -62,6 +62,27 @@ public sealed class DoubleClickWordObserver : IDisposable
 
     public event EventHandler<WordDoubleClickedEventArgs>? WordDoubleClicked;
 
+    /// <summary>
+    /// Raised, on the dispatcher, for every primary-button press anywhere on the desktop,
+    /// with the screen point in physical pixels.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Why dismissal is a click and not an inference.</b> The lexical card used to
+    /// close when a field snapshot stopped matching the one it was opened for. That is a
+    /// proxy for "the user has moved on", and it is a bad one: the monitor republishes its
+    /// snapshot whenever the interaction state changes and restamps it with the live text
+    /// version, and it publishes a null snapshot whenever the tracked field changes — none of
+    /// which the user did, and all of which made the card vanish on its own. The click that
+    /// actually dismisses a popup is a fact this hook already has.</para>
+    ///
+    /// <para>The press is reported rather than the release, so the card is gone before the
+    /// host application acts on the click. Both clicks of a double-click are reported; the
+    /// first lands outside whatever card is open and closes it, and the second opens the new
+    /// one about 90 ms later, so a double-click on a second word reads as a replacement
+    /// rather than as a flicker.</para>
+    /// </remarks>
+    public event EventHandler<Point>? PrimaryButtonPressed;
+
     public void Start()
     {
         if (_hook != IntPtr.Zero) return;
@@ -98,6 +119,8 @@ public sealed class DoubleClickWordObserver : IDisposable
                 var point = new Point(info.Pt.X, info.Pt.Y);
                 if (msg == WmLButtonDown)
                 {
+                    RaisePrimaryButtonPressed(point);
+
                     var now = DateTimeOffset.UtcNow;
                     // Synthetic double-click detection (some apps swallow WM_LBUTTONDBLCLK).
                     if (now - _lastDownUtc <= DoubleClickWindow
@@ -118,6 +141,25 @@ public sealed class DoubleClickWordObserver : IDisposable
         }
 
         return CallNextHookEx(_hook, nCode, wParam, lParam);
+    }
+
+    /// <summary>
+    /// Hands the press to the dispatcher without letting a subscriber run inside the hook.
+    /// </summary>
+    /// <remarks>
+    /// This callback is on the low-level mouse hook's thread and inside the system's
+    /// <c>LowLevelHooksTimeout</c> budget for the whole desktop: work done here delays every
+    /// application's mouse input, and exceeding the budget makes Windows silently remove the
+    /// hook, which would end double-click detection for the rest of the session. So the
+    /// point is posted and the hook returns.
+    /// </remarks>
+    private void RaisePrimaryButtonPressed(Point screenPoint)
+    {
+        if (PrimaryButtonPressed is null) return;
+
+        _ = _dispatcher.BeginInvoke(
+            DispatcherPriority.Input,
+            new Action(() => PrimaryButtonPressed?.Invoke(this, screenPoint)));
     }
 
     private void ScheduleResolve(Point screenPoint)
@@ -186,19 +228,100 @@ public sealed class DoubleClickWordObserver : IDisposable
             $"request={requestId} len={args.Range.Length} generation={args.GenerationId}");
     }
 
-    private WordDoubleClickedEventArgs? ResolveCore(Point screenPoint, long requestId, CancellationToken token)
+    /// <summary>
+    /// The editable field the user double-clicked in, given the point they clicked.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Why the hit element is a starting point and never the answer.</b>
+    /// <c>AutomationElement.FromPoint</c> returns the deepest node under the cursor, and in
+    /// every document-model host that node is a fragment of the field's interior rather than
+    /// the field. Measured over Discord's composer, a point in the middle of the text
+    /// resolves to an anonymous <c>Group</c> with no text provider, no value provider and
+    /// <c>IsKeyboardFocusable=false</c> — a Slate wrapper div. Asking that node whether it is
+    /// an editable target and giving up when it says no is what produced 409 consecutive
+    /// <c>reason=not-editable</c> rejections in the log against three successful lookups: the
+    /// walk that was meant to handle exactly this case sat below an early return and never
+    /// ran.</para>
+    ///
+    /// <para>So the walk comes first, and the hit node's own verdict is just its first
+    /// iteration. When the whole chain refuses — a host whose hit-testing does not reach the
+    /// composer at all — the field the monitor is already tracking is used instead, but only
+    /// if the click landed inside it. That keeps the fallback from opening a card for a field
+    /// on the other side of the screen.</para>
+    /// </remarks>
+    private AutomationElement? ResolveEditableUnderPoint(Point screenPoint, CancellationToken token)
     {
-        AutomationElement? element;
+        AutomationElement? hit;
         try
         {
-            element = AutomationElement.FromPoint(new System.Windows.Point(screenPoint.X, screenPoint.Y))
-                      ?? _getFocusedElement();
+            hit = AutomationElement.FromPoint(new System.Windows.Point(screenPoint.X, screenPoint.Y));
         }
         catch
         {
-            element = _getFocusedElement();
+            hit = null;
         }
 
+        var candidate = hit;
+        for (var depth = 0; depth < 8 && candidate is not null && !token.IsCancellationRequested; depth++)
+        {
+            // The full capability read is a dozen cross-process calls and this loop runs
+            // inside a 700 ms budget for the whole conversation. Keyboard focus is one call
+            // and is necessary for the answer to be yes, so it filters the interior nodes —
+            // which is all of them but one — before anything expensive is asked.
+            if (HasKeyboardFocus(candidate) && EditableTextTargetPolicy.IsEditableTextTarget(candidate))
+            {
+                return candidate;
+            }
+
+            try { candidate = TreeWalker.ControlViewWalker.GetParent(candidate); }
+            catch { break; }
+        }
+
+        var focused = _getFocusedElement();
+        if (focused is null)
+        {
+            CompatibilityLogger.Technical("lexical-dblclick-ignored", "reason=not-editable");
+            return null;
+        }
+
+        if (!EditableTextTargetPolicy.IsEditableTextTarget(focused))
+        {
+            CompatibilityLogger.Technical("lexical-dblclick-ignored", "reason=not-editable");
+            return null;
+        }
+
+        if (!ContainsPoint(focused, screenPoint))
+        {
+            CompatibilityLogger.Technical("lexical-dblclick-ignored", "reason=click-outside-target");
+            return null;
+        }
+
+        CompatibilityLogger.Technical("lexical-dblclick-fallback", "source=focused-target");
+        return focused;
+    }
+
+    private static bool HasKeyboardFocus(AutomationElement element)
+    {
+        try { return element.Current.HasKeyboardFocus; }
+        catch { return false; }
+    }
+
+    private static bool ContainsPoint(AutomationElement element, Point screenPoint)
+    {
+        try
+        {
+            var bounds = element.Current.BoundingRectangle;
+            return !bounds.IsEmpty && bounds.Contains(screenPoint);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private WordDoubleClickedEventArgs? ResolveCore(Point screenPoint, long requestId, CancellationToken token)
+    {
+        var element = ResolveEditableUnderPoint(screenPoint, token);
         if (element is null || token.IsCancellationRequested) return null;
 
         int processId;
@@ -206,27 +329,6 @@ public sealed class DoubleClickWordObserver : IDisposable
         catch { return null; }
 
         if (processId == _ownProcessId) return null;
-        if (!EditableTextTargetPolicy.IsEditableTextTarget(element))
-        {
-            CompatibilityLogger.Technical("lexical-dblclick-ignored", "reason=not-editable");
-            return null;
-        }
-
-        // Walk up if point hit a child chrome element.
-        var candidate = element;
-        for (var i = 0; i < 6 && candidate is not null; i++)
-        {
-            if (EditableTextTargetPolicy.IsEditableTextTarget(candidate))
-            {
-                element = candidate;
-                break;
-            }
-
-            try { candidate = TreeWalker.ControlViewWalker.GetParent(candidate); }
-            catch { break; }
-        }
-
-        if (!EditableTextTargetPolicy.IsEditableTextTarget(element)) return null;
 
         string text;
         WordRange? range;

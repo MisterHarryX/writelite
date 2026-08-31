@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace WriteLite.Services.Reading;
 
@@ -215,6 +215,18 @@ public sealed class ReadingProject
 
     public ReaderTypography Typography { get; set; } = ReaderTypography.Default;
 
+    /// <summary>
+    /// How many times a cover has been chosen for this book. Zero means none ever was.
+    /// </summary>
+    /// <remarks>
+    /// A counter rather than a flag, because the cover always lives at the same path and WPF
+    /// caches decoded images by URI: without something that changes, replacing a cover would
+    /// go on showing the previous picture until the application was restarted. Absent from an
+    /// older project file, where it reads as zero — which is correct, since no cover was ever
+    /// set. See <see cref="BookCoverStore"/>.
+    /// </remarks>
+    public int CoverVersion { get; set; }
+
     /// <summary>The line under the project title: «12 пометок · 4 закладки · 18 карточек · 37% прочитано».</summary>
     public string Summary()
     {
@@ -265,6 +277,9 @@ public sealed class ReadingProjectSummary
 
     public int CardCount { get; set; }
 
+    /// <inheritdoc cref="ReadingProject.CoverVersion"/>
+    public int CoverVersion { get; set; }
+
     /// <summary>The counts line shown on the library card.</summary>
     public string Details()
     {
@@ -292,7 +307,8 @@ public sealed class ReadingProjectSummary
         HighlightCount = project.Highlights.Count,
         AnnotationCount = project.Annotations.Count,
         BookmarkCount = project.Bookmarks.Count,
-        CardCount = project.Cards.Count
+        CardCount = project.Cards.Count,
+        CoverVersion = project.CoverVersion
     };
 }
 

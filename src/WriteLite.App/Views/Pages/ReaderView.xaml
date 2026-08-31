@@ -1,4 +1,4 @@
-<UserControl x:Class="WriteLite.Views.Pages.ReaderView"
+﻿<UserControl x:Class="WriteLite.Views.Pages.ReaderView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:WriteLite.Controls"
@@ -84,6 +84,31 @@
                      one row of related controls, and letting it reflow into two rows
                      would push the reading canvas down every time the window narrows. -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Page navigation leads the toolbar because it is the only group here
+                         that answers "where am I", and because this row scrolls horizontally:
+                         anything placed after the typography controls would be the first
+                         thing to leave the screen on a narrow window. -->
+                    <Button x:Name="PreviousPageButton" Style="{DynamicResource WlIconButton}"
+                            Width="28" Height="28" Content="‹"
+                            Click="PreviousPage_Click" ToolTip="Предыдущая страница"
+                            AutomationProperties.Name="Предыдущая страница" />
+                    <TextBox x:Name="PageBox" Style="{DynamicResource WlSmallInput}"
+                             Width="46" Margin="6,0,0,0" VerticalAlignment="Center"
+                             TextAlignment="Center"
+                             KeyDown="PageBox_KeyDown"
+                             LostFocus="PageBox_LostFocus"
+                             ToolTip="Номер страницы — введите и нажмите Enter"
+                             AutomationProperties.Name="Номер страницы" />
+                    <TextBlock x:Name="PageCountText" Style="{DynamicResource WlMonoValue}"
+                               Foreground="{DynamicResource WlTextMuted}"
+                               VerticalAlignment="Center" Margin="6,0,6,0" />
+                    <Button x:Name="NextPageButton" Style="{DynamicResource WlIconButton}"
+                            Width="28" Height="28" Content="›"
+                            Click="NextPage_Click" ToolTip="Следующая страница"
+                            AutomationProperties.Name="Следующая страница" />
+
+                    <Border Style="{DynamicResource WlToolbarRule}" Margin="10,0" />
+
                     <Button x:Name="HighlightButton" Style="{DynamicResource WlToolbarButton}"
                             Click="Highlight_Click" ToolTip="Выделить выбранный фрагмент"
                             AutomationProperties.Name="Выделить">

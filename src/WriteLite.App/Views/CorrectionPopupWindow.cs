@@ -8,6 +8,7 @@ using WriteLite.Language.Core;
 using WriteLite.Models;
 using WriteLite.Services;
 using Button = System.Windows.Controls.Button;
+using ProgressBar = System.Windows.Controls.ProgressBar;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using Size = System.Windows.Size;
 using MediaBrush = System.Windows.Media.Brush;
@@ -23,23 +24,38 @@ namespace WriteLite.Views;
 /// The click-to-correct popover shown next to an underlined word in another application.
 /// </summary>
 /// <remarks>
-/// Deliberately independent of the target app's typography and colours: it carries the
+/// <para>Deliberately independent of the target app's typography and colours: it carries the
 /// WriteLite surface so a correction looks the same in Notepad, Word and a browser field.
-/// The hierarchy matches the correction cards elsewhere in the product \u2014 category, then
-/// the change, then the rule, then the actions.
+/// The hierarchy matches the correction cards elsewhere in the product — category, then
+/// the change, then the rule, then the actions.</para>
+///
+/// <para><b>The window holds no presentation state of its own.</b> Every element below is
+/// shown or hidden by <see cref="Render"/> from a single <see cref="CorrectionCardState"/>,
+/// and every public method is a transition that produces one. Nothing toggles a control
+/// individually, because that is what made the reported defect possible: a failure row was
+/// laid over a finished result, a result over a check in flight, and the card ended up
+/// asserting four incompatible things at once. If a combination is not expressible as a
+/// phase, it cannot be drawn.</para>
+///
+/// <para><b>Ordering.</b> <see cref="Token"/> is monotonic and every transition bumps it.
+/// An asynchronous caller captures the token it started with and passes it back; a render
+/// carrying a superseded token is discarded rather than drawn, so a slow analysis cannot
+/// repaint the card that belongs to newer text — §5.</para>
 /// </remarks>
 public sealed class CorrectionPopupWindow : Window
 {
     private static readonly MediaBrush CardBackground = ThemeResource.Brush("WlSurface", Brushes.Black);
-    private static readonly MediaBrush RaisedBackground = ThemeResource.Brush("WlRaised", Brushes.DarkSlateGray);
     private static readonly MediaBrush CardBorderBrush = ThemeResource.Brush("WlLineStrong", Brushes.DimGray);
-    private static readonly MediaBrush TextBrush = ThemeResource.Brush("WlText", Brushes.White);
     private static readonly MediaBrush MutedBrush = ThemeResource.Brush("WlTextSecondary", Brushes.LightGray);
     private static readonly MediaBrush FaintBrush = ThemeResource.Brush("WlTextMuted", Brushes.Gray);
     private static readonly MediaBrush AccentBrush = ThemeResource.Brush("WlBrand", Brushes.Orange);
     private static readonly MediaBrush OnAccentBrush = ThemeResource.Brush("WlOnBrand", Brushes.Black);
     private static readonly MediaBrush ErrorBrush = ThemeResource.Brush("WlDanger", Brushes.OrangeRed);
+    private static readonly MediaBrush LineBrush = ThemeResource.Brush("WlLine", Brushes.DimGray);
     private static readonly FontFamily MonoFont = ThemeResource.Font("WlFontMono", "Cascadia Mono, Consolas");
+
+    /// <summary>How this window identifies itself on the accessibility tree.</summary>
+    public const string AutomationId = "WriteLiteCorrectionCard";
 
     private readonly Border _categoryMark = new()
     {
@@ -52,36 +68,66 @@ public sealed class CorrectionPopupWindow : Window
     };
     private readonly TextBlock _category = new() { FontSize = 9, FontFamily = MonoFont, Foreground = AccentBrush, VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _original = new() { FontSize = 13, FontFamily = MonoFont, Foreground = FaintBrush, TextDecorations = TextDecorations.Strikethrough, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
-    private readonly TextBlock _arrow = new() { Text = "\u2192", FontSize = 12, Foreground = FaintBrush, Margin = new Thickness(7, 0, 7, 0), VerticalAlignment = VerticalAlignment.Center };
+    private readonly TextBlock _arrow = new() { Text = "→", FontSize = 12, Foreground = FaintBrush, Margin = new Thickness(7, 0, 7, 0), VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _replacement = new() { FontSize = 13, FontFamily = MonoFont, Foreground = AccentBrush, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
+
+    /// <summary>The title of an informational card — there is no change to draw above it.</summary>
+    private readonly TextBlock _headline = new()
+    {
+        FontSize = 14,
+        FontWeight = FontWeights.SemiBold,
+        TextWrapping = TextWrapping.Wrap,
+        Margin = new Thickness(0, 12, 0, 0)
+    };
+
     private readonly TextBlock _explanation = new() { FontSize = 12.5, Foreground = MutedBrush, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 10, 0, 0), LineHeight = 19 };
     private readonly TextBlock _status = new()
     {
         FontSize = 12,
-        Foreground = AccentBrush,
+        Foreground = ErrorBrush,
         TextWrapping = TextWrapping.Wrap,
-        Margin = new Thickness(0, 10, 0, 0),
-        Visibility = Visibility.Collapsed
+        Margin = new Thickness(0, 10, 0, 0)
     };
 
+    private readonly WrapPanel _changeRow = new() { Margin = new Thickness(0, 12, 0, 0) };
+
     /// <summary>
-    /// Alternative replacements. The analyzer currently produces a single one, so this
-    /// holds one chip today; the layout takes a list so richer suggestions need no redesign.
+    /// The progress state: a hairline indeterminate bar and a caption.
     /// </summary>
-    private readonly StackPanel _suggestions = new() { Margin = new Thickness(0, 13, 0, 0) };
+    /// <remarks>
+    /// §7: a check in flight is not an action, so it is never drawn as a button. The bar is
+    /// two pixels tall and the caption is secondary text — the card must not appear to be
+    /// doing something dramatic while it re-reads one word.
+    /// </remarks>
+    private readonly StackPanel _progress = new() { Margin = new Thickness(0, 14, 0, 2) };
+    private readonly TextBlock _progressLabel = new()
+    {
+        FontSize = 12,
+        Foreground = MutedBrush,
+        Margin = new Thickness(0, 8, 0, 0)
+    };
+
+    private readonly Button _primary;
+    private readonly StackPanel _primaryHost = new() { Margin = new Thickness(0, 13, 0, 0) };
 
     /// <summary>What the user can still do when the correction could not be written.</summary>
     private readonly StackPanel _recovery = new()
     {
         Orientation = Orientation.Horizontal,
-        Margin = new Thickness(0, 8, 0, 0),
-        Visibility = Visibility.Collapsed
+        Margin = new Thickness(0, 8, 0, 0)
     };
 
+    private readonly Button _copy;
+    private readonly Button _retry;
     private readonly Button _dictionary;
-    private TextIssue? _issue;
+    private readonly Button _ignore;
+    private readonly DockPanel _footer = new() { LastChildFill = false, Margin = new Thickness(0, 12, 0, 0) };
+
+    private CorrectionCardState _state = CorrectionCardState.Hidden;
+    private long _token;
     private Rect _pendingPhysicalAnchor;
     private bool _repositionPending;
+    private System.Windows.Threading.DispatcherTimer? _recheckDeadline;
 
     public CorrectionPopupWindow()
     {
@@ -92,10 +138,16 @@ public sealed class CorrectionPopupWindow : Window
         ShowActivated = false;
         Topmost = true;
         Width = 360;
-        MinHeight = 140;
+        MinHeight = 120;
         MaxHeight = 360;
         SizeToContent = SizeToContent.Height;
         FontFamily = ThemeResource.Font("WlFont", "Segoe UI Variable Text, Segoe UI");
+
+        // A titleless, chromeless window is otherwise indistinguishable from the suggestions
+        // panel to anything reading the desktop through accessibility — a screen reader, or
+        // the live probe that verifies this card's phases against a real external field.
+        System.Windows.Automation.AutomationProperties.SetAutomationId(this, AutomationId);
+        System.Windows.Automation.AutomationProperties.SetName(this, "Исправление WriteLite");
 
         var card = new Border
         {
@@ -117,38 +169,61 @@ public sealed class CorrectionPopupWindow : Window
         var categoryRow = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
         categoryRow.Children.Add(_categoryMark);
         categoryRow.Children.Add(_category);
-        var close = CreateGhostButton("\u00d7", 22, 22, 15);
-        close.ToolTip = "\u0417\u0430\u043a\u0440\u044b\u0442\u044c";
-        close.Click += (_, _) => Hide();
+        var close = CreateGhostButton("×", 22, 22, 15);
+        close.ToolTip = "Закрыть";
+        close.Click += (_, _) => Dismiss();
         Grid.SetColumn(close, 1);
         header.Children.Add(categoryRow);
         header.Children.Add(close);
 
-        // \u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c\u0441\u044f \u2192 \u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u0441\u044f
-        var changeRow = new WrapPanel { Margin = new Thickness(0, 12, 0, 0) };
-        changeRow.Children.Add(_original);
-        changeRow.Children.Add(_arrow);
-        changeRow.Children.Add(_replacement);
+        // становиться → становится
+        _changeRow.Children.Add(_original);
+        _changeRow.Children.Add(_arrow);
+        _changeRow.Children.Add(_replacement);
 
-        var footer = new DockPanel { LastChildFill = false, Margin = new Thickness(0, 12, 0, 0) };
-        var ignore = CreateGhostButton("\u0418\u0433\u043d\u043e\u0440\u0438\u0440\u043e\u0432\u0430\u0442\u044c", double.NaN, 26, 12);
-        ignore.Click += (_, _) => { if (_issue is not null) IgnoreRequested?.Invoke(this, _issue); };
-        _dictionary = CreateGhostButton("\u0412 \u0441\u043b\u043e\u0432\u0430\u0440\u044c", double.NaN, 26, 12);
-        _dictionary.Click += (_, _) => { if (_issue is not null) AddToDictionaryRequested?.Invoke(this, _issue); };
-        DockPanel.SetDock(ignore, Dock.Right);
-        footer.Children.Add(ignore);
+        _progress.Children.Add(new ProgressBar
+        {
+            Height = 2,
+            IsIndeterminate = true,
+            BorderThickness = new Thickness(0),
+            Foreground = AccentBrush,
+            Background = LineBrush
+        });
+        _progress.Children.Add(_progressLabel);
+
+        _primary = CreatePrimaryAction();
+        _primary.Click += (_, _) => RequestApply();
+        _primaryHost.Children.Add(_primary);
+
+        _copy = CreateGhostButton("Скопировать", double.NaN, 26, 12);
+        _copy.Click += (_, _) => { if (_state.Issue is { } issue) CopyRequested?.Invoke(this, issue); };
+        _retry = CreateGhostButton("Повторить", double.NaN, 26, 12);
+        _retry.Click += (_, _) => RequestApply();
+        _recovery.Children.Add(_copy);
+        _recovery.Children.Add(_retry);
+
+        _ignore = CreateGhostButton("Игнорировать", double.NaN, 26, 12);
+        _ignore.Click += (_, _) => { if (_state.Issue is { } issue) IgnoreRequested?.Invoke(this, issue); };
+        _dictionary = CreateGhostButton("В словарь", double.NaN, 26, 12);
+        _dictionary.Click += (_, _) => { if (_state.Issue is { } issue) AddToDictionaryRequested?.Invoke(this, issue); };
+        DockPanel.SetDock(_ignore, Dock.Right);
+        _footer.Children.Add(_ignore);
         DockPanel.SetDock(_dictionary, Dock.Left);
-        footer.Children.Add(_dictionary);
+        _footer.Children.Add(_dictionary);
 
         root.Children.Add(header);
-        root.Children.Add(changeRow);
+        root.Children.Add(_changeRow);
+        root.Children.Add(_headline);
         root.Children.Add(_explanation);
+        root.Children.Add(_progress);
         root.Children.Add(_status);
         root.Children.Add(_recovery);
-        root.Children.Add(_suggestions);
-        root.Children.Add(footer);
+        root.Children.Add(_primaryHost);
+        root.Children.Add(_footer);
         card.Child = root;
         Content = card;
+
+        Render(CorrectionCardState.Hidden);
     }
 
     public event EventHandler<TextIssue>? ApplyRequested;
@@ -157,6 +232,69 @@ public sealed class CorrectionPopupWindow : Window
 
     /// <summary>Raised when the user asks for the replacement on the clipboard instead.</summary>
     public event EventHandler<TextIssue>? CopyRequested;
+
+    /// <summary>The finding the card currently belongs to, or null when it shows nothing.</summary>
+    public TextIssue? CurrentIssue => _state.Issue;
+
+    public CorrectionCardPhase Phase => _state.Phase;
+
+    /// <summary>The ordering token of the transition currently on screen.</summary>
+    public long Token => Interlocked.Read(ref _token);
+
+    /// <summary>True while <paramref name="token"/> is still the newest transition.</summary>
+    public bool IsCurrent(long token) => Token == token;
+
+    /// <summary>
+    /// Puts the card into its progress state and returns the token that owns the refresh.
+    /// </summary>
+    /// <remarks>
+    /// §4: this is what a text change does. It runs synchronously, so the previous result's
+    /// apply action, explanation and any failure row are off the card before the call
+    /// returns — the user cannot press an action belonging to text that is gone. The caller
+    /// then re-analyses and comes back through <see cref="ShowForIssue(TextIssue, Rect, long)"/>
+    /// with this token, or closes the card with <see cref="Dismiss"/>.
+    /// </remarks>
+    public long BeginRecheck()
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            return Dispatcher.Invoke(BeginRecheck);
+        }
+
+        var token = Interlocked.Increment(ref _token);
+        Render(_state.Recheck());
+        ArmRecheckDeadline(token);
+        return token;
+    }
+
+    /// <summary>How long a refresh may stay on screen before the card closes instead.</summary>
+    /// <remarks>
+    /// The guarantee that makes <see cref="CorrectionCardPhase.Checking"/> safe to enter. A
+    /// refresh depends on an analysis pass arriving, and a pass can fail to arrive — the
+    /// target stopped responding, the monitor lost the field, the user switched away
+    /// mid-edit. Without a deadline the card would sit spinning over text it no longer
+    /// describes, which is the same dead end as the «Обновите предложение» card it replaced,
+    /// with a nicer animation. A card that closes is always recoverable: the underline is
+    /// still there to click.
+    /// </remarks>
+    public static readonly TimeSpan RecheckDeadline = TimeSpan.FromMilliseconds(1200);
+
+    private void ArmRecheckDeadline(long token)
+    {
+        _recheckDeadline?.Stop();
+        _recheckDeadline = new System.Windows.Threading.DispatcherTimer(
+            RecheckDeadline,
+            System.Windows.Threading.DispatcherPriority.Background,
+            (_, _) =>
+            {
+                _recheckDeadline?.Stop();
+                if (!IsCurrent(token) || _state.Phase != CorrectionCardPhase.Checking) return;
+
+                CompatibilityLogger.Technical("correction-card-recheck-timeout", $"token={token}");
+                Dismiss();
+            },
+            Dispatcher);
+    }
 
     /// <summary>Shows a non-empty failure or progress message so the card never fails silently.</summary>
     public void ShowApplyFeedback(string message, bool isError = true)
@@ -176,91 +314,139 @@ public sealed class CorrectionPopupWindow : Window
     /// read-only control gets «Скопировать», because copying is the only thing left. A field
     /// that should have been writable also gets «Повторить», because the usual causes — a
     /// window that just changed, a provider that was busy — pass.</para>
+    ///
+    /// <para>Reaching this method replaces the card rather than annotating it: the phase
+    /// becomes <see cref="CorrectionCardPhase.Failed"/>, which has no primary action. A
+    /// success message is not a failure and closes the card instead — a non-error string
+    /// here used to leave an accent status line under a live apply button, which reads as a
+    /// correction that is both done and still pending.</para>
     /// </remarks>
     public void ShowApplyFeedback(string message, bool isError, bool offerCopy, bool offerRetry)
+        => ShowApplyFeedback(message, isError, offerCopy, offerRetry, Token);
+
+    /// <summary>
+    /// As above, but only while <paramref name="token"/> is still the card on screen.
+    /// </summary>
+    /// <remarks>
+    /// A write outcome arrives after the write, by which time the text may have changed and
+    /// the card may already be refreshing for it. Reporting the old attempt then would put a
+    /// failure about text the user has left back onto a card about text they are in.
+    /// </remarks>
+    public void ShowApplyFeedback(string message, bool isError, bool offerCopy, bool offerRetry, long token)
     {
         if (!Dispatcher.CheckAccess())
         {
-            Dispatcher.BeginInvoke(() => ShowApplyFeedback(message, isError, offerCopy, offerRetry));
+            Dispatcher.BeginInvoke(() => ShowApplyFeedback(message, isError, offerCopy, offerRetry, token));
             return;
         }
 
-        _status.Text = message;
-        _status.Foreground = isError ? ThemeResource.Brush("WlDanger", Brushes.OrangeRed) : AccentBrush;
-        _status.Visibility = string.IsNullOrWhiteSpace(message) ? Visibility.Collapsed : Visibility.Visible;
-
-        _recovery.Children.Clear();
-        _recovery.Visibility = offerCopy || offerRetry ? Visibility.Visible : Visibility.Collapsed;
-
-        if (offerCopy)
+        if (_state.Issue is not { } issue) return;
+        if (!IsCurrent(token))
         {
-            var copy = CreateGhostButton("Скопировать", double.NaN, 26, 12);
-            copy.Click += (_, _) => { if (_issue is not null) CopyRequested?.Invoke(this, _issue); };
-            _recovery.Children.Add(copy);
+            CompatibilityLogger.Technical("correction-card-feedback-discarded", $"token={token} current={Token}");
+            return;
         }
 
-        if (offerRetry)
+        Interlocked.Increment(ref _token);
+        if (!isError)
         {
-            var retry = CreateGhostButton("Повторить", double.NaN, 26, 12);
-            retry.Click += (_, _) =>
-            {
-                if (_issue is null) return;
-                _status.Text = "Применение…";
-                _recovery.Visibility = Visibility.Collapsed;
-                ApplyRequested?.Invoke(this, _issue);
-            };
-            _recovery.Children.Add(retry);
+            // Nothing is pending and nothing failed; there is no card left to show.
+            Render(CorrectionCardState.Hidden);
+            return;
         }
+
+        Render(CorrectionCardState.Failed(issue, message, offerCopy, offerRetry));
     }
 
     public void ShowForIssue(TextIssue issue, Rect physicalScreenAnchor)
+        => ShowForIssue(issue, physicalScreenAnchor, Interlocked.Increment(ref _token));
+
+    /// <summary>
+    /// Draws the finished analysis for <paramref name="issue"/>, if this render is still the
+    /// newest one.
+    /// </summary>
+    /// <remarks>
+    /// §5: results arrive out of order. Four selections in a row can finish C, A, D, B, and
+    /// only D describes the text in front of the user. A render whose token has been
+    /// superseded is dropped here, at the one place that draws, rather than being defended
+    /// against separately at each call site.
+    /// </remarks>
+    public void ShowForIssue(TextIssue issue, Rect physicalScreenAnchor, long token)
     {
         if (!Dispatcher.CheckAccess())
         {
-            Dispatcher.BeginInvoke(() => ShowForIssue(issue, physicalScreenAnchor));
+            Dispatcher.BeginInvoke(() => ShowForIssue(issue, physicalScreenAnchor, token));
             return;
         }
 
-        var displayIssue = CorrectionPresentation.NormalizeForApply(issue);
-        _issue = displayIssue;
-
-        var categoryBrush = CorrectionCardText.CategoryBrushes(displayIssue.Category).Foreground;
-        _categoryMark.Background = categoryBrush;
-        _category.Foreground = categoryBrush;
-        Controls.Type.SetTracked(_category, CorrectionCardText.CategoryLabelUpper(displayIssue.Category));
-
-        var originalDisplay = CorrectionCardText.OriginalDisplay(displayIssue);
-        var replacementDisplay = CorrectionCardText.ReplacementDisplay(displayIssue);
-        RenderChange(originalDisplay, replacementDisplay);
-        var hasReplacement = !string.IsNullOrWhiteSpace(displayIssue.Replacement);
-        _arrow.Visibility = hasReplacement ? Visibility.Visible : Visibility.Collapsed;
-        _replacement.Visibility = hasReplacement ? Visibility.Visible : Visibility.Collapsed;
-
-        _explanation.Text = displayIssue.Explanation;
-        _status.Text = string.Empty;
-        _status.Visibility = Visibility.Collapsed;
-        _recovery.Children.Clear();
-        _recovery.Visibility = Visibility.Collapsed;
-        _suggestions.Children.Clear();
-
-        if (hasReplacement)
+        if (!IsCurrent(token))
         {
-            // The chip applies immediately; the label stays human-readable for
-            // punctuation inserts, where there is no "before" word to swap.
-            var chip = CreateSuggestionChip(CorrectionPresentation.FormatChipLabel(displayIssue));
-            chip.IsEnabled = true;
-            chip.Click += (_, _) =>
-            {
-                chip.IsEnabled = false;
-                _status.Text = "Применение…";
-                _status.Visibility = Visibility.Visible;
-                ApplyRequested?.Invoke(this, displayIssue);
-            };
-            _suggestions.Children.Add(chip);
+            CompatibilityLogger.Technical("correction-card-render-discarded", $"token={token} current={Token}");
+            return;
         }
 
-        _dictionary.Visibility = issue.Category == IssueCategory.Orthography ? Visibility.Visible : Visibility.Collapsed;
         _pendingPhysicalAnchor = physicalScreenAnchor;
+        Render(CorrectionCardState.ForIssue(issue));
+    }
+
+    public void ShowIssue(TextIssue issue, Rect physicalScreenAnchor) => ShowForIssue(issue, physicalScreenAnchor);
+
+    /// <summary>Closes the card and voids every render still in flight for it.</summary>
+    public void Dismiss()
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.BeginInvoke(Dismiss);
+            return;
+        }
+
+        Interlocked.Increment(ref _token);
+        Render(CorrectionCardState.Hidden);
+    }
+
+    /// <summary>
+    /// The one place any part of this card becomes visible or invisible.
+    /// </summary>
+    private void Render(CorrectionCardState state)
+    {
+        _state = state;
+        if (state.Phase != CorrectionCardPhase.Checking) _recheckDeadline?.Stop();
+
+        if (!state.IsVisible)
+        {
+            if (IsVisible) Hide();
+            return;
+        }
+
+        var categoryBrush = CorrectionCardText.CategoryBrushes(state.Category).Foreground;
+        _categoryMark.Background = categoryBrush;
+        _category.Foreground = categoryBrush;
+        Controls.Type.SetTracked(_category, state.CategoryLabel);
+
+        if (state.ShowChange)
+        {
+            RenderChange(state.OriginalDisplay, state.ReplacementDisplay);
+        }
+
+        _changeRow.Visibility = Show(state.ShowChange);
+        _headline.Text = state.Headline;
+        _headline.Foreground = categoryBrush;
+        _headline.Visibility = Show(state.ShowHeadline);
+        _explanation.Text = state.Explanation;
+        _explanation.Visibility = Show(state.ShowExplanation);
+        _progressLabel.Text = state.ProgressLabel;
+        _progress.Visibility = Show(state.ShowProgress);
+        _status.Text = state.StatusMessage;
+        _status.Visibility = Show(state.ShowStatus);
+        _copy.Visibility = Show(state.ShowCopy);
+        _retry.Visibility = Show(state.ShowRetry);
+        _recovery.Visibility = Show(state.ShowCopy || state.ShowRetry);
+        _primary.Content = state.PrimaryActionLabel;
+        _primaryHost.Visibility = Show(state.ShowPrimaryAction);
+        _dictionary.Visibility = Show(state.ShowDictionary);
+        _ignore.Visibility = Show(state.ShowIgnore);
+        _footer.Visibility = Show(state.ShowDictionary || state.ShowIgnore);
+
         // Use a conservative provisional size before the first WPF measure.  The final
         // placement below uses ActualHeight, so a wrapped explanation cannot be clipped
         // or placed beyond the current monitor's working area.
@@ -276,6 +462,22 @@ public sealed class CorrectionPopupWindow : Window
         ScheduleMeasuredReposition();
     }
 
+    private static Visibility Show(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>
+    /// Hands the correction to the apply path and puts the card into its write-in-flight
+    /// phase, which has no clickable primary action to press twice.
+    /// </summary>
+    private void RequestApply()
+    {
+        if (_state.Issue is not { } issue) return;
+        if (_state.Phase is not (CorrectionCardPhase.Result or CorrectionCardPhase.Failed)) return;
+
+        Interlocked.Increment(ref _token);
+        Render(CorrectionCardState.Applying(issue));
+        ApplyRequested?.Invoke(this, issue);
+    }
+
     /// <summary>
     /// Draws both sides of the change, emphasising only the characters that differ.
     /// </summary>
@@ -284,8 +486,8 @@ public sealed class CorrectionPopupWindow : Window
     /// split by <see cref="CorrectionDiff"/> purely to decide which characters get the
     /// stronger brush, and the fragments are re-appended in order, so the line the user reads
     /// is character for character the display string it was given. Nothing here is ever read
-    /// back — the correction that gets applied is the <see cref="TextIssue"/> held in
-    /// <c>_issue</c>, which the diff never touches.</para>
+    /// back — the correction that gets applied is the <see cref="TextIssue"/> held in the
+    /// card's state, which the diff never touches.</para>
     ///
     /// <para>Diffing the display strings rather than the raw ones matters: the card may mark
     /// an invisible space, and a boundary computed against the unmarked text would land in
@@ -321,8 +523,6 @@ public sealed class CorrectionPopupWindow : Window
 
         if (suffix.Length > 0) target.Inlines.Add(new Run(suffix) { Foreground = sharedBrush });
     }
-
-    public void ShowIssue(TextIssue issue, Rect physicalScreenAnchor) => ShowForIssue(issue, physicalScreenAnchor);
 
     /// <summary>
     /// Marks the popup as a window that never takes the keyboard.
@@ -448,11 +648,10 @@ public sealed class CorrectionPopupWindow : Window
     }
 
     /// <summary>Primary action: the accent surface with the near-black brand foreground.</summary>
-    private static Button CreateSuggestionChip(string text)
+    private static Button CreatePrimaryAction()
     {
         var button = new Button
         {
-            Content = text,
             FontSize = 13,
             FontWeight = FontWeights.Medium,
             Foreground = OnAccentBrush,
@@ -462,7 +661,7 @@ public sealed class CorrectionPopupWindow : Window
             HorizontalAlignment = HorizontalAlignment.Stretch,
             HorizontalContentAlignment = HorizontalAlignment.Center,
             Cursor = Cursors.Hand,
-            // Keep mouse events on the chip (do not let transparent host steal MouseUp).
+            // Keep mouse events on the button (do not let transparent host steal MouseUp).
             Focusable = false,
             IsHitTestVisible = true
         };

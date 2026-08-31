@@ -155,6 +155,30 @@ public sealed class ExternalTextWriterTests
                 "target", 7, 12, "text", "target", 7, 12, "changed"));
     }
 
+    [TestMethod]
+    public void RealignmentPrefersTheOccurrenceNearestTheOffsetAndRefusesATie()
+    {
+        // Discord's composer: Slate keeps a zero-width no-break space in the value, so an
+        // offset measured through ValuePattern sits one character right of the same word in
+        // the TextPattern document. One marker off, not one sentence off.
+        const string document = "Сечас программа роботает";
+        Assert.AreEqual(
+            16,
+            SelectionPasteWriteStrategy.NearestOccurrence(document, "роботает", preferred: 17));
+
+        // Several occurrences: the one the offset points at wins, not the first in the string.
+        const string twice = "роботает и снова роботает";
+        Assert.AreEqual(0, SelectionPasteWriteStrategy.NearestOccurrence(twice, "роботает", 1));
+        Assert.AreEqual(17, SelectionPasteWriteStrategy.NearestOccurrence(twice, "роботает", 16));
+
+        // Equidistant occurrences are genuine ambiguity: refuse rather than guess, and let
+        // the caller fail the write instead of correcting the wrong word.
+        Assert.AreEqual(-1, SelectionPasteWriteStrategy.NearestOccurrence("аба", "а", preferred: 1));
+
+        Assert.AreEqual(-1, SelectionPasteWriteStrategy.NearestOccurrence(document, "отсутствует", 0));
+        Assert.AreEqual(-1, SelectionPasteWriteStrategy.NearestOccurrence(document, string.Empty, 0));
+    }
+
     private static ExternalTextWriter Writer(FakeField field, params IExternalWriteStrategy[] strategies)
     {
         foreach (var strategy in strategies.OfType<FakeStrategy>()) strategy.Field = field;

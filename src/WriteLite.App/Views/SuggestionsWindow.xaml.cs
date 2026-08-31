@@ -359,8 +359,17 @@ public partial class SuggestionsWindow : Window
         {
             var normalized = CorrectionPresentation.NormalizeForApply(issue);
             Issue = normalized;
-            CanApply = TextCorrectionService.CanApplyManual(normalized, currentText, supportsDirectWrite)
-                       || TextCorrectionService.CanApply(normalized, currentText, supportsDirectWrite);
+
+            // The same test the popup card uses. A finding whose two sides render as one
+            // fragment — emphasis markers stripped, a difference past the truncation cap —
+            // has nothing to apply, however different the underlying strings are, and
+            // «Проверяем → Проверяем» over an enabled «Исправить» is a promise the button
+            // cannot keep. Both surfaces show the same findings, so both ask the same
+            // question of them.
+            HasChange = !CorrectionCardText.IsNoOpForDisplay(normalized);
+            CanApply = HasChange
+                       && (TextCorrectionService.CanApplyManual(normalized, currentText, supportsDirectWrite)
+                           || TextCorrectionService.CanApply(normalized, currentText, supportsDirectWrite));
 
             // Shared with the in-app editor panel so the same issue reads identically
             // in both places.
@@ -374,10 +383,21 @@ public partial class SuggestionsWindow : Window
 
         public TextIssue Issue { get; }
         public bool CanApply { get; }
+
+        /// <summary>Whether this finding has a replacement the card can honestly draw.</summary>
+        public bool HasChange { get; }
+
         public Visibility DictionaryVisibility =>
             Issue.Category == IssueCategory.Orthography ? Visibility.Visible : Visibility.Collapsed;
         public Visibility ReplacementVisibility =>
-            !string.IsNullOrEmpty(Issue.Replacement) ? Visibility.Visible : Visibility.Collapsed;
+            HasChange ? Visibility.Visible : Visibility.Collapsed;
+
+        /// <summary>
+        /// §3: no apply action where there is no alternative to apply. A disabled one is not
+        /// enough — a large primary button still says a correction is available here.
+        /// </summary>
+        public Visibility ApplyVisibility =>
+            HasChange ? Visibility.Visible : Visibility.Collapsed;
         public string OriginalDisplay { get; }
         public string CorrectedDisplay { get; }
         public string BriefLabel { get; }

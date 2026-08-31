@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -17,6 +17,8 @@ using Brushes = System.Windows.Media.Brushes;
 using FontFamily = System.Windows.Media.FontFamily;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using UserControl = System.Windows.Controls.UserControl;
+
+using WriteLite.Services.Settings;
 
 namespace WriteLite.Views.Pages;
 
@@ -271,6 +273,18 @@ public partial class EditorPage : UserControl, IDisposable
         QueueWritingSuggestion();
     }
 
+    /// <summary>
+    /// The shortcuts this page obeys. Replaced when the settings page changes them.
+    /// </summary>
+    /// <remarks>
+    /// Defaults until the shell binds the configured set, so a page constructed in a test or
+    /// before startup finishes still responds to Ctrl+S rather than to nothing.
+    /// </remarks>
+    private ShortcutRegistry _shortcuts = new();
+
+    /// <summary>Gives the editor the shortcut bindings the reader configured.</summary>
+    public void BindShortcuts(ShortcutRegistry shortcuts) => _shortcuts = shortcuts;
+
     private void UpdatePlaceholder()
     {
         var empty = Editor.Document.Blocks.Count <= 1
@@ -353,6 +367,7 @@ public partial class EditorPage : UserControl, IDisposable
             var previousText = _lastAnalyzedText;
             var previousIssues = _lastAnalyzedIssues;
 
+            _answerSettled = false;
             SetAnalyzing(true);
             _applied.Prune(text);
 
@@ -597,6 +612,12 @@ public partial class EditorPage : UserControl, IDisposable
         _allIssues = live;
         ApplyDiff(Filtered(live));
         RefreshPresentation();
+
+        if (lane is AnalysisLane.Fast or AnalysisLane.Deterministic)
+        {
+            _answerSettled = true;
+            SetAnalyzing(false);
+        }
 
         CompatibilityLogger.Technical(
             "editor-lane-published",
@@ -1072,23 +1093,31 @@ public partial class EditorPage : UserControl, IDisposable
     private async void Recheck_Click(object sender, RoutedEventArgs e) =>
         await ScheduleAnalysisAsync(TimeSpan.Zero);
 
+    /// <summary>
+    /// Turns a keypress in the editor into whatever it is currently bound to.
+    /// </summary>
+    /// <remarks>
+    /// <para>The bindings used to be a <c>switch</c> on <see cref="Key"/> here, which is why
+    /// nothing in the product could list them and nothing could tell anyone what Ctrl+H does.
+    /// They now come from <see cref="ShortcutRegistry"/>, so the settings page shows the same
+    /// set this method obeys, and changing one there changes it here with nothing to keep in
+    /// step.</para>
+    ///
+    /// <para>Tab and Escape stay written out rather than looked up. Neither is a command:
+    /// each has a meaning only when something is on screen to act on — a prepared
+    /// continuation, an open find bar — and falls through to its ordinary behaviour when
+    /// there is not. That condition is the binding, and a registry entry could not express
+    /// it.</para>
+    /// </remarks>
     private async void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        var control = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
-        var shift = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+        var modifiers = Keyboard.Modifiers;
 
-        if (control && e.Key == Key.Enter)
-        {
-            e.Handled = true;
-            await ScheduleAnalysisAsync(TimeSpan.Zero);
-            return;
-        }
-
-        if (!control)
+        if (modifiers == ModifierKeys.None)
         {
             // Tab accepts a prepared continuation and does nothing else; when none is painted
             // Tab keeps its ordinary meaning, so the binding costs the user nothing.
-            if (e.Key == Key.Tab && !shift && HasWritingSuggestion)
+            if (e.Key == Key.Tab && HasWritingSuggestion)
             {
                 e.Handled = AcceptWritingSuggestion();
                 if (e.Handled) return;
@@ -1108,60 +1137,68 @@ public partial class EditorPage : UserControl, IDisposable
                     e.Handled = true;
                     CloseFind();
                 }
-            }
 
+                return;
+            }
+        }
+
+        var shortcut = _shortcuts.Match(e.Key, modifiers, ShortcutScope.Application);
+        if (shortcut is null)
+        {
             return;
         }
 
         // A caret move by any other means also invalidates a prepared continuation.
         DismissWritingSuggestion();
 
-        switch (e.Key)
+        switch (shortcut)
         {
-            case Key.N:
+            case ShortcutRegistry.CheckNow:
+                e.Handled = true;
+                await ScheduleAnalysisAsync(TimeSpan.Zero);
+                break;
+
+            case ShortcutRegistry.NewDocument:
                 e.Handled = true;
                 NewDocument();
                 break;
 
-            case Key.O:
+            case ShortcutRegistry.OpenDocument:
                 e.Handled = true;
                 await OpenDocumentAsync();
                 break;
 
-            case Key.S:
+            case ShortcutRegistry.SaveDocument:
                 e.Handled = true;
-                if (shift)
-                {
-                    await SaveAsAsync();
-                }
-                else
-                {
-                    await SaveAsync();
-                }
-
+                await SaveAsync();
                 break;
 
-            case Key.B:
+            case ShortcutRegistry.SaveDocumentAs:
+                e.Handled = true;
+                await SaveAsAsync();
+                break;
+
+            case ShortcutRegistry.Bold:
                 e.Handled = true;
                 ToggleBold();
                 break;
 
-            case Key.I:
+            case ShortcutRegistry.Italic:
                 e.Handled = true;
                 ToggleItalic();
                 break;
 
-            case Key.U:
+            case ShortcutRegistry.Underline:
                 e.Handled = true;
                 ToggleUnderline();
                 break;
 
-            case Key.F:
+            case ShortcutRegistry.Find:
                 e.Handled = true;
                 OpenFind(replace: false);
                 break;
 
-            case Key.H:
+            case ShortcutRegistry.Replace:
                 e.Handled = true;
                 OpenFind(replace: true);
                 break;
@@ -1190,6 +1227,24 @@ public partial class EditorPage : UserControl, IDisposable
             .OfType<System.Windows.Documents.Paragraph>()
             .Count(paragraph => (paragraph.Tag as string) == FlowDocumentBridge.PageBreakTag);
 
+    /// <summary>
+    /// Shows or clears the "checking" state in the findings panel.
+    /// </summary>
+    /// <remarks>
+    /// <para>Analysis never blocks the canvas; only the empty slot in the panel changes.
+    /// What it must also not do is keep claiming to be working after it has an answer.</para>
+    ///
+    /// <para>A pass runs in lanes: the deterministic ones answer in milliseconds, and the
+    /// model lane afterwards can take tens of seconds. When the deterministic lanes find
+    /// something the panel fills and the state clears itself, so the problem was invisible on
+    /// text with mistakes in it. On <em>clean</em> text there is nothing to fill the panel
+    /// with, and the state used to stay up for the whole model lane — a document with nothing
+    /// wrong with it showed a spinner for as long as it took the model to also find nothing,
+    /// and then said so. That is the worst case reading it the wrong way round.</para>
+    ///
+    /// <para>So the state is cleared by the first deterministic answer, whatever that answer
+    /// is, and <see cref="_answerSettled"/> keeps a later lane from putting it back.</para>
+    /// </remarks>
     private void SetAnalyzing(bool analyzing)
     {
         if (!Dispatcher.CheckAccess())
@@ -1198,13 +1253,28 @@ public partial class EditorPage : UserControl, IDisposable
             return;
         }
 
-        // Analysis never blocks the canvas: only the empty slot in the panel changes.
-        AnalyzingState.Visibility = analyzing && Issues.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        if (analyzing && Issues.Count == 0)
+        var show = analyzing && !_answerSettled && Issues.Count == 0;
+        AnalyzingState.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+
+        if (show)
         {
             EmptyState.Visibility = Visibility.Collapsed;
         }
+        else
+        {
+            RefreshPresentation();
+        }
     }
+
+    /// <summary>
+    /// True once a lane that does not need the model has answered for the current text.
+    /// </summary>
+    /// <remarks>
+    /// Cleared at the start of every pass, set by the first deterministic lane to publish.
+    /// It is what separates "still working" from "still working, but you already have the
+    /// answer that matters".
+    /// </remarks>
+    private bool _answerSettled;
 
     private void RefreshPresentation()
     {

@@ -63,6 +63,19 @@ public partial class ReaderView : UserControl
     private bool _restoringPosition;
     private bool _hasRoomForPanel = true;
 
+    /// <summary>
+    /// The book's division into numbered pages, rebuilt only when the text changes.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately not rebuilt on a typography change. The division is a function of the
+    /// document's characters and nothing else, which is the property that makes a page number
+    /// worth showing at all — see <see cref="ReadingPagination"/>.
+    /// </remarks>
+    private ReadingPagination _pagination = ReadingPagination.Empty;
+
+    /// <summary>Page shown in the box, so typing in it is not fought by every scroll event.</summary>
+    private int _renderedPage;
+
     /// <summary>The character to come back to after a run of typography changes.</summary>
     private int? _typographyAnchor;
 
@@ -201,6 +214,8 @@ public partial class ReaderView : UserControl
     private void AdoptDocument(ReadingDocument reading)
     {
         _document = reading;
+        _pagination = ReadingPagination.For(reading);
+        _renderedPage = 0;
         Canvas.Document = reading.Flow;
         LoadingState.Visibility = Visibility.Collapsed;
         ErrorState.Visibility = Visibility.Collapsed;
@@ -261,6 +276,19 @@ public partial class ReaderView : UserControl
         AnnotateButton.IsEnabled = enabled;
         CardButton.IsEnabled = enabled;
         BookmarkButton.IsEnabled = enabled;
+
+        PageBox.IsEnabled = enabled;
+        if (!enabled)
+        {
+            // A book that failed to open has no pages, and offering navigation for it would
+            // be the interface claiming a state the reader is not in.
+            PreviousPageButton.IsEnabled = false;
+            NextPageButton.IsEnabled = false;
+            PageBox.Text = string.Empty;
+            PageCountText.Text = string.Empty;
+            _pagination = ReadingPagination.Empty;
+            _renderedPage = 0;
+        }
     }
 
     private async void Relocate_Click(object sender, RoutedEventArgs e)
@@ -1119,7 +1147,26 @@ public partial class ReaderView : UserControl
         }
     }
 
-    private void GoToOffset(int offset)
+    private void GoToOffset(int offset) => GoToOffset(offset, lead: true);
+
+    /// <param name="lead">
+    /// Whether to leave a third of a viewport above the target.
+    /// </param>
+    /// <remarks>
+    /// <para>Lead-in is right when the destination is a passage inside the text — a
+    /// highlight, an annotation, a bookmark — because a marked sentence pinned to the top
+    /// edge reads as though the book starts there, and what came before it is part of
+    /// understanding it.</para>
+    ///
+    /// <para>It is wrong for a page, and measurably so: a page jump scrolled with lead-in
+    /// leaves the top of the viewport a third of a screen *before* the page begins, so the
+    /// reading position — which is the character at the top of the viewport — is the previous
+    /// page, and the reader is told they are on page 6 immediately after asking for page 7.
+    /// That is what <c>TheForwardArrowMovesExactlyOnePage</c> caught. A page starts where it
+    /// starts.</para>
+    /// </remarks>
+    /// <inheritdoc cref="GoToOffset(int)"/>
+    private void GoToOffset(int offset, bool lead)
     {
         if (_document is null)
         {
@@ -1135,12 +1182,10 @@ public partial class ReaderView : UserControl
         }
 
         // The canvas does not scroll itself (see WlReadingCanvas): the page scrolls,
-        // so the character rectangle is already in the scrolled content's space and
-        // a third of a viewport of lead-in puts the target under the eye rather than
-        // against the top edge.
-        var lead = CanvasScroll.ViewportHeight / 3;
+        // so the character rectangle is already in the scrolled content's space.
+        var leadHeight = lead ? CanvasScroll.ViewportHeight / 3 : 0;
         _restoringPosition = true;
-        CanvasScroll.ScrollToVerticalOffset(Math.Max(0, rect.Top + Canvas.Margin.Top - lead));
+        CanvasScroll.ScrollToVerticalOffset(Math.Max(0, rect.Top + Canvas.Margin.Top - leadHeight));
 
         Dispatcher.BeginInvoke(
             System.Windows.Threading.DispatcherPriority.Background,
@@ -1236,10 +1281,144 @@ public partial class ReaderView : UserControl
         Controls.Type.SetTracked(ProgressText, $"{(int)Math.Round(fraction * 100)}%");
         ProgressFill.Width = 72 * fraction;
 
+        RenderPage(position);
+
         var block = BlockIndexAt(position) + 1;
         Controls.Type.SetTracked(
             LocationText,
             _document.BlockCount > 0 ? $"АБЗАЦ {block} ИЗ {_document.BlockCount}" : string.Empty);
+    }
+
+    // ── Pages ────────────────────────────────────────────────────────────────
+
+    /// <summary>Puts the current page in the toolbar without fighting the reader for the box.</summary>
+    /// <remarks>
+    /// The box is left alone while it has focus. Scrolling raises this on every frame, and
+    /// overwriting a half-typed page number as someone types it is the classic way a jump-to
+    /// field becomes unusable.
+    /// </remarks>
+    private void RenderPage(int position, bool force = false)
+    {
+        var page = _pagination.PageAt(position);
+
+        // Plain Text, not Controls.Type tracking: tracking inserts a thin space between
+        // every character, which is right for a lettered eyebrow like «АБЗАЦ 4 ИЗ 12» and
+        // wrong for a bare number, where it spaces the digits of "367" apart.
+        PageCountText.Text = $"/ {_pagination.PageCount}";
+
+        PreviousPageButton.IsEnabled = page > 1;
+        NextPageButton.IsEnabled = page < _pagination.PageCount;
+
+        // Recorded before the box is considered, because this is what the reader is on,
+        // and the arrows step from it whether or not the box happens to be showing it.
+        var unchanged = page == _renderedPage;
+        _renderedPage = page;
+
+        // The box is left alone while it has focus — except after a navigation the reader
+        // just asked for, which is the one case where what is in the box is certainly out of
+        // date and certainly not what they are typing.
+        if (!force && (unchanged || PageBox.IsKeyboardFocusWithin))
+        {
+            return;
+        }
+
+        PageBox.Text = page.ToString();
+    }
+
+    /// <summary>
+    /// The page the reader is on, as the interface currently states it.
+    /// </summary>
+    /// <remarks>
+    /// Read from what was last rendered rather than re-derived from the scroll offset. The
+    /// arrows used to re-derive it, which made a second press before the scroll settled read
+    /// the position from before the first press and go nowhere — clicking «next» twice
+    /// quickly advanced one page. The rendered page is updated by every scroll and by every
+    /// jump, so it tracks the reader without being subject to that race.
+    /// </remarks>
+    private int CurrentPage =>
+        _renderedPage > 0 ? _renderedPage : _pagination.PageAt(VisiblePosition());
+
+    /// <summary>
+    /// Moves the reader to the first character of a page and records it as the position.
+    /// </summary>
+    /// <remarks>
+    /// The position is saved rather than left to the scroll handler, because a jump is an
+    /// explicit statement about where the reader wants to be and should survive the
+    /// application closing a moment later.
+    /// </remarks>
+    private void GoToPage(int page)
+    {
+        if (_document is null || _project is null)
+        {
+            return;
+        }
+
+        var clamped = Math.Clamp(page, 1, _pagination.PageCount);
+        var offset = _pagination.OffsetOfPage(clamped);
+
+        GoToOffset(offset, lead: false);
+
+        _project.Position = offset;
+        _project.Progress = ReadingAnchorResolver.Fraction(offset, _document.Length);
+        SaveSettings();
+
+        RenderProgress(offset);
+        RenderPage(offset, force: true);
+        Announce($"СТРАНИЦА {clamped} ИЗ {_pagination.PageCount}");
+    }
+
+    /// <summary>Turns back one page. Public because the shell binds a shortcut to it.</summary>
+    public void GoToPreviousPage() => GoToPage(CurrentPage - 1);
+
+    /// <summary>Turns forward one page. Public because the shell binds a shortcut to it.</summary>
+    public void GoToNextPage() => GoToPage(CurrentPage + 1);
+
+    private void PreviousPage_Click(object sender, RoutedEventArgs e) => GoToPreviousPage();
+
+    private void NextPage_Click(object sender, RoutedEventArgs e) => GoToNextPage();
+
+    private void PageBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key != System.Windows.Input.Key.Enter)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        CommitPageBox();
+
+        // Focus goes back to the text, because the reason for typing a page number is to
+        // read that page.
+        Canvas.Focus();
+    }
+
+    private void PageBox_LostFocus(object sender, RoutedEventArgs e) => CommitPageBox();
+
+    /// <summary>
+    /// Acts on whatever is in the page box, and puts the real page back when it is not a page.
+    /// </summary>
+    /// <remarks>
+    /// Rejection is silent and self-correcting: the box returns to the page the reader is
+    /// actually on. An error message for "42x" would be telling someone off for a typo in a
+    /// field whose only possible content is a number.
+    /// </remarks>
+    private void CommitPageBox()
+    {
+        if (_document is null)
+        {
+            return;
+        }
+
+        if (int.TryParse(PageBox.Text?.Trim(), out var page) && _pagination.IsValidPage(page))
+        {
+            if (page != CurrentPage)
+            {
+                GoToPage(page);
+                return;
+            }
+        }
+
+        RenderPage(_pagination.OffsetOfPage(CurrentPage), force: true);
     }
 
     private void RenderSummary()

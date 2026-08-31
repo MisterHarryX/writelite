@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace WriteLite.Services.Settings;
 
@@ -152,6 +152,17 @@ public sealed class WriteLiteAppSettings
 
     /// <summary>Whether the current track repeats instead of handing over to the next one.</summary>
     public bool AmbienceLoop { get; set; }
+
+    /// <summary>
+    /// Keyboard shortcuts the user changed, keyed by shortcut identifier.
+    /// </summary>
+    /// <remarks>
+    /// Only the differences from the shipped bindings, so this file says what someone chose
+    /// rather than restating the defaults — and a later release that changes a default
+    /// reaches everyone who never touched that shortcut. Unknown identifiers and unparseable
+    /// gestures are dropped on load; see <see cref="ShortcutRegistry"/>.
+    /// </remarks>
+    public Dictionary<string, string> Shortcuts { get; set; } = [];
 
     // Schema for forward-compat. 4 renames the local-AI keys to WriteAI.
     public int SchemaVersion { get; set; } = 4;

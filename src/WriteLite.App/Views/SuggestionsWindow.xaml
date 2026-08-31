@@ -196,6 +196,7 @@
                                                         Content="Исправить"
                                                         MinHeight="28" Padding="12,0"
                                                         IsEnabled="{Binding CanApply}"
+                                                        Visibility="{Binding ApplyVisibility}"
                                                         Tag="{Binding Issue}"
                                                         Click="ApplyIssueButton_Click" />
                                                 <Button Style="{DynamicResource WlTextButton}"
