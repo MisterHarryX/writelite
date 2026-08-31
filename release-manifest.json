@@ -1,0 +1,35 @@
+{
+    "schemaVersion":  1,
+    "product":  "WriteLite",
+    "version":  "1.0.0",
+    "channel":  "stable",
+    "platform":  "windows",
+    "architecture":  "x64",
+    "buildDate":  "2026-07-25",
+    "minimumOs":  "Windows 10 (x64)",
+    "offline":  true,
+    "codeSigned":  false,
+    "installedSizeBytes":  1054057234,
+    "components":  {
+                       "languageModel":  "WriteLite-Qwen-0.6B-GEC-1.0.1",
+                       "modelRuntime":  "llama.cpp (GGUF, CPU only)",
+                       "languageEngine":  "LanguageTool 6.4",
+                       "spelling":  "Hunspell ru_RU / en_US"
+                   },
+    "artifacts":  [
+                      {
+                          "kind":  "installer",
+                          "name":  "WriteLite-Setup-x64-1.0.0.exe",
+                          "sizeBytes":  694151525,
+                          "sha256":  "6c279ddcfc94dbcde3a6bb06c705552ec7bbc99cb3f3e4ea54804db954dd0445",
+                          "url":  null
+                      },
+                      {
+                          "kind":  "portable",
+                          "name":  "WriteLite-Portable-x64-1.0.0.zip",
+                          "sizeBytes":  728519285,
+                          "sha256":  "f8f03232823079f74f6f18788af888a12ea9cf01b6b1944d99fd40134717cb83",
+                          "url":  null
+                      }
+                  ]
+}
