@@ -20,11 +20,6 @@ public sealed class RuleCatalog
     };
 
     /// <summary>
-    /// How long a match against user text may run before the analyzer abandons it.
-    /// </summary>
-    private static readonly TimeSpan RuntimeMatchTimeout = TimeSpan.FromMilliseconds(100);
-
-    /// <summary>
     /// How long a match against a rule's own example may run before the pattern is called bad.
     /// Generous on purpose — see <see cref="ValidateRegexTests"/>.
     /// </summary>
@@ -140,38 +135,16 @@ public sealed class RuleCatalog
 
             foreach (var rule in document.Rules)
             {
-                ValidateRule(rule, file);
-                if (!rules.TryAdd(rule.RuleId, rule))
-                {
-                    throw new InvalidDataException($"Duplicate RuleId '{rule.RuleId}' in {file}.");
-                }
-
-                if (string.Equals(rule.Implementation.Engine, "regex", StringComparison.Ordinal))
-                {
-                    var options = RegexOptions.Compiled | RegexOptions.CultureInvariant;
-                    if (rule.Implementation.IgnoreCase)
-                    {
-                        options |= RegexOptions.IgnoreCase;
-                    }
-
-                    Regex pattern;
-                    try
-                    {
-                        pattern = new Regex(rule.Implementation.Pattern!, options, RuntimeMatchTimeout);
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        throw new InvalidDataException($"Invalid regex in rule '{rule.RuleId}'.", ex);
-                    }
-
-                    if (validateEmbeddedTests)
-                    {
-                        ValidateRegexTests(rule, file);
-                    }
-
-                    regexRules.Add(new CompiledRuleDefinition(rule, pattern));
-                }
+                AddRule(rule, rules, regexRules, file, validateEmbeddedTests);
             }
+        }
+
+        // Declarative regex wordlists sit in the same directory as *.yaml. Compiled by
+        // RuleRegexFactory (composed from bare word lists) and fed through the exact same
+        // validation and compile path, so a YAML entry behaves like a hand-typed JSON rule.
+        foreach (var yamlRule in RuleRegexFactory.CompileDirectory(root))
+        {
+            AddRule(yamlRule, rules, regexRules, "regex.yaml", validateEmbeddedTests: true);
         }
 
         return new RuleCatalog(rules, regexRules, packVersion!);
@@ -216,6 +189,46 @@ public sealed class RuleCatalog
                 // A pattern too slow for two spaces will be too slow for real text as
                 // well, and the analyzer already handles that. Not this method's problem.
             }
+        }
+    }
+
+    private static void AddRule(
+        RuleDefinition rule,
+        Dictionary<string, RuleDefinition> rules,
+        List<CompiledRuleDefinition> regexRules,
+        string file,
+        bool validateEmbeddedTests)
+    {
+        ValidateRule(rule, file);
+        if (!rules.TryAdd(rule.RuleId, rule))
+        {
+            throw new InvalidDataException($"Duplicate RuleId '{rule.RuleId}' in {file}.");
+        }
+
+        if (string.Equals(rule.Implementation.Engine, "regex", StringComparison.Ordinal))
+        {
+            var options = RegexOptions.Compiled | RegexOptions.CultureInvariant;
+            if (rule.Implementation.IgnoreCase)
+            {
+                options |= RegexOptions.IgnoreCase;
+            }
+
+            Regex pattern;
+            try
+            {
+                pattern = new Regex(rule.Implementation.Pattern!, options, WriteLiteDefaults.Analysis.RegexMatchTimeout);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new InvalidDataException($"Invalid regex in rule '{rule.RuleId}'.", ex);
+            }
+
+            if (validateEmbeddedTests)
+            {
+                ValidateRegexTests(rule, file);
+            }
+
+            regexRules.Add(new CompiledRuleDefinition(rule, pattern));
         }
     }
 

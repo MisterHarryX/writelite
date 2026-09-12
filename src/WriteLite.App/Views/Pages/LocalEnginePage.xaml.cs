@@ -1,4 +1,5 @@
 using System.Windows;
+using WriteLite.Resources;
 using WriteLite.Services.Settings;
 using TextBlock = System.Windows.Controls.TextBlock;
 using UserControl = System.Windows.Controls.UserControl;
@@ -35,7 +36,7 @@ public partial class LocalEnginePage : UserControl
                        || status.Contains("ошибк", StringComparison.OrdinalIgnoreCase);
 
         StateDot.Fill = (System.Windows.Media.Brush)FindResource(degraded ? "WlWarning" : "WlSuccess");
-        StateText.Text = degraded ? "Работает базовая проверка" : "Движок активен";
+        StateText.Text = degraded ? Strings.LocalAi_DegradedState : Strings.LocalAi_EngineActive;
     }
 
     private void Reload()
@@ -45,10 +46,10 @@ public partial class LocalEnginePage : UserControl
             return;
         }
 
-        RowLocalAi.Control = Value(_settings.LocalAiEnabled ? "Включён" : "Выключен");
+        RowLocalAi.Control = Value(_settings.LocalAiEnabled ? Strings.LocalAi_Enabled : Strings.LocalAi_Disabled);
         RowProfile.Control = Value(_settings.LocalAiProfile);
         RowEndpoint.Control = Value(_settings.QwenEndpoint);
-        ModelText.Text = _settings.LocalAiEnabled ? $"WriteLite · {_settings.LocalAiProfile}" : "Не используется";
+        ModelText.Text = _settings.LocalAiEnabled ? string.Format(Strings.LocalAi_ModelFormat, _settings.LocalAiProfile) : Strings.LocalAi_NotUsed;
     }
 
     private TextBlock Value(string text) => new()

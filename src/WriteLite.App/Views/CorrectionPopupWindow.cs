@@ -3,10 +3,12 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
-using System.Runtime.InteropServices;
+using WriteLite.Interop;
 using WriteLite.Language.Core;
 using WriteLite.Models;
+using WriteLite.Resources;
 using WriteLite.Services;
+using static WriteLite.Services.PopupChrome;
 using Button = System.Windows.Controls.Button;
 using ProgressBar = System.Windows.Controls.ProgressBar;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
@@ -44,12 +46,6 @@ namespace WriteLite.Views;
 /// </remarks>
 public sealed class CorrectionPopupWindow : Window
 {
-    private static readonly MediaBrush CardBackground = ThemeResource.Brush("WlSurface", Brushes.Black);
-    private static readonly MediaBrush CardBorderBrush = ThemeResource.Brush("WlLineStrong", Brushes.DimGray);
-    private static readonly MediaBrush MutedBrush = ThemeResource.Brush("WlTextSecondary", Brushes.LightGray);
-    private static readonly MediaBrush FaintBrush = ThemeResource.Brush("WlTextMuted", Brushes.Gray);
-    private static readonly MediaBrush AccentBrush = ThemeResource.Brush("WlBrand", Brushes.Orange);
-    private static readonly MediaBrush OnAccentBrush = ThemeResource.Brush("WlOnBrand", Brushes.Black);
     private static readonly MediaBrush ErrorBrush = ThemeResource.Brush("WlDanger", Brushes.OrangeRed);
     private static readonly MediaBrush LineBrush = ThemeResource.Brush("WlLine", Brushes.DimGray);
     private static readonly FontFamily MonoFont = ThemeResource.Font("WlFontMono", "Cascadia Mono, Consolas");
@@ -147,7 +143,7 @@ public sealed class CorrectionPopupWindow : Window
         // panel to anything reading the desktop through accessibility — a screen reader, or
         // the live probe that verifies this card's phases against a real external field.
         System.Windows.Automation.AutomationProperties.SetAutomationId(this, AutomationId);
-        System.Windows.Automation.AutomationProperties.SetName(this, "Исправление WriteLite");
+        System.Windows.Automation.AutomationProperties.SetName(this, Strings.Corr_CardAutomationName);
 
         var card = new Border
         {
@@ -170,7 +166,7 @@ public sealed class CorrectionPopupWindow : Window
         categoryRow.Children.Add(_categoryMark);
         categoryRow.Children.Add(_category);
         var close = CreateGhostButton("×", 22, 22, 15);
-        close.ToolTip = "Закрыть";
+        close.ToolTip = Strings.Common_Close;
         close.Click += (_, _) => Dismiss();
         Grid.SetColumn(close, 1);
         header.Children.Add(categoryRow);
@@ -195,16 +191,16 @@ public sealed class CorrectionPopupWindow : Window
         _primary.Click += (_, _) => RequestApply();
         _primaryHost.Children.Add(_primary);
 
-        _copy = CreateGhostButton("Скопировать", double.NaN, 26, 12);
+        _copy = CreateGhostButton(Strings.EditorAi_Copy, double.NaN, 26, 12);
         _copy.Click += (_, _) => { if (_state.Issue is { } issue) CopyRequested?.Invoke(this, issue); };
-        _retry = CreateGhostButton("Повторить", double.NaN, 26, 12);
+        _retry = CreateGhostButton(Strings.Corr_Retry, double.NaN, 26, 12);
         _retry.Click += (_, _) => RequestApply();
         _recovery.Children.Add(_copy);
         _recovery.Children.Add(_retry);
 
-        _ignore = CreateGhostButton("Игнорировать", double.NaN, 26, 12);
+        _ignore = CreateGhostButton(Strings.Common_Ignore, double.NaN, 26, 12);
         _ignore.Click += (_, _) => { if (_state.Issue is { } issue) IgnoreRequested?.Invoke(this, issue); };
-        _dictionary = CreateGhostButton("В словарь", double.NaN, 26, 12);
+        _dictionary = CreateGhostButton(Strings.Common_AddToDictionary, double.NaN, 26, 12);
         _dictionary.Click += (_, _) => { if (_state.Issue is { } issue) AddToDictionaryRequested?.Invoke(this, issue); };
         DockPanel.SetDock(_ignore, Dock.Right);
         _footer.Children.Add(_ignore);
@@ -255,17 +251,13 @@ public sealed class CorrectionPopupWindow : Window
     /// with this token, or closes the card with <see cref="Dismiss"/>.
     /// </remarks>
     public long BeginRecheck()
-    {
-        if (!Dispatcher.CheckAccess())
+        => Dispatcher.InvokeIfNeeded(() =>
         {
-            return Dispatcher.Invoke(BeginRecheck);
-        }
-
-        var token = Interlocked.Increment(ref _token);
-        Render(_state.Recheck());
-        ArmRecheckDeadline(token);
-        return token;
-    }
+            var token = Interlocked.Increment(ref _token);
+            Render(_state.Recheck());
+            ArmRecheckDeadline(token);
+            return token;
+        });
 
     /// <summary>How long a refresh may stay on screen before the card closes instead.</summary>
     /// <remarks>
@@ -334,11 +326,7 @@ public sealed class CorrectionPopupWindow : Window
     /// </remarks>
     public void ShowApplyFeedback(string message, bool isError, bool offerCopy, bool offerRetry, long token)
     {
-        if (!Dispatcher.CheckAccess())
-        {
-            Dispatcher.BeginInvoke(() => ShowApplyFeedback(message, isError, offerCopy, offerRetry, token));
-            return;
-        }
+        if (Dispatcher.InvokeIfNeeded(() => ShowApplyFeedback(message, isError, offerCopy, offerRetry, token))) return;
 
         if (_state.Issue is not { } issue) return;
         if (!IsCurrent(token))
@@ -373,11 +361,7 @@ public sealed class CorrectionPopupWindow : Window
     /// </remarks>
     public void ShowForIssue(TextIssue issue, Rect physicalScreenAnchor, long token)
     {
-        if (!Dispatcher.CheckAccess())
-        {
-            Dispatcher.BeginInvoke(() => ShowForIssue(issue, physicalScreenAnchor, token));
-            return;
-        }
+        if (Dispatcher.InvokeIfNeeded(() => ShowForIssue(issue, physicalScreenAnchor, token))) return;
 
         if (!IsCurrent(token))
         {
@@ -394,11 +378,7 @@ public sealed class CorrectionPopupWindow : Window
     /// <summary>Closes the card and voids every render still in flight for it.</summary>
     public void Dismiss()
     {
-        if (!Dispatcher.CheckAccess())
-        {
-            Dispatcher.BeginInvoke(Dismiss);
-            return;
-        }
+        if (Dispatcher.InvokeIfNeeded(Dismiss)) return;
 
         Interlocked.Increment(ref _token);
         Render(CorrectionCardState.Hidden);
@@ -546,38 +526,14 @@ public sealed class CorrectionPopupWindow : Window
         var handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
         if (handle == IntPtr.Zero) return;
 
-        var before = GetWindowLongPtr(handle, GwlExStyle).ToInt64();
-        var after = before | WsExNoActivate;
+        var before = User32.GetWindowLongPtr(handle, User32.GwlExStyle);
+        var after = before | User32.WsExNoActivate;
         if (after != before)
         {
-            SetWindowLongPtr(handle, GwlExStyle, new IntPtr(after));
+            User32.SetWindowLongPtr(handle, User32.GwlExStyle, after);
             CompatibilityLogger.Technical("correction-popup-style", "noActivate=1");
         }
     }
-
-    private const int GwlExStyle = -20;
-    private const long WsExNoActivate = 0x08000000L;
-
-    private static IntPtr GetWindowLongPtr(IntPtr hwnd, int index)
-        => IntPtr.Size == 8 ? GetWindowLongPtr64(hwnd, index) : new IntPtr(GetWindowLong32(hwnd, index));
-
-    private static void SetWindowLongPtr(IntPtr hwnd, int index, IntPtr value)
-    {
-        if (IntPtr.Size == 8) SetWindowLongPtr64(hwnd, index, value);
-        else SetWindowLong32(hwnd, index, value.ToInt32());
-    }
-
-    [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
-    private static extern int GetWindowLong32(IntPtr hwnd, int index);
-
-    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr")]
-    private static extern IntPtr GetWindowLongPtr64(IntPtr hwnd, int index);
-
-    [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
-    private static extern int SetWindowLong32(IntPtr hwnd, int index, int value);
-
-    [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
-    private static extern IntPtr SetWindowLongPtr64(IntPtr hwnd, int index, IntPtr value);
 
     /// <summary>Places the popup using the measured card size. Exposed for deterministic placement tests.</summary>
     public static OverlayPlacementResult CalculatePlacement(Rect anchor, Rect workArea, Size popupSize) =>
@@ -600,51 +556,10 @@ public sealed class CorrectionPopupWindow : Window
     {
         var dpi = VisualTreeHelper.GetDpi(this);
         var anchor = OverlayPlacementService.Scale(physicalScreenAnchor, dpi.DpiScaleX, dpi.DpiScaleY);
-        var workArea = GetCurrentWorkArea(physicalScreenAnchor, dpi.DpiScaleX, dpi.DpiScaleY);
+        var workArea = PopupWorkArea.GetCurrent(physicalScreenAnchor, dpi.DpiScaleX, dpi.DpiScaleY);
         var placement = CalculatePlacement(anchor, workArea, popupSize);
         Left = placement.Location.X;
         Top = placement.Location.Y;
-    }
-
-    private static Rect GetCurrentWorkArea(Rect physicalAnchor, double dpiX, double dpiY)
-    {
-        var point = new NativePoint
-        {
-            X = (int)Math.Round(physicalAnchor.Left),
-            Y = (int)Math.Round(physicalAnchor.Top)
-        };
-        var monitor = MonitorFromPoint(point, MonitorDefaultToNearest);
-        var info = new MonitorInfo { Size = Marshal.SizeOf<MonitorInfo>() };
-        if (monitor != IntPtr.Zero && GetMonitorInfo(monitor, ref info))
-        {
-            var work = new Rect(info.Work.Left, info.Work.Top, info.Work.Right - info.Work.Left, info.Work.Bottom - info.Work.Top);
-            return OverlayPlacementService.Scale(work, dpiX, dpiY);
-        }
-
-        return SystemParameters.WorkArea;
-    }
-
-    private const uint MonitorDefaultToNearest = 2;
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr MonitorFromPoint(NativePoint point, uint flags);
-
-    [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    private static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo monitorInfo);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct NativePoint { public int X; public int Y; }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct NativeRect { public int Left; public int Top; public int Right; public int Bottom; }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MonitorInfo
-    {
-        public int Size;
-        public NativeRect Monitor;
-        public NativeRect Work;
-        public uint Flags;
     }
 
     /// <summary>Primary action: the accent surface with the near-black brand foreground.</summary>
@@ -665,57 +580,9 @@ public sealed class CorrectionPopupWindow : Window
             Focusable = false,
             IsHitTestVisible = true
         };
-        button.Template = RoundedTemplate(new CornerRadius(5), Brushes.Transparent);
+        button.Template = RoundedButtonTemplate(new CornerRadius(5), Brushes.Transparent);
         button.PreviewMouseLeftButtonDown += (_, e) => e.Handled = false;
         button.PreviewMouseLeftButtonUp += (_, e) => e.Handled = false;
         return button;
-    }
-
-    private static Button CreateGhostButton(string text, double width, double height, double fontSize)
-    {
-        var button = new Button
-        {
-            Content = text,
-            Width = width,
-            Height = height,
-            FontSize = fontSize,
-            Foreground = MutedBrush,
-            Background = Brushes.Transparent,
-            BorderThickness = new Thickness(0),
-            Padding = new Thickness(8, 2, 8, 2),
-            Cursor = Cursors.Hand,
-            HorizontalContentAlignment = HorizontalAlignment.Center
-        };
-        button.Template = RoundedTemplate(new CornerRadius(5), ThemeResource.Brush("WlHover", Brushes.DimGray));
-        return button;
-    }
-
-    /// <summary>
-    /// Minimal rounded button template. Built in code because this window is created
-    /// without XAML, but the shape and hover surface follow the same tokens as the
-    /// styles in Themes/Buttons.xaml.
-    /// </summary>
-    private static ControlTemplate RoundedTemplate(CornerRadius radius, MediaBrush hoverBrush)
-    {
-        var border = new FrameworkElementFactory(typeof(Border));
-        border.Name = "border";
-        border.SetValue(Border.CornerRadiusProperty, radius);
-        border.SetValue(Border.SnapsToDevicePixelsProperty, true);
-        border.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding("Background") { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
-        var content = new FrameworkElementFactory(typeof(ContentPresenter));
-        content.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-        content.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-        border.AppendChild(content);
-
-        var template = new ControlTemplate(typeof(Button)) { VisualTree = border };
-        var hover = new Trigger { Property = UIElement.IsMouseOverProperty, Value = true };
-        hover.Setters.Add(new Setter(Border.BackgroundProperty, hoverBrush, "border"));
-        template.Triggers.Add(hover);
-
-        var disabled = new Trigger { Property = UIElement.IsEnabledProperty, Value = false };
-        disabled.Setters.Add(new Setter(UIElement.OpacityProperty, 0.45, "border"));
-        template.Triggers.Add(disabled);
-
-        return template;
     }
 }

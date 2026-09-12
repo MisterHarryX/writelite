@@ -1,4 +1,5 @@
 using WriteLite.Models;
+using WriteLite.Resources;
 
 namespace WriteLite.Services;
 
@@ -194,7 +195,7 @@ public sealed record CorrectionCardState
         : Common(CorrectionPresentation.NormalizeForApply(issue))) with
     {
         Phase = CorrectionCardPhase.Checking,
-        ProgressLabel = "Проверяем текст…",
+        ProgressLabel = Strings.Suggestions_Checking,
     };
 
     /// <summary>The user pressed the primary action; the write has not come back yet.</summary>
@@ -204,7 +205,7 @@ public sealed record CorrectionCardState
         return ForIssue(issue) with
         {
             Phase = CorrectionCardPhase.Applying,
-            ProgressLabel = "Применяем исправление…",
+            ProgressLabel = Strings.Corr_Applying,
         };
     }
 
@@ -264,11 +265,11 @@ public sealed record CorrectionCardState
     private static string PrimaryLabel(TextIssue issue) =>
         CorrectionCardText.IsInsertion(issue)
             ? CorrectionPresentation.FormatChipLabel(issue)
-            : "Исправить";
+            : Strings.Common_Fix;
 
     private static string NoSuggestionHeadline(TextIssue issue) =>
         issue.Category == IssueCategory.Orthography
-            ? "Слово не найдено в словаре"
+            ? Strings.Corr_WordNotFound
             : issue.Title;
 
     /// <summary>
@@ -284,7 +285,7 @@ public sealed record CorrectionCardState
         if (issue.Category != IssueCategory.Orthography) return issue.Explanation ?? string.Empty;
 
         return DictionaryWordPolicy.ResolveWord(issue) is { } word
-            ? $"WriteLite не удалось подобрать уверенное исправление для «{word}»."
-            : "WriteLite не удалось подобрать уверенное исправление.";
+            ? string.Format(Strings.Corr_NoConfidentFixForWord, word)
+            : Strings.Corr_NoConfidentFix;
     }
 }

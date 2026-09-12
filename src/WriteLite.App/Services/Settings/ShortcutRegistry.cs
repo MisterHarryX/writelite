@@ -1,5 +1,6 @@
 using System.Text;
 using System.Windows.Input;
+using WriteLite.Resources;
 
 namespace WriteLite.Services.Settings;
 
@@ -56,15 +57,15 @@ public readonly record struct RebindResult(RebindRefusal Refusal, string? Confli
     public string Message => Refusal switch
     {
         RebindRefusal.None => string.Empty,
-        RebindRefusal.UnknownShortcut => "Неизвестное сочетание.",
-        RebindRefusal.NotRebindable => "Это сочетание изменить нельзя.",
-        RebindRefusal.NoKey => "Нажмите клавишу вместе с модификатором.",
-        RebindRefusal.ModifierRequired => "Нужен модификатор: Ctrl, Alt или Shift.",
-        RebindRefusal.ReservedKey => "Эта клавиша занята системой.",
+        RebindRefusal.UnknownShortcut => Strings.Shortcut_ErrorUnknown,
+        RebindRefusal.NotRebindable => Strings.Shortcut_ErrorNotRebindable,
+        RebindRefusal.NoKey => Strings.Shortcut_ErrorNoKey,
+        RebindRefusal.ModifierRequired => Strings.Shortcut_ErrorModifierRequired,
+        RebindRefusal.ReservedKey => Strings.Shortcut_ErrorReservedKey,
         RebindRefusal.Conflict => ConflictsWith is null
-            ? "Это сочетание уже занято."
-            : $"Это сочетание уже занято: «{ConflictsWith}».",
-        _ => "Не удалось назначить сочетание."
+            ? Strings.Shortcut_ErrorConflict
+            : string.Format(Strings.Shortcut_ErrorConflictWith, ConflictsWith),
+        _ => Strings.Shortcut_ErrorFailed
     };
 }
 
@@ -116,33 +117,33 @@ public sealed class ShortcutRegistry
     public const string FullScreen = "shell.fullscreen";
     public const string Dismiss = "shell.dismiss";
 
-    private const string SectionGlobal = "Система";
-    private const string SectionEditor = "Редактор";
-    private const string SectionReader = "Чтение";
-    private const string SectionShell = "Окно";
+    private static readonly string SectionGlobal = Strings.Shortcut_SectionGlobal;
+    private static readonly string SectionEditor = Strings.Nav_Editor;
+    private static readonly string SectionReader = Strings.Nav_Reading;
+    private static readonly string SectionShell = Strings.Shortcut_SectionWindow;
 
     /// <summary>Every shortcut the product has, in the order the settings page shows them.</summary>
     public static IReadOnlyList<ShortcutDefinition> Definitions { get; } =
     [
-        new(OpenWriteLite, "Открыть WriteLite", SectionGlobal, ShortcutScope.Global, "Ctrl+Alt+W"),
+        new(OpenWriteLite, Strings.Shortcut_OpenWriteLite, SectionGlobal, ShortcutScope.Global, "Ctrl+Alt+W"),
 
-        new(CheckNow, "Проверить сейчас", SectionEditor, ShortcutScope.Application, "Ctrl+Enter"),
-        new(NewDocument, "Новый документ", SectionEditor, ShortcutScope.Application, "Ctrl+N"),
-        new(OpenDocument, "Открыть документ", SectionEditor, ShortcutScope.Application, "Ctrl+O"),
-        new(SaveDocument, "Сохранить", SectionEditor, ShortcutScope.Application, "Ctrl+S"),
-        new(SaveDocumentAs, "Сохранить как…", SectionEditor, ShortcutScope.Application, "Ctrl+Shift+S"),
-        new(Bold, "Полужирный", SectionEditor, ShortcutScope.Application, "Ctrl+B"),
-        new(Italic, "Курсив", SectionEditor, ShortcutScope.Application, "Ctrl+I"),
-        new(Underline, "Подчёркнутый", SectionEditor, ShortcutScope.Application, "Ctrl+U"),
-        new(Find, "Найти", SectionEditor, ShortcutScope.Application, "Ctrl+F"),
-        new(Replace, "Найти и заменить", SectionEditor, ShortcutScope.Application, "Ctrl+H"),
-        new(AcceptSuggestion, "Принять подсказку", SectionEditor, ShortcutScope.Application, "Tab", IsRebindable: false),
+        new(CheckNow, Strings.Shortcut_CheckNow, SectionEditor, ShortcutScope.Application, "Ctrl+Enter"),
+        new(NewDocument, Strings.Shortcut_NewDocument, SectionEditor, ShortcutScope.Application, "Ctrl+N"),
+        new(OpenDocument, Strings.EditorDoc_OpenTitle, SectionEditor, ShortcutScope.Application, "Ctrl+O"),
+        new(SaveDocument, Strings.Menu_Save, SectionEditor, ShortcutScope.Application, "Ctrl+S"),
+        new(SaveDocumentAs, Strings.Menu_SaveAs, SectionEditor, ShortcutScope.Application, "Ctrl+Shift+S"),
+        new(Bold, Strings.Editor_Bold, SectionEditor, ShortcutScope.Application, "Ctrl+B"),
+        new(Italic, Strings.Editor_Italic, SectionEditor, ShortcutScope.Application, "Ctrl+I"),
+        new(Underline, Strings.Editor_Underline, SectionEditor, ShortcutScope.Application, "Ctrl+U"),
+        new(Find, Strings.Editor_FindBox, SectionEditor, ShortcutScope.Application, "Ctrl+F"),
+        new(Replace, Strings.Editor_FindReplace, SectionEditor, ShortcutScope.Application, "Ctrl+H"),
+        new(AcceptSuggestion, Strings.Shortcut_AcceptSuggestion, SectionEditor, ShortcutScope.Application, "Tab", IsRebindable: false),
 
-        new(PreviousPage, "Предыдущая страница", SectionReader, ShortcutScope.Application, "Ctrl+Left"),
-        new(NextPage, "Следующая страница", SectionReader, ShortcutScope.Application, "Ctrl+Right"),
+        new(PreviousPage, Strings.Shortcut_PreviousPage, SectionReader, ShortcutScope.Application, "Ctrl+Left"),
+        new(NextPage, Strings.Shortcut_NextPage, SectionReader, ShortcutScope.Application, "Ctrl+Right"),
 
-        new(FullScreen, "Во весь экран", SectionShell, ShortcutScope.Application, "F11"),
-        new(Dismiss, "Закрыть текущее", SectionShell, ShortcutScope.Application, "Escape", IsRebindable: false),
+        new(FullScreen, Strings.Shortcut_FullScreen, SectionShell, ShortcutScope.Application, "F11"),
+        new(Dismiss, Strings.Shortcut_Dismiss, SectionShell, ShortcutScope.Application, "Escape", IsRebindable: false),
     ];
 
     private static readonly Dictionary<string, ShortcutDefinition> ById =

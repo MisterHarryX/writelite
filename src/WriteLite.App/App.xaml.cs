@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using System.Windows.Threading;
 using System.Windows.Automation;
@@ -24,73 +24,47 @@ namespace WriteLite;
 
 public partial class App : System.Windows.Application
 {
-    private TextFieldMonitor? _monitor;
-    private BubbleWindow? _bubble;
-    private SuggestionsWindow? _suggestions;
-    private CorrectionPopupWindow? _correctionPopup;
 
-    /// <summary>
-    /// The snapshot the open correction card was built from.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="_latestSnapshot"/> follows the focused field and is set to null the moment
-    /// focus leaves one — which is routine while a card is open, and which made pressing the
-    /// card's button report «Нет активного текстового поля» for a correction that was on
-    /// screen and perfectly valid. This holds the card's own context for as long as the card
-    /// is up. It is not a shortcut past staleness: the apply path still re-reads the target
-    /// and refuses if the text has moved on.
-    /// </remarks>
-    private readonly CorrectionCardCoordinator _cardCoordinator = new();
-
-    /// <summary>Where the open card is anchored, so a refreshed result lands on the same word.</summary>
-    private Rect _pinnedPopupAnchor;
-    private LexicalPopupWindow? _lexicalPopup;
     private ShortcutRegistry _shortcuts = new();
-    private GlobalHotkeyService? _hotkeys;
-    private InlineErrorOverlayController? _inlineOverlay;
-    private MainWindow? _mainWindow;
-    private TrayIconService? _tray;
-    private TextSnapshot? _latestSnapshot;
-    private WriteLiteOrchestratingAnalyzer? _orchestrator;
-    private HybridTextAnalysisService? _hybrid;
 
-    /// <summary>
-    /// The native deterministic lane, shared by the field monitor and the editor.
-    /// </summary>
-    /// <remarks>
-    /// One instance for both surfaces: it holds a rule catalogue and a reference to the form
-    /// index, and a second copy would parse the catalogue again to answer the same questions.
-    /// </remarks>
-    private CompositeTextAnalyzer? _fastAnalyzer;
-    private WritingAssistanceService? _writingAssistance;
-    private WritingAssistanceCoordinator? _writingCoordinator;
-    private LocalAiRoutingPolicy? _routingPolicy;
-    private WriteLiteLanguageEngine? _languageEngine;
-    private IAiTextProvider? _aiProvider;
-    private LocalAiTextProvider? _localAiProvider;
-    private OfflineLexicalKnowledgeService? _lexicalKnowledge;
-    private TranslationIndex? _translations;
+    private GlobalHotkeyService? _hotkeys;
+
+    private MainWindow? _mainWindow;
+
+    private TrayIconService? _tray;
+
     private AmbiencePlayer? _ambience;
+
     private NotesService? _notes;
+
     private ReadingLibraryService? _readingLibrary;
-    private ILexicalReplacementService? _lexicalReplacement;
-    private DoubleClickWordObserver? _doubleClickObserver;
-    private CancellationTokenSource? _lexicalLookupCts;
-    private WriteLiteSettingsStore? _settingsStore;
+
     private WriteLiteAppSettings _settings = new();
+
     private WriteLiteAutostartService? _autostart;
+
     private WriteLiteDiagnosticsService? _diagnostics;
-    private readonly AsyncOperationGate _correctionGate = new();
+
     private readonly CancellationTokenSource _applicationLifetimeCts = new();
-    private readonly UiaCircuitBreaker _uiaCircuitBreaker = new();
-    private CorrectionApplicationService? _correctionApplication;
+
     private UiResponsivenessWatchdog? _uiWatchdog;
+
     private bool _startupComplete;
+
     private bool _openMainWindowPending;
+
     private SingleInstanceService? _singleInstance;
+
     private bool _monitorPaused;
-    private int _lastIndicatorGeneration = -1;
+
+    private TextFieldMonitor? _monitor;
+
+    private readonly UiaCircuitBreaker _uiaCircuitBreaker = new();
+
+    private CorrectionUiCoordinator? _corrections;
+
     private bool _servicesBound;
+
     private int _shutdownRequested;
 
     // async void is deliberate here: it is the one WPF-sanctioned place for it
@@ -98,6 +72,7 @@ public partial class App : System.Windows.Application
     // wired before the first await, and the alternative was measured, not
     // hypothetical — constructing the spell checker inline parked the
     // dispatcher for the whole Hunspell parse at every launch.
+
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -115,11 +90,11 @@ public partial class App : System.Windows.Application
         }
 
         CompatibilityLogger.State("application-starting");
-        _correctionApplication = new CorrectionApplicationService(_uiaCircuitBreaker);
+        var correctionApplication = new CorrectionApplicationService(_uiaCircuitBreaker);
         _uiWatchdog = new UiResponsivenessWatchdog(Dispatcher);
         _uiWatchdog.SetContextProvider(() =>
         {
-            var popup = (_correctionPopup?.IsVisible == true ? 1 : 0) + (_lexicalPopup?.IsVisible == true ? 1 : 0) + (_suggestions?.IsVisible == true ? 1 : 0);
+            var popup = (_corrections is { IsCorrectionPopupVisible: true } ? 1 : 0) + (_lexicalPopup?.IsVisible == true ? 1 : 0) + (_suggestions?.IsVisible == true ? 1 : 0);
             var fast = _monitor?.FastAnalysisLatency.Count ?? 0;
             var deep = _monitor?.DeepAnalysisLatency.Count ?? 0;
             return $"popups={popup} fastSamples={fast} deepSamples={deep} circuit={_uiaCircuitBreaker.OpenCount}";
@@ -261,7 +236,7 @@ public partial class App : System.Windows.Application
         }
 
         _diagnostics = new WriteLiteDiagnosticsService(
-            () => _latestSnapshot,
+            () => _corrections?.LatestSnapshot,
             () => _languageEngine,
             () => _settings,
             () => _monitor,
@@ -300,7 +275,6 @@ public partial class App : System.Windows.Application
         _monitor.SetShowUiOnlyWhileEditing(_settings.ShowUiOnlyWhileEditing);
         _monitor.SetIdleGrace(UiInteractionStateMachine.FromSecondsClamped(_settings.EditingIdleGraceSeconds));
         _suggestions = new SuggestionsWindow();
-        _correctionPopup = new CorrectionPopupWindow();
         _lexicalPopup = new LexicalPopupWindow();
         _lexicalKnowledge = new OfflineLexicalKnowledgeService();
         // Bootstrap parses the bundled lexical packs from disk. Inline it was
@@ -357,33 +331,40 @@ public partial class App : System.Windows.Application
             },
             exitRequested: RequestShutdown);
 
-        _monitor.SnapshotChanged += OnSnapshotChanged;
+        _corrections = new CorrectionUiCoordinator(
+            Dispatcher,
+            correctionApplication,
+            () => _settings,
+            _monitor,
+            () => _lexicalLookupCts,
+            _bubble,
+            _suggestions,
+            _inlineOverlay,
+            _lexicalPopup,
+            _orchestrator,
+            _writingCoordinator,
+            _mainWindow,
+            _applicationLifetimeCts,
+            () => Volatile.Read(ref _shutdownRequested) != 0);
+
+        _monitor.SnapshotChanged += (_, snapshot) => _corrections?.HandleSnapshotChanged(snapshot);
         _bubble.OpenRequested += OpenSuggestions;
-        _bubble.ApplyAllRequested += async (_, _) => await ApplyAllAsync();
+        _bubble.ApplyAllRequested += async (_, _) =>
+        {
+            if (_corrections is { } corrections) await corrections.ApplyAllAsync();
+        };
         _bubble.OpenMainWindowRequested += (_, _) => OpenMainWindow();
         _bubble.HideIndicatorRequested += (_, _) => CompatibilityLogger.State("indicator-hidden-by-user");
-        _suggestions.ApplyIssueRequested += ApplyIssueAsync;
-        _suggestions.ApplyAllRequested += ApplyAllAsync;
+        _suggestions.ApplyIssueRequested += issue => _corrections?.ApplyIssueAsync(issue) ?? Task.CompletedTask;
+        _suggestions.ApplyAllRequested += () => _corrections?.ApplyAllAsync() ?? Task.CompletedTask;
         _suggestions.PanelHidden += (_, _) =>
         {
             _monitor?.SetSuggestionsWindowOpen(false);
             _monitor?.SetPopupInteractionOpen(false);
         };
         _suggestions.OpenMainWindowRequested += (_, _) => OpenMainWindow();
-        _suggestions.AddToDictionaryRequested += OnAddToDictionary;
-        _suggestions.IgnoreIssueRequested += OnIgnoreIssue;
-        _correctionPopup.ApplyRequested += async (_, issue) => await ApplyIssueAsync(issue);
-        _correctionPopup.IgnoreRequested += (_, issue) => OnIgnoreIssue(issue);
-        _correctionPopup.AddToDictionaryRequested += (_, issue) => OnAddToDictionary(issue);
-        _correctionPopup.CopyRequested += (_, issue) => CopyReplacementToClipboard(issue.Replacement);
-        _correctionPopup.IsVisibleChanged += (_, _) =>
-        {
-            if (_correctionPopup is { IsVisible: false })
-            {
-                _cardCoordinator.Close();
-                _monitor?.SetPopupInteractionOpen(false);
-            }
-        };
+        _suggestions.AddToDictionaryRequested += issue => _corrections?.AddToDictionary(issue);
+        _suggestions.IgnoreIssueRequested += issue => _corrections?.IgnoreIssue(issue);
         _lexicalPopup.ReplaceRequested += OnLexicalReplaceRequested;
         _lexicalPopup.FullArticleRequested += OnLexicalFullArticleRequested;
         _lexicalPopup.ClosedByUser += (_, _) => _monitor?.SetPopupInteractionOpen(false);
@@ -401,7 +382,7 @@ public partial class App : System.Windows.Application
             () =>
             {
                 try { return AutomationElement.FocusedElement; }
-                catch { return null; }
+                catch { return null; } // UIA throws when busy or the element is torn down; a miss is fine
             },
             () => _monitor?.GetTargetState() ?? (null, 0, 0, null));
         _doubleClickObserver.WordDoubleClicked += OnWordDoubleClicked;
@@ -439,7 +420,7 @@ public partial class App : System.Windows.Application
             {
                 try
                 {
-                    await Task.Delay(1_500, _applicationLifetimeCts.Token);
+                    await Task.Delay(WriteLiteDefaults.Application.LifecycleSmokeShutdownDelay, _applicationLifetimeCts.Token);
                     RequestShutdown();
                 }
                 catch (OperationCanceledException)
@@ -468,6 +449,7 @@ public partial class App : System.Windows.Application
         };
     }
 
+
     private void RequestShutdown()
     {
         if (Interlocked.Exchange(ref _shutdownRequested, 1) != 0)
@@ -488,6 +470,7 @@ public partial class App : System.Windows.Application
             _ = Dispatcher.BeginInvoke(() => Shutdown(0));
         }
     }
+
 
     private void BindMainWindowServices()
     {
@@ -566,204 +549,6 @@ public partial class App : System.Windows.Application
         _servicesBound = true;
     }
 
-    /// <summary>
-    /// Prepares a continuation for the field the user is typing in.
-    /// </summary>
-    /// <remarks>
-    /// Fire-and-forget with supersession: the coordinator cancels the previous request, and a
-    /// completion whose snapshot has been replaced is dropped before it is ever offered. The
-    /// suggestion arrives as an ordinary insertion issue, so the suggestions panel, the apply
-    /// path and the write telemetry need to know nothing about completions.
-    /// </remarks>
-    private void QueueFieldContinuation(TextSnapshot? snapshot)
-    {
-        if (_writingCoordinator is not { IsAvailable: true } coordinator) return;
-
-        if (snapshot is null
-            || string.IsNullOrWhiteSpace(snapshot.Text)
-            || !snapshot.Target.IsEditable
-            || !snapshot.ShowMainUi)
-        {
-            coordinator.Dismiss();
-            return;
-        }
-
-        var caret = snapshot.Text.Length;
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await coordinator.RequestAsync(snapshot.Text, caret).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                CompatibilityLogger.Technical("field-continuation-failed", $"type={ex.GetType().Name}");
-            }
-        });
-    }
-
-    /// <summary>
-    /// Takes a shortcut change to Windows, so a rebound global shortcut works immediately.
-    /// </summary>
-    /// <remarks>
-    /// The registry object is the same instance the editor and the shell already hold, so
-    /// application shortcuts need nothing here — they are read from it on every keypress.
-    /// Only the system-wide ones are held by Windows and have to be told.
-    /// </remarks>
-    private void OnShortcutsChanged(ShortcutRegistry registry)
-    {
-        _shortcuts = registry;
-        _hotkeys?.Apply(registry);
-    }
-
-    private void OnSettingsChanged(WriteLiteAppSettings settings)
-    {
-        _settings = settings;
-        SaveSettingsQuietly(settings);
-        ApplyRuntimeSettings(settings);
-    }
-
-    /// <summary>Persists settings without re-applying runtime behaviour.</summary>
-    private void SaveSettingsQuietly(WriteLiteAppSettings settings)
-    {
-        try
-        {
-            _settingsStore?.Save(settings);
-        }
-        catch
-        {
-            CompatibilityLogger.State("settings-save-failed");
-        }
-    }
-
-    private void ApplyRuntimeSettings(WriteLiteAppSettings settings)
-    {
-        _orchestrator?.ApplySettings(settings);
-        _hybrid?.ApplySettings(settings);
-        // Rebuild the local provider when its endpoint/profile changes.
-        RebuildAiProvider(settings);
-        _mainWindow?.SetMinimizeToTray(settings.MinimizeToTrayOnClose);
-        _bubble?.ApplyDisplaySettings(settings.ShowIndicator, settings.ShowGreenIndicatorWhenClean);
-        IssueUnderlineTheme.MinimizeDuplication = settings.MinimizeUnderlineDuplication;
-        _monitor?.SetShowUiOnlyWhileEditing(settings.ShowUiOnlyWhileEditing);
-        _monitor?.SetIdleGrace(UiInteractionStateMachine.FromSecondsClamped(settings.EditingIdleGraceSeconds));
-        var delayMs = ResolveAnalysisDelayMs(settings, _aiProvider);
-        _monitor?.SetAnalysisDelay(TimeSpan.FromMilliseconds(delayMs));
-        _mainWindow?.SetEngineStatus(ResolveEngineStatusText());
-
-        if (_languageEngine is not null)
-        {
-            // Fire-and-forget is intentional: settings UI must not block on engine stop/start.
-            _ = ApplyExtendedCheckingAsync(settings.ExtendedChecking);
-        }
-
-        if (_monitor is not null)
-        {
-            if (settings.CheckingEnabled && !_monitorPaused)
-            {
-                // Start is idempotent when already running.
-                _monitor.Start();
-                if (settings.LexicalCardEnabled)
-                {
-                    _doubleClickObserver?.Start();
-                }
-                else
-                {
-                    _doubleClickObserver?.Stop();
-                    _lexicalPopup?.Hide();
-                }
-            }
-            else if (!settings.CheckingEnabled)
-            {
-                _monitor.Stop();
-                _doubleClickObserver?.Stop();
-                _bubble?.Hide();
-                _suggestions?.Hide();
-                _lexicalPopup?.Hide();
-            }
-        }
-
-        if (!settings.ShowIndicator)
-        {
-            _bubble?.Hide();
-        }
-
-        CompatibilityLogger.State("settings-applied");
-    }
-
-    private async Task ApplyExtendedCheckingAsync(bool enabled)
-    {
-        if (_languageEngine is null)
-        {
-            return;
-        }
-
-        try
-        {
-            await _languageEngine.SetExtendedEnabledAsync(enabled).ConfigureAwait(true);
-            _ = Dispatcher.BeginInvoke(() => _mainWindow?.SetEngineStatus(_languageEngine.UserFacingStatus));
-        }
-        catch
-        {
-            CompatibilityLogger.State("language-engine-fallback-active");
-        }
-    }
-
-    private async Task<bool> RestartEngineAsync()
-    {
-        if (_languageEngine is null)
-        {
-            return false;
-        }
-
-        var ok = await _languageEngine.TryRestartAsync().ConfigureAwait(true);
-        _mainWindow?.SetEngineStatus(_languageEngine.UserFacingStatus);
-        return ok;
-    }
-
-    private void OnAddToDictionary(TextIssue issue)
-    {
-        // §18: never a diff fragment, never punctuation, never part of a word.
-        var word = DictionaryWordPolicy.ResolveWord(issue);
-        if (word is null)
-        {
-            CompatibilityLogger.Technical("dictionary-add-rejected", $"rule={issue.RuleId} length={issue.Length}");
-            _correctionPopup?.ShowApplyFeedback(
-                "Это не отдельное слово — в словарь можно добавить только слово целиком.",
-                isError: true,
-                offerCopy: false,
-                offerRetry: false);
-            return;
-        }
-
-        _orchestrator?.Dictionary.Add(word);
-        _orchestrator?.Ignore.IgnoreWord(word);
-        CompatibilityLogger.Technical("language-engine-ignore", "kind=dictionary-add");
-        _ = _monitor?.RefreshOnceAfterSuppressionAsync();
-        _mainWindow?.RefreshDictionary();
-        _correctionPopup?.Dismiss();
-    }
-
-    private void OnIgnoreIssue(TextIssue issue)
-    {
-        _orchestrator?.Ignore.IgnoreIssueUntilTextChanges(issue);
-        _orchestrator?.Ignore.IgnoreRule(issue.RuleId);
-        CompatibilityLogger.Technical("language-engine-ignore", "kind=issue-and-rule");
-        if (_latestSnapshot is not null)
-        {
-            var filtered = _latestSnapshot.Issues.Where(i => i != issue && !_orchestrator!.Ignore.IsIgnored(i)).ToList();
-            var snap = _latestSnapshot with { Issues = filtered };
-            _latestSnapshot = snap;
-            _suggestions?.ShowSnapshot(snap);
-            if (_settings.ShowIndicator)
-            {
-                _bubble?.ShowSnapshot(snap);
-            }
-        }
-
-        _mainWindow?.RefreshExceptions();
-        _correctionPopup?.Dismiss();
-    }
 
     private void OpenMainWindow()
     {
@@ -792,920 +577,6 @@ public partial class App : System.Windows.Application
         _mainWindow.ShowFromTray();
     }
 
-    private void OnSnapshotChanged(object? sender, TextSnapshot? snapshot)
-    {
-        _latestSnapshot = snapshot;
-
-        // §39/§81: the field path runs the same writing-assistance service the editor runs,
-        // through the same bounded context and the same never-insert-without-acceptance rule.
-        // The text has already been captured off the UIA callback by the monitor, so nothing
-        // here touches the target application.
-        QueueFieldContinuation(snapshot);
-
-        // Do not leave an old dictionary result on screen once the user has moved to a
-        // different field, or edited the text the card was read from. This also cancels its
-        // background lookup before it can update the UI. What does *not* invalidate a card is
-        // the monitor merely republishing, or reporting that it is tracking nothing — see
-        // LexicalPopupWindow.IsStaleFor.
-        if (_lexicalPopup is { IsVisible: true }
-            && _lexicalPopup.IsStaleFor(snapshot?.Target.Identity.RuntimeId, snapshot?.Text))
-        {
-            _lexicalLookupCts?.Cancel();
-            _lexicalPopup.Hide();
-            CompatibilityLogger.Technical("lexical-popup-invalidated", "reason=target-or-text-changed");
-        }
-
-        RefreshCorrectionCard(snapshot);
-
-        if (snapshot is null || string.IsNullOrWhiteSpace(snapshot.Text))
-        {
-            CompatibilityLogger.State("overlay-hidden");
-            _lastIndicatorGeneration = -1;
-            _bubble?.ClearUserHide();
-            _bubble?.Hide();
-            _suggestions?.Hide();
-            _inlineOverlay?.Hide();
-            // Never force-close a popup the user is interacting with.
-            if (_monitor?.ShouldKeepPopup != true)
-            {
-                _correctionPopup?.Dismiss();
-            }
-
-            return;
-        }
-
-        // Clear "hide indicator" only when the active target generation changes.
-        if (snapshot.GenerationId != _lastIndicatorGeneration)
-        {
-            _lastIndicatorGeneration = snapshot.GenerationId;
-            _bubble?.ClearUserHide();
-        }
-
-        // Main chrome (indicator + underlines + suggestions) only after confirmed editing.
-        var showMain = snapshot.ShowMainUi && snapshot.Target.IsEditable;
-        if (!showMain)
-        {
-            CompatibilityLogger.Technical(
-                "ui-main-hidden",
-                $"state={snapshot.InteractionState} generation={snapshot.GenerationId}");
-            _bubble?.Hide();
-            _inlineOverlay?.Hide();
-            if (_suggestions?.IsVisible == true && !snapshot.ShowMainUi)
-            {
-                _suggestions.Hide();
-                _monitor?.SetSuggestionsWindowOpen(false);
-            }
-
-            if (_monitor?.ShouldKeepPopup != true)
-            {
-                // Keep correction popup only while explicitly in popup interaction.
-            }
-
-            return;
-        }
-
-        CompatibilityLogger.State(snapshot.Issues.Count == 0 ? "overlay-shown-clean" : "overlay-shown");
-
-        if (_settings.ShowIndicator)
-        {
-            _bubble?.ShowSnapshot(snapshot);
-        }
-        else
-        {
-            _bubble?.Hide();
-        }
-
-        _ = UpdateInlineOverlayAsync(snapshot);
-
-        if (_suggestions?.IsVisible == true)
-        {
-            _monitor?.SetSuggestionsWindowOpen(true);
-            _suggestions.ShowSnapshot(snapshot);
-        }
-        else if (snapshot.Issues.Count == 0)
-        {
-            _suggestions?.Hide();
-        }
-    }
-
-    /// <summary>
-    /// Keeps the open correction card pointing at text that still exists.
-    /// </summary>
-    /// <remarks>
-    /// <para><b>The defect this fixes.</b> Nothing invalidated the correction card when the
-    /// text underneath it changed. The card kept its finished result, its explanation and its
-    /// apply action, all computed from text the user had since edited; pressing the action
-    /// failed the range check inside the write path, and the failure came back to the card as
-    /// «Текст изменился. Обновите предложение.» with a «Повторить» button — laid on top of the
-    /// old result, which was still on screen and still wrong. Retrying could not help, because
-    /// nothing was going to make the old text come back.</para>
-    ///
-    /// <para>A text change is not a processing failure and is not reported as one. The old
-    /// result is voided the moment the change is observed — <see cref="CorrectionPopupWindow.BeginRecheck"/>
-    /// removes the apply action synchronously, so there is no window in which the user can
-    /// press an action belonging to text that is gone — and the card then shows what the next
-    /// analysis says about the same word. It rides the monitor's ordinary fast lane, so no new
-    /// analysis pass and no extra debounce is introduced here.</para>
-    ///
-    /// <para>Where the word cannot be identified in the new text, the card closes.
-    /// <see cref="CorrectionCardRebinder"/> will not guess: a card describing something the
-    /// user can no longer see is the thing being removed, and a wrong guess would put it
-    /// straight back.</para>
-    /// </remarks>
-    private void RefreshCorrectionCard(TextSnapshot? snapshot)
-    {
-        if (_correctionPopup is not { IsVisible: true } popup) return;
-
-        // A write in flight owns the card until its outcome lands — including the text change
-        // the write itself is about to cause.
-        if (popup.Phase == CorrectionCardPhase.Applying) return;
-
-        var action = _cardCoordinator.Observe(snapshot);
-        switch (action.Kind)
-        {
-            case CorrectionCardActionKind.None:
-                return;
-
-            case CorrectionCardActionKind.Dismiss:
-                CompatibilityLogger.Technical("correction-card-invalidated", "reason=not-rebindable-or-target-changed");
-                popup.Dismiss();
-                return;
-
-            case CorrectionCardActionKind.Recheck:
-                popup.BeginRecheck();
-                return;
-
-            case CorrectionCardActionKind.Render when action.Issue is { } rebound:
-                // The token is taken from the same call that voided the old result, so the
-                // new one cannot be overtaken by anything that started before it.
-                var token = popup.BeginRecheck();
-                CompatibilityLogger.Technical(
-                    "correction-card-refreshed",
-                    $"rule={rebound.RuleId} generation={snapshot?.GenerationId} token={token}");
-                popup.ShowForIssue(rebound, _pinnedPopupAnchor, token);
-                return;
-        }
-    }
-
-    private async Task UpdateInlineOverlayAsync(TextSnapshot snapshot)
-    {
-        var overlay = _inlineOverlay;
-        if (overlay is null || Volatile.Read(ref _shutdownRequested) != 0)
-        {
-            return;
-        }
-
-        try
-        {
-            await overlay.UpdateAsync(snapshot).ConfigureAwait(true);
-        }
-        catch (OperationCanceledException)
-        {
-            // A newer snapshot or normal shutdown superseded the geometry request.
-        }
-        catch (Exception exception)
-        {
-            // Overlay rendering is optional. It must not be able to terminate the
-            // monitor or the host application when UIA geometry becomes unavailable.
-            CompatibilityLogger.AccessError("inline-overlay-update", snapshot.Target.ProcessId, exception);
-        }
-    }
-
-    private void OpenSuggestions(object? sender, EventArgs e)
-    {
-        if (_latestSnapshot is null || _suggestions is null || !_latestSnapshot.ShowMainUi) return;
-
-        _bubble?.ClearUserHide();
-        _monitor?.SetSuggestionsWindowOpen(true);
-        _monitor?.SetPopupInteractionOpen(true);
-        _suggestions.ShowSnapshot(_latestSnapshot);
-    }
-
-    private void OnInlineIssueClicked(object? sender, InlineIssueClickedEventArgs args)
-    {
-        var snapshot = _latestSnapshot;
-        if (snapshot is null || !snapshot.Target.IsEditable || !snapshot.ShowMainUi || !snapshot.Issues.Contains(args.Issue)
-            || !TextCorrectionService.IsRangeValid(snapshot.Text, args.Issue.Start, args.Issue.Length)
-            || (args.Issue.Length > 0 && !string.Equals(snapshot.Text.Substring(args.Issue.Start, args.Issue.Length), args.Issue.Original, StringComparison.Ordinal)))
-        {
-            CompatibilityLogger.Technical("inline-stale-result-rejected", "reason=issue-not-current");
-            return;
-        }
-
-        _bubble?.ClearUserHide();
-        _monitor?.SetPopupInteractionOpen(true);
-        // §10: the card outlives the monitor's idea of "the current field". Whatever happens
-        // to focus between now and the click on «Исправить», the correction belongs to this
-        // target, this text and this range — so the apply path is given them rather than
-        // whatever the monitor happens to be looking at by then.
-        _cardCoordinator.Open(snapshot, args.Issue);
-        _pinnedPopupAnchor = args.Anchor;
-        CompatibilityLogger.Technical("correction-popup-open-requested", $"rule={args.Issue.RuleId} generation={snapshot.GenerationId} request={snapshot.RequestId}");
-        try
-        {
-            Dispatcher.BeginInvoke(() =>
-            {
-                try
-                {
-                    _correctionPopup?.ShowForIssue(args.Issue, args.Anchor);
-                    CompatibilityLogger.Technical("correction-popup-opened", $"rule={args.Issue.RuleId}");
-                }
-                catch (Exception exception)
-                {
-                    CompatibilityLogger.AccessError("correction-popup", snapshot.Target.ProcessId, exception);
-                    CompatibilityLogger.Technical("correction-popup-failed", "reason=show-exception");
-                }
-            });
-        }
-        catch (Exception exception)
-        {
-            CompatibilityLogger.AccessError("correction-popup-dispatch", snapshot.Target.ProcessId, exception);
-            CompatibilityLogger.Technical("correction-popup-failed", "reason=dispatch-exception");
-        }
-    }
-
-    /// <summary>
-    /// Closes the dictionary card when the user clicks anywhere that is not the card.
-    /// </summary>
-    /// <remarks>
-    /// The dismissal the product promises — "click somewhere else and it goes away" — stated
-    /// as the thing it actually is, rather than derived from field-monitor state. Both clicks
-    /// of a double-click arrive here: the first closes whatever card is open, and the second
-    /// is what opens the next one, so double-clicking a second word replaces the card instead
-    /// of leaving the old one over the new word.
-    /// </remarks>
-    private void OnPrimaryButtonPressed(object? sender, System.Windows.Point physicalScreenPoint)
-    {
-        if (_lexicalPopup is not { IsVisible: true } popup) return;
-        if (popup.ContainsPhysicalPoint(physicalScreenPoint)) return;
-
-        _lexicalLookupCts?.Cancel();
-        popup.Hide();
-        CompatibilityLogger.Technical("lexical-popup-dismissed", "reason=click-outside");
-    }
-
-    private void OnWordDoubleClicked(object? sender, WordDoubleClickedEventArgs args)
-    {
-        var snapshot = _latestSnapshot;
-        var lexicalCardAvailable = _settings.LexicalCardEnabled
-                                   && _lexicalKnowledge is not null
-                                   && _lexicalPopup is not null;
-        // Double-click is reserved for the dictionary card. A single click on
-        // an underline opens the correction card. Only fall back to correction
-        // here when the lexical card is explicitly unavailable.
-        if (!lexicalCardAvailable
-            && snapshot is not null
-            && snapshot.Target.IsEditable
-            && snapshot.ShowMainUi
-            && snapshot.Target.Identity.RuntimeId == args.TargetId
-            && snapshot.GenerationId == args.GenerationId
-            && snapshot.TextVersion == args.TextVersion)
-        {
-            var issue = CorrectionInteractionResolver.FindIssueAtRange(
-                snapshot.Issues, args.Range.Start, args.Range.Length);
-            if (issue is not null
-                && TextCorrectionService.IsRangeValid(snapshot.Text, issue.Start, issue.Length)
-                && (issue.Length == 0 || string.Equals(
-                    snapshot.Text.Substring(issue.Start, issue.Length), issue.Original, StringComparison.Ordinal)))
-            {
-                _lexicalLookupCts?.Cancel();
-                _lexicalPopup?.Hide();
-                CompatibilityLogger.Technical("double-click-correction-priority",
-                    $"rule={issue.RuleId} generation={snapshot.GenerationId}");
-                OnInlineIssueClicked(this, new InlineIssueClickedEventArgs(issue, args.Anchor));
-                return;
-            }
-        }
-
-        if (!lexicalCardAvailable || _lexicalKnowledge is null || _lexicalPopup is null)
-            return;
-
-        _monitor?.SetPopupInteractionOpen(true);
-        _lexicalPopup.ShowLoading(
-            args.Range,
-            args.Anchor,
-            args.RequestId,
-            args.TargetId,
-            args.GenerationId,
-            args.TextVersion,
-            args.FullText);
-
-        _lexicalLookupCts?.Cancel();
-        _lexicalLookupCts?.Dispose();
-        _lexicalLookupCts = new CancellationTokenSource();
-        var token = _lexicalLookupCts.Token;
-        var requestId = args.RequestId;
-
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                // The word's own script decides which pack answers. Russian was passed here
-                // unconditionally, which the service happened to survive because it re-detects
-                // the language itself — but it meant the request said one thing and the answer
-                // another, and anything downstream that trusted the request was wrong about
-                // every English word.
-                var request = new LexicalLookupRequest(
-                    args.Range.Word,
-                    args.Range.Sentence,
-                    args.FullText,
-                    args.Range.Start,
-                    args.Range.Length,
-                    args.Range.Language,
-                    requestId,
-                    args.GenerationId,
-                    args.TextVersion,
-                    args.TargetId);
-
-                var result = await _lexicalKnowledge.LookupAsync(request, token).ConfigureAwait(true);
-                if (token.IsCancellationRequested) return;
-
-                // Read from the same index the dictionary page and the editor's word panel
-                // use, on this worker rather than the dispatcher: it is a SQLite query, and
-                // this path runs while the user is typing in someone else's window.
-                var translations = ResolveCardTranslations(result, args.Range);
-                if (token.IsCancellationRequested) return;
-                if (_lexicalPopup.CurrentRequestId > requestId)
-                {
-                    CompatibilityLogger.Technical("lexical-stale-result-rejected", $"request={requestId}");
-                    return;
-                }
-
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    if (token.IsCancellationRequested) return;
-                    _lexicalPopup.ShowResult(
-                        result,
-                        args.Range,
-                        args.FullText,
-                        args.TargetId,
-                        args.GenerationId,
-                        args.TextVersion,
-                        args.SupportsDirectWrite,
-                        args.Anchor,
-                        requestId,
-                        translations);
-                });
-            }
-            catch (OperationCanceledException)
-            {
-                // newer lookup owns the UI
-            }
-            catch (Exception ex)
-            {
-                CompatibilityLogger.AccessError("lexical-lookup", null, ex);
-                await Dispatcher.InvokeAsync(() =>
-                    _lexicalPopup.ShowError("Не удалось загрузить словарные данные.", requestId));
-            }
-        }, token);
-    }
-
-    /// <summary>
-    /// Takes the user from the card over another application to the full dictionary article.
-    /// </summary>
-    /// <remarks>
-    /// Routed through <c>MainWindow.OpenWordInDictionary</c>, which is the one destination the
-    /// editor, the reader and the notes board already navigate to. The card is deliberately
-    /// dismissed on the way: it is a summary of the article now being opened, and leaving it
-    /// floating over the main window would be two views of one word on screen at once.
-    /// </remarks>
-    private void OnLexicalFullArticleRequested(object? sender, string word)
-    {
-        _lexicalLookupCts?.Cancel();
-        _lexicalPopup?.Hide();
-
-        OpenMainWindow();
-        _mainWindow?.OpenWordInDictionary(word);
-        CompatibilityLogger.Technical("lexical-card-open-full-article", "ok=1");
-    }
-
-    /// <summary>
-    /// The cross-language glosses for a card's word, or nothing when none are installed.
-    /// </summary>
-    /// <remarks>
-    /// The lemma is tried before the surface form because the index is keyed by lemma, and
-    /// the language the lookup actually resolved to is preferred over the word's script —
-    /// they agree except where the pack knows better.
-    /// </remarks>
-    private IReadOnlyList<string> ResolveCardTranslations(LexicalLookupResult result, WordRange range)
-    {
-        if (_translations is null) return [];
-
-        var language = result.Language == LexicalLanguage.Unknown ? range.Language : result.Language;
-        if (language == LexicalLanguage.Unknown) return [];
-
-        try
-        {
-            var values = _translations.Translate(result.Lemma, language);
-            if (values.Count == 0 && !string.Equals(result.Lemma, range.Word, StringComparison.OrdinalIgnoreCase))
-            {
-                values = _translations.Translate(range.Word, language);
-            }
-
-            return values;
-        }
-        catch (Exception exception)
-        {
-            // A damaged translation file costs the card its translation tab, not the card.
-            CompatibilityLogger.Technical("lexical-translations-failed", $"type={exception.GetType().Name}");
-            return [];
-        }
-    }
-
-    private async void OnLexicalReplaceRequested(object? sender, LexicalReplaceRequestedEventArgs args)
-    {
-        if (_lexicalReplacement is null) return;
-
-        var snapshot = _latestSnapshot;
-        if (snapshot is null)
-        {
-            CompatibilityLogger.Technical("lexical-replace-rejected", "reason=no-snapshot");
-            return;
-        }
-
-        // Prefer live target identity from the active snapshot.
-        if (!LexicalRequestValidator.IsCurrent(
-                snapshot.Target.Identity.RuntimeId,
-                snapshot.GenerationId,
-                snapshot.TextVersion,
-                args.TargetId,
-                args.GenerationId,
-                args.TextVersion))
-        {
-            CompatibilityLogger.Technical("lexical-replace-rejected", "reason=stale-target-generation-or-text");
-            return;
-        }
-
-        var read = await snapshot.Target.TryReadTextAsync();
-        var liveText = read.Succeeded ? read.Text : snapshot.Text;
-        var supportsWrite = snapshot.Target.SupportsDirectWrite;
-
-        var replaceRequest = new LexicalReplacementRequest(
-            args.TargetId,
-            args.GenerationId,
-            args.TextVersion,
-            liveText,
-            args.Start,
-            args.Length,
-            args.OriginalWord,
-            args.Replacement,
-            supportsWrite,
-            IsPassword: false,
-            IsReadOnly: !supportsWrite);
-
-        var outcome = _lexicalReplacement.TryReplace(replaceRequest);
-        if (!outcome.Success || outcome.NewText is null)
-        {
-            CompatibilityLogger.Technical("lexical-replace-rejected", $"reason={outcome.FailureReason}");
-            if (outcome.OfferCopyOnly)
-            {
-                try { System.Windows.Clipboard.SetText(args.Replacement); } catch { /* ignore */ }
-                MessageBox.Show(
-                    "Не удалось безопасно заменить слово. Вариант скопирован в буфер обмена.",
-                    "WriteLite",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-            }
-
-            return;
-        }
-
-        await ReplaceTargetTextAsync(snapshot, liveText => CanonicalCorrection.TryBind(
-                liveText, args.Start, args.Length, args.OriginalWord, args.Replacement, out var correction)
-                    == CorrectionBindingStatus.Bound && correction is not null
-            ? correction
-            : null);
-        _lexicalPopup?.Hide();
-    }
-
-    /// <summary>Puts a replacement on the clipboard, at the user's explicit request.</summary>
-    private void CopyReplacementToClipboard(string? replacement)
-    {
-        if (string.IsNullOrEmpty(replacement)) return;
-        try
-        {
-            System.Windows.Clipboard.SetText(replacement);
-            _correctionPopup?.ShowApplyFeedback(
-                "Исправление скопировано в буфер обмена.", isError: false, offerCopy: false, offerRetry: false);
-        }
-        catch (Exception exception)
-        {
-            CompatibilityLogger.Technical("clipboard-copy-failed", $"type={exception.GetType().Name}");
-        }
-    }
-
-    private async Task ApplyIssueAsync(TextIssue issue)
-    {
-        CompatibilityLogger.State("apply-issue-requested");
-        // The card's own snapshot first: it is the one the user is looking at.
-        var snapshot = _cardCoordinator.PinnedSnapshot ?? _latestSnapshot;
-        if (snapshot is null || _monitor is null || _correctionApplication is null)
-        {
-            NotifyCorrectionFailure("Нет активного текстового поля.");
-            return;
-        }
-
-        // The card moved into its applying phase before raising this, so its token is the
-        // one this write belongs to. If anything supersedes it while the write is in flight,
-        // the outcome is dropped rather than drawn over newer text — §5.
-        var token = _correctionPopup?.Token ?? 0;
-        var normalized = CorrectionPresentation.NormalizeForApply(issue);
-        var outcome = await _correctionApplication.ApplyAsync(
-            normalized, snapshot, _monitor, _correctionGate, _applicationLifetimeCts.Token);
-
-        await Dispatcher.InvokeAsync(() => HandleCorrectionOutcome(outcome, normalized.Replacement, token));
-    }
-
-    private async Task ApplyAllAsync()
-    {
-        CompatibilityLogger.State("apply-all-requested");
-        var snapshot = _latestSnapshot;
-        if (snapshot is null || _monitor is null || _correctionApplication is null)
-        {
-            NotifyCorrectionFailure("Нет активного текстового поля.");
-            return;
-        }
-
-        var outcome = await _correctionApplication.ApplyAllSafeAsync(
-            snapshot, _monitor, _correctionGate, _applicationLifetimeCts.Token);
-        await Dispatcher.InvokeAsync(() => HandleCorrectionOutcome(outcome, null, _correctionPopup?.Token ?? 0));
-    }
-
-    /// <summary>
-    /// Puts the result of a correction where the user is already looking.
-    /// </summary>
-    /// <remarks>
-    /// <para>§12: a correction that did not apply is an ordinary outcome, not an error
-    /// condition, and it used to be reported with a modal <c>MessageBox</c> — which takes the
-    /// keyboard away from the field being corrected, hides the card that names the word, and
-    /// has to be dismissed before anything else can happen. Everything short of "there is no
-    /// card to put this on" now goes on the card, with the recovery actions the outcome
-    /// actually supports.</para>
-    ///
-    /// <para>The clipboard is written only when the card is offering a copy, and only after
-    /// the user asks for it — a failed correction is not a reason to overwrite what they had
-    /// copied.</para>
-    ///
-    /// <para><b>Except staleness.</b> «Текст изменился» is not a failure the user can retry
-    /// their way out of, and offering «Повторить» for it is what produced the dead card in the
-    /// reported defect. The write path can still see a change our snapshot stream has not
-    /// published yet, and where it does the card refreshes — the same response as any other
-    /// text change — instead of reporting an error about it.</para>
-    /// </remarks>
-    private void HandleCorrectionOutcome(
-        CorrectionApplicationOutcome outcome,
-        string? replacementForCopy,
-        long cardToken)
-    {
-        if (outcome.Succeeded)
-        {
-            _correctionPopup?.Dismiss();
-            if (_settings.HidePanelAfterSuccessfulApply)
-            {
-                _suggestions?.Hide();
-            }
-
-            CompatibilityLogger.Technical("correction-ui-success", $"path={outcome.WritePath ?? "n/a"}");
-            return;
-        }
-
-        CompatibilityLogger.Technical(
-            "correction-ui-failed",
-            $"status={outcome.Status} offerCopy={(outcome.OfferCopy ? 1 : 0)} offerRefresh={(outcome.OfferRefresh ? 1 : 0)}");
-
-        if (IsStaleTextOutcome(outcome.Status) && _correctionPopup is { IsVisible: true } stalePopup)
-        {
-            if (!stalePopup.IsCurrent(cardToken)) return;
-
-            CompatibilityLogger.Technical("correction-card-invalidated", $"reason=apply-{outcome.Status}");
-            stalePopup.BeginRecheck();
-            _ = _monitor?.RefreshOnceAfterSuppressionAsync();
-            return;
-        }
-
-        var canCopy = outcome.OfferCopy && !string.IsNullOrEmpty(replacementForCopy);
-        if (_correctionPopup is { IsVisible: true })
-        {
-            _correctionPopup.ShowApplyFeedback(
-                outcome.UserMessage,
-                isError: true,
-                offerCopy: canCopy,
-                offerRetry: outcome.OfferRefresh,
-                token: cardToken);
-            return;
-        }
-
-        // No card on screen — the panel path, or a popup the user has already closed.
-        _suggestions?.ShowApplyFeedback(outcome.UserMessage, canCopy ? replacementForCopy : null);
-    }
-
-    /// <summary>Outcomes that mean "the text moved on", not "the write failed".</summary>
-    private static bool IsStaleTextOutcome(CorrectionApplicationStatus status) => status
-        is CorrectionApplicationStatus.CorrectionStale
-        or CorrectionApplicationStatus.OriginalMismatch
-        or CorrectionApplicationStatus.AmbiguousRelocation;
-
-    private void NotifyCorrectionFailure(string message)
-    {
-        CompatibilityLogger.Technical("correction-apply-failed", "reason=no-context");
-        if (_correctionPopup is { IsVisible: true })
-        {
-            _correctionPopup.ShowApplyFeedback(message, isError: true, offerCopy: false, offerRetry: false);
-            return;
-        }
-
-        _suggestions?.ShowApplyFeedback(message, replacementForCopy: null);
-    }
-
-    /// <summary>
-    /// Applies a lexical (dictionary card) replacement through the same verified write path
-    /// as a correction card.
-    /// </summary>
-    /// <remarks>
-    /// This used to compose a whole new value and push it with <c>ValuePattern.SetValue</c>,
-    /// which is a second write path with none of the range validation, none of the strategy
-    /// fallback and none of the read-back the correction path has. A word swap from the
-    /// dictionary popup is the same kind of edit as a correction and now takes the same route.
-    /// </remarks>
-    private async Task ReplaceTargetTextAsync(
-        TextSnapshot snapshot,
-        Func<string, CanonicalCorrection?> bind)
-    {
-        if (!_correctionGate.TryEnter())
-        {
-            NotifyCorrectionFailure("Предыдущая правка ещё выполняется.");
-            return;
-        }
-
-        _monitor?.BeginApplyingCorrection();
-        CompatibilityLogger.State("correction-started");
-
-        try
-        {
-            var read = await snapshot.Target.TryReadTextAsync();
-            if (!read.Succeeded)
-            {
-                CompatibilityLogger.State("correction-failed");
-                NotifyCorrectionFailure("Поле ввода временно недоступно.");
-                return;
-            }
-
-            var correction = bind(read.Text);
-            if (correction is null)
-            {
-                // The word moved between reading the card and pressing it. §4: a text change
-                // is refreshed, not reported — and the dictionary card is about a word that
-                // may no longer be there, so it closes rather than asserting anything.
-                CompatibilityLogger.State("correction-failed");
-                CompatibilityLogger.Technical("correction-card-invalidated", "reason=lexical-bind-stale");
-                _lexicalPopup?.Hide();
-                if (_correctionPopup is { IsVisible: true } popup)
-                {
-                    popup.BeginRecheck();
-                    _ = _monitor?.RefreshOnceAfterSuppressionAsync();
-                }
-
-                return;
-            }
-
-            var write = await snapshot.Target.TryApplyCorrectionAsync(correction, read.Text);
-            if (!write.Succeeded)
-            {
-                CompatibilityLogger.State("correction-failed");
-                NotifyCorrectionFailure("WriteLite не удалось изменить текст в этом поле.");
-                return;
-            }
-
-            CompatibilityLogger.State("correction-completed");
-            _correctionPopup?.Dismiss();
-            _lexicalPopup?.Hide();
-            if (_settings.HidePanelAfterSuccessfulApply)
-            {
-                _suggestions?.Hide();
-            }
-
-            if (_monitor is not null)
-            {
-                await _monitor.RefreshOnceAfterSuppressionAsync();
-            }
-        }
-        finally
-        {
-            _monitor?.EndApplyingCorrection();
-            _correctionGate.Exit();
-        }
-    }
-
-    private string ResolveEngineStatusText()
-    {
-        var local = _languageEngine?.UserFacingStatus ?? "Используется базовая проверка WriteLite";
-
-        // Technical backend: Qwen / LanguageTool / Lite fallback
-        var backend = ResolveActiveBackendLabel();
-        if (!string.IsNullOrEmpty(backend))
-        {
-            local += " · Backend: " + backend;
-        }
-
-        return local;
-    }
-
-    /// <summary>
-    /// The backend tag shown beside the engine status, in WriteAI vocabulary.
-    /// </summary>
-    /// <remarks>
-    /// The branching this replaced produced six different strings from three transport
-    /// identifiers and two booleans, and four of the six said «Qwen» to the user.
-    /// <see cref="WriteAiStatus.BackendLabel"/> is now the single place that decides.
-    /// </remarks>
-    private string ResolveActiveBackendLabel()
-    {
-        if (_settings.WriteAiEnabled && _localAiProvider is { IsConfigured: true })
-        {
-            var last = _localAiProvider.LastBackend;
-            var available = _localAiProvider.WriteAiAvailable;
-            if (!string.IsNullOrEmpty(last))
-            {
-                return WriteAiStatus.BackendLabel(last, available);
-            }
-
-            if (available && _settings.PreferWriteAi
-                && !_settings.LocalAiProfile.Equals("Lite", StringComparison.OrdinalIgnoreCase))
-            {
-                return WriteAiStatus.ProductName;
-            }
-        }
-
-        if (_settings.ExtendedChecking
-            && _languageEngine is not null
-            && !string.IsNullOrWhiteSpace(_languageEngine.UserFacingStatus)
-            && !_languageEngine.UserFacingStatus.Contains("базовая", StringComparison.OrdinalIgnoreCase))
-        {
-            return "LanguageTool";
-        }
-
-        return "Lite fallback";
-    }
-
-    private static int ResolveAnalysisDelayMs(WriteLiteAppSettings settings, IAiTextProvider? provider)
-    {
-        // Local Lite is fast — keep monitor debounce closer to normal typing delay.
-        if (settings.LocalAiEnabled && (provider?.IsConfigured ?? false))
-        {
-            return Math.Max(settings.AnalysisDelayMs, settings.AiDebounceMs);
-        }
-
-        return settings.AnalysisDelayMs;
-    }
-
-    private static LocalAiTextProvider CreateLocalAiProvider(WriteLiteAppSettings settings)
-    {
-        var profile = ParseLocalProfile(settings.LocalAiProfile);
-        var modelDir = Path.Combine(AppContext.BaseDirectory, "models", "writelight-qwen");
-        var endpoint = string.IsNullOrWhiteSpace(settings.QwenEndpoint)
-            ? "http://127.0.0.1:8742"
-            : settings.QwenEndpoint.Trim().TrimEnd('/');
-
-        CompatibilityLogger.Technical(
-            "local-ai-provider-create",
-            $"enabled={(settings.LocalAiEnabled ? 1 : 0)} profile={profile} preferQwen={(settings.PreferQwen ? 1 : 0)} " +
-            $"endpoint={endpoint} modelDirExists={(Directory.Exists(modelDir) ? 1 : 0)}");
-
-        return new LocalAiTextProvider(new LocalAiOptions
-        {
-            Enabled = settings.LocalAiEnabled,
-            Profile = profile,
-            ModelDirectory = modelDir,
-            QwenEndpoint = endpoint,
-            PreferQwen = settings.PreferQwen,
-            TimeoutSeconds = 90,
-            MaxInputChars = settings.AiMaxTextLength,
-            // Allow AI on typical sentences; hybrid still has its own min length gate.
-            MinInputChars = 1
-        });
-    }
-
-    private static WriteLite.AI.Contracts.AiModelProfile ParseLocalProfile(string? value)
-        => (value ?? "Auto").Trim().ToLowerInvariant() switch
-        {
-            "lite" => WriteLite.AI.Contracts.AiModelProfile.Lite,
-            "standard" => WriteLite.AI.Contracts.AiModelProfile.Standard,
-            "quality" => WriteLite.AI.Contracts.AiModelProfile.Quality,
-            _ => WriteLite.AI.Contracts.AiModelProfile.Auto
-        };
-
-    private void RebuildAiProvider(WriteLiteAppSettings settings)
-    {
-        try
-        {
-            if (_aiProvider is IDisposable d)
-            {
-                d.Dispose();
-            }
-            else
-            {
-                _localAiProvider?.Dispose();
-            }
-        }
-        catch
-        {
-            // ignore
-        }
-
-        _localAiProvider = CreateLocalAiProvider(settings);
-        _aiProvider = _localAiProvider;
-        _hybrid?.SetAiService(new AiTextAnalysisService(_aiProvider));
-        _hybrid?.ApplySettings(settings);
-        if (settings.LocalAiEnabled)
-        {
-            _ = WarmupLocalAiAndRefreshStatusAsync();
-        }
-    }
-
-    private async Task WarmupLocalAiAndRefreshStatusAsync()
-    {
-        try
-        {
-            if (_localAiProvider is null)
-            {
-                return;
-            }
-
-            // Task.Run is load-bearing, not defensive. An async method runs
-            // synchronously until its first real await, and this chain reaches
-            // QwenModelBackend.RefreshAvailability — a fully synchronous method
-            // that blocks on an HTTP health probe to 127.0.0.1:8742 — before any
-            // await. Called directly from OnStartup, that executed the whole
-            // probe sequence on the dispatcher: a dump taken inside the hang
-            // shows OnStartup → WarmupAsync → ProbeHealth → GetResult parking
-            // the UI thread ~10 s at every launch while llama-server was not up
-            // yet. The worker thread eats that wait instead.
-            // Availability only. Starting the model server here would hold ~481 MB
-            // resident for every session, including the many in which no Smart Action is
-            // ever invoked — §34. It starts on the first request that needs it.
-            await Task.Run(() => _localAiProvider.WarmupAsync(startBackend: false))
-                .ConfigureAwait(true);
-            CompatibilityLogger.Technical(
-                "local-ai-warmup-done",
-                $"qwenAvailable={(_localAiProvider.QwenAvailable ? 1 : 0)} endpoint={_localAiProvider.QwenEndpoint}");
-        }
-        catch (Exception ex)
-        {
-            CompatibilityLogger.Technical("local-ai-warmup-failed", $"type={ex.GetType().Name}");
-        }
-
-        try
-        {
-            _ = Dispatcher.BeginInvoke(() => _mainWindow?.SetEngineStatus(ResolveEngineStatusText()));
-        }
-        catch
-        {
-            // ignore
-        }
-    }
-
-    private async Task WarmupLexicalKnowledgeAsync(OfflineLexicalKnowledgeService service)
-    {
-        try
-        {
-            // The open dictionary contains tens of thousands of lemmas. Parsing it
-            // off the dispatcher keeps tray startup and the first keystroke smooth.
-            await Task.Run(
-                () => service.LoadFromDirectory(),
-                _applicationLifetimeCts.Token).ConfigureAwait(true);
-            CompatibilityLogger.Technical(
-                "lexical-warmup-done",
-                $"loaded={(service.IsPackLoaded ? 1 : 0)} version={service.PackVersion ?? "none"}");
-        }
-        catch (OperationCanceledException)
-        {
-            // Normal application shutdown.
-        }
-        catch (Exception ex)
-        {
-            CompatibilityLogger.Technical("lexical-warmup-failed", $"type={ex.GetType().Name}");
-        }
-    }
-
-    private void OnLanguageEngineStatusChanged(object? sender, EventArgs e)
-    {
-        // Engine shutdown and the WPF dispatcher can race.  Status updates are
-        // optional UI work and must never turn a successful shutdown into a
-        // dispatcher exception.
-        if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished)
-        {
-            return;
-        }
-
-        try
-        {
-            _ = Dispatcher.BeginInvoke(() => _mainWindow?.SetEngineStatus(ResolveEngineStatusText()));
-        }
-        catch (Exception exception)
-        {
-            CompatibilityLogger.AccessError("engine-status-dispatch", null, exception);
-        }
-    }
 
     protected override void OnExit(ExitEventArgs e)
     {
@@ -1851,7 +722,7 @@ public partial class App : System.Windows.Application
         _tray?.Dispose();
         _bubble?.Close();
         _suggestions?.Close();
-        _correctionPopup?.Close();
+        _corrections?.ClosePopup();
         _hotkeys?.Dispose();
         _hotkeys = null;
         _lexicalPopup?.Close();
@@ -1866,6 +737,7 @@ public partial class App : System.Windows.Application
         CompatibilityLogger.State("application-stopped");
         base.OnExit(e);
     }
+
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
@@ -1888,6 +760,7 @@ public partial class App : System.Windows.Application
         e.Handled = disposition == ApplicationFailureDisposition.Recoverable;
     }
 
+
     /// <summary>Which section was on screen, for the crash record. Never throws.</summary>
     private string CurrentPageName()
     {
@@ -1897,9 +770,11 @@ public partial class App : System.Windows.Application
         }
         catch (Exception)
         {
+            // Best effort for the crash record; never take the process down over it.
             return "unknown";
         }
     }
+
 
     private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
@@ -1912,6 +787,7 @@ public partial class App : System.Windows.Application
 
         e.SetObserved();
     }
+
 
     private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
@@ -1927,4 +803,5 @@ public partial class App : System.Windows.Application
             CompatibilityLogger.State("appdomain-unhandled-nonexception");
         }
     }
+
 }

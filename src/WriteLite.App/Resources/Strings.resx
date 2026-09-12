@@ -1,0 +1,958 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype" xml:space="preserve"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version" xml:space="preserve"><value>2.0</value></resheader>
+  <resheader name="reader" xml:space="preserve"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer" xml:space="preserve"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Common_Settings" xml:space="preserve"><value>Настройки</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="Common_Fix" xml:space="preserve"><value>Исправить</value></data>
+  <data name="Common_Ignore" xml:space="preserve"><value>Игнорировать</value></data>
+  <data name="Common_AddToDictionary" xml:space="preserve"><value>В словарь</value></data>
+  <data name="Filter_All" xml:space="preserve"><value>Все</value></data>
+  <data name="Filter_Orthography" xml:space="preserve"><value>Орфография</value></data>
+  <data name="Filter_Punctuation" xml:space="preserve"><value>Пунктуация</value></data>
+  <data name="Filter_Grammar" xml:space="preserve"><value>Грамматика</value></data>
+  <data name="Filter_Style" xml:space="preserve"><value>Стиль</value></data>
+  <data name="Filter_All_Count" xml:space="preserve"><value>Все {0}</value></data>
+  <data name="Filter_Orthography_Count" xml:space="preserve"><value>Орфография {0}</value></data>
+  <data name="Filter_Punctuation_Count" xml:space="preserve"><value>Пунктуация {0}</value></data>
+  <data name="Filter_Grammar_Count" xml:space="preserve"><value>Грамматика {0}</value></data>
+  <data name="Filter_Style_Count" xml:space="preserve"><value>Стиль {0}</value></data>
+  <data name="Suggestions_Title" xml:space="preserve"><value>Замечания</value></data>
+  <data name="Suggestions_SummaryZero" xml:space="preserve"><value>0 замечаний</value></data>
+  <data name="Suggestions_SettingsTooltip" xml:space="preserve"><value>Настройки WriteLite</value></data>
+  <data name="Suggestions_ClosePanel" xml:space="preserve"><value>Закрыть панель</value></data>
+  <data name="Suggestions_ReadonlyBanner" xml:space="preserve"><value>Поле доступно только для чтения. Исправления можно скопировать.</value></data>
+  <data name="Suggestions_CopyFix" xml:space="preserve"><value>Скопировать исправление</value></data>
+  <data name="Suggestions_DictLoadingBanner" xml:space="preserve"><value>Словарь ещё загружается. Точность проверки может быть ниже обычного.</value></data>
+  <data name="Suggestions_NoIssues" xml:space="preserve"><value>Замечаний не найдено</value></data>
+  <data name="Suggestions_TextLooksGood" xml:space="preserve"><value>Текст выглядит хорошо.</value></data>
+  <data name="Suggestions_Checking" xml:space="preserve"><value>Проверяем текст…</value></data>
+  <data name="Suggestions_ApplyAllSafe" xml:space="preserve"><value>Исправить все безопасные</value></data>
+  <data name="Suggestions_HeaderAnalyzing" xml:space="preserve"><value>Анализ текста…</value></data>
+  <data name="Suggestions_HeaderDictionaryLoading" xml:space="preserve"><value>Словарь загружается</value></data>
+  <data name="Suggestions_HeaderReadOnly" xml:space="preserve"><value>Только для чтения</value></data>
+  <data name="Suggestions_HeaderNoIssues" xml:space="preserve"><value>Нет замечаний</value></data>
+  <data name="Suggestions_CopiedToClipboard" xml:space="preserve"><value>Исправление скопировано в буфер обмена.</value></data>
+  <data name="Suggestions_SafeCount" xml:space="preserve"><value>{0} можно исправить автоматически</value></data>
+  <data name="Suggestions_NoSafeAutoFixes" xml:space="preserve"><value>Нет безопасных автоправок</value></data>
+  <data name="Nav_Home" xml:space="preserve"><value>Главная</value></data>
+  <data name="Nav_Editor" xml:space="preserve"><value>Редактор</value></data>
+  <data name="Nav_Reading" xml:space="preserve"><value>Чтение</value></data>
+  <data name="Nav_Reading_Tooltip" xml:space="preserve"><value>Проекты чтения: пометки, закладки и карточки</value></data>
+  <data name="Nav_Notes" xml:space="preserve"><value>Заметки</value></data>
+  <data name="Nav_Notes_Tooltip" xml:space="preserve"><value>Заметки, задачи, цели и списки</value></data>
+  <data name="Nav_Converter" xml:space="preserve"><value>Конвертер</value></data>
+  <data name="Nav_Converter_Tooltip" xml:space="preserve"><value>Преобразование документов между форматами</value></data>
+  <data name="Nav_Dictionary" xml:space="preserve"><value>Словарь</value></data>
+  <data name="Nav_WordsManager" xml:space="preserve"><value>Менеджер слов</value></data>
+  <data name="Nav_LocalAi" xml:space="preserve"><value>WriteAI</value></data>
+  <data name="Nav_LocalAi_Tooltip" xml:space="preserve"><value>Локальный движок и модель</value></data>
+  <data name="Nav_Compatibility" xml:space="preserve"><value>Совместимость</value></data>
+  <data name="Nav_Diagnostics" xml:space="preserve"><value>Диагностика</value></data>
+  <data name="Nav_About" xml:space="preserve"><value>О программе</value></data>
+  <data name="Main_PageName_Home" xml:space="preserve"><value>ГЛАВНАЯ</value></data>
+  <data name="Main_EngineState" xml:space="preserve"><value>ЛОКАЛЬНАЯ ПРОВЕРКА</value></data>
+  <data name="Main_EngineStatePaused" xml:space="preserve"><value>ПРОВЕРКА НА ПАУЗЕ</value></data>
+  <data name="Main_Footnote" xml:space="preserve"><value>BETA · ЛОКАЛЬНО</value></data>
+  <data name="Main_GroupWorkspace" xml:space="preserve"><value>РАБОЧЕЕ ПРОСТРАНСТВО</value></data>
+  <data name="Main_GroupSystem" xml:space="preserve"><value>СИСТЕМА</value></data>
+  <data name="Main_Minimize" xml:space="preserve"><value>Свернуть</value></data>
+  <data name="Main_MinimizeWindow" xml:space="preserve"><value>Свернуть окно</value></data>
+  <data name="Main_Maximize" xml:space="preserve"><value>Развернуть</value></data>
+  <data name="Main_MaximizeWindow" xml:space="preserve"><value>Развернуть окно</value></data>
+  <data name="Main_CloseToTray" xml:space="preserve"><value>Свернуть в трей</value></data>
+  <data name="Main_CloseWindow" xml:space="preserve"><value>Закрыть окно</value></data>
+  <data name="Main_Exit" xml:space="preserve"><value>Завершить WriteLite</value></data>
+  <data name="Main_Exit_Tooltip" xml:space="preserve"><value>Полностью закрыть WriteLite</value></data>
+  <data name="Menu_File" xml:space="preserve"><value>Файл</value></data>
+  <data name="Menu_FileAutomation" xml:space="preserve"><value>Меню файла</value></data>
+  <data name="Menu_New" xml:space="preserve"><value>Создать</value></data>
+  <data name="Menu_Open" xml:space="preserve"><value>Открыть…</value></data>
+  <data name="Menu_Recent" xml:space="preserve"><value>Недавние</value></data>
+  <data name="Menu_Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Menu_SaveAs" xml:space="preserve"><value>Сохранить как…</value></data>
+  <data name="Menu_Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Menu_ConvertDocument" xml:space="preserve"><value>Конвертировать документ…</value></data>
+  <data name="Editor_AutomationName" xml:space="preserve"><value>Редактор WriteLite</value></data>
+  <data name="Editor_Untitled" xml:space="preserve"><value>Без названия</value></data>
+  <data name="Editor_DirtyTooltip" xml:space="preserve"><value>Есть несохранённые изменения</value></data>
+  <data name="Chips_Draft" xml:space="preserve"><value>ЧЕРНОВИК</value></data>
+  <data name="Chips_Analyzing" xml:space="preserve"><value>АНАЛИЗ</value></data>
+  <data name="Chips_Actions" xml:space="preserve"><value>ДЕЙСТВИЯ</value></data>
+  <data name="Chips_Meaning" xml:space="preserve"><value>ЗНАЧЕНИЕ</value></data>
+  <data name="Chips_Synonyms" xml:space="preserve"><value>СИНОНИМЫ</value></data>
+  <data name="Chips_Antonyms" xml:space="preserve"><value>АНТОНИМЫ</value></data>
+  <data name="Chips_Translation" xml:space="preserve"><value>ПЕРЕВОД</value></data>
+  <data name="Chips_Form" xml:space="preserve"><value>ФОРМА</value></data>
+  <data name="Editor_AutoCorrect" xml:space="preserve"><value>Автоисправление</value></data>
+  <data name="Editor_AutoCorrectTooltip" xml:space="preserve"><value>Применять безопасные исправления автоматически</value></data>
+  <data name="Editor_AutoCorrectAutomation" xml:space="preserve"><value>Автоматическое исправление</value></data>
+  <data name="Editor_Recheck" xml:space="preserve"><value>Проверить</value></data>
+  <data name="Editor_RecheckAutomation" xml:space="preserve"><value>Повторно проверить текст</value></data>
+  <data name="Editor_Font" xml:space="preserve"><value>Шрифт</value></data>
+  <data name="Editor_FontSize" xml:space="preserve"><value>Размер</value></data>
+  <data name="Editor_FontSizeAutomation" xml:space="preserve"><value>Размер шрифта</value></data>
+  <data name="Editor_BoldTooltip" xml:space="preserve"><value>Полужирный (Ctrl+B)</value></data>
+  <data name="Editor_Bold" xml:space="preserve"><value>Полужирный</value></data>
+  <data name="Editor_ItalicTooltip" xml:space="preserve"><value>Курсив (Ctrl+I)</value></data>
+  <data name="Editor_Italic" xml:space="preserve"><value>Курсив</value></data>
+  <data name="Editor_UnderlineTooltip" xml:space="preserve"><value>Подчёркнутый (Ctrl+U)</value></data>
+  <data name="Editor_Underline" xml:space="preserve"><value>Подчёркнутый</value></data>
+  <data name="Editor_Strikethrough" xml:space="preserve"><value>Зачёркнутый</value></data>
+  <data name="Editor_TextColor" xml:space="preserve"><value>Цвет текста</value></data>
+  <data name="Editor_AlignLeft" xml:space="preserve"><value>По левому краю</value></data>
+  <data name="Editor_AlignLeftAutomation" xml:space="preserve"><value>Выравнивание по левому краю</value></data>
+  <data name="Editor_AlignCenter" xml:space="preserve"><value>По центру</value></data>
+  <data name="Editor_AlignCenterAutomation" xml:space="preserve"><value>Выравнивание по центру</value></data>
+  <data name="Editor_AlignRight" xml:space="preserve"><value>По правому краю</value></data>
+  <data name="Editor_AlignRightAutomation" xml:space="preserve"><value>Выравнивание по правому краю</value></data>
+  <data name="Editor_AlignJustify" xml:space="preserve"><value>По ширине</value></data>
+  <data name="Editor_AlignJustifyAutomation" xml:space="preserve"><value>Выравнивание по ширине</value></data>
+  <data name="Editor_BulletList" xml:space="preserve"><value>Маркированный список</value></data>
+  <data name="Editor_NumberedList" xml:space="preserve"><value>Нумерованный список</value></data>
+  <data name="Editor_IndentLess" xml:space="preserve"><value>Уменьшить отступ</value></data>
+  <data name="Editor_IndentMore" xml:space="preserve"><value>Увеличить отступ</value></data>
+  <data name="Editor_SpacingTooltip" xml:space="preserve"><value>Интервалы и отступы абзаца</value></data>
+  <data name="Editor_SpacingAutomation" xml:space="preserve"><value>Интервалы абзаца</value></data>
+  <data name="Editor_SpacingLineSpacing" xml:space="preserve"><value>Междустрочный интервал</value></data>
+  <data name="Editor_SpacingBefore" xml:space="preserve"><value>Интервал до абзаца +6 пт</value></data>
+  <data name="Editor_SpacingAfter" xml:space="preserve"><value>Интервал после абзаца +6 пт</value></data>
+  <data name="Editor_SpacingClear" xml:space="preserve"><value>Убрать интервалы</value></data>
+  <data name="Editor_SpacingFirstLine" xml:space="preserve"><value>Красная строка 1,25 см</value></data>
+  <data name="Editor_SpacingClearFirstLine" xml:space="preserve"><value>Убрать красную строку</value></data>
+  <data name="Editor_ParagraphStyle" xml:space="preserve"><value>Стиль абзаца</value></data>
+  <data name="Editor_UndoTooltip" xml:space="preserve"><value>Отменить (Ctrl+Z)</value></data>
+  <data name="Editor_Undo" xml:space="preserve"><value>Отменить</value></data>
+  <data name="Editor_RedoTooltip" xml:space="preserve"><value>Повторить (Ctrl+Y)</value></data>
+  <data name="Editor_Redo" xml:space="preserve"><value>Повторить</value></data>
+  <data name="Editor_FindReplaceTooltip" xml:space="preserve"><value>Найти и заменить (Ctrl+F)</value></data>
+  <data name="Editor_FindReplace" xml:space="preserve"><value>Найти и заменить</value></data>
+  <data name="Editor_FindBoxTooltip" xml:space="preserve"><value>Что искать</value></data>
+  <data name="Editor_FindBox" xml:space="preserve"><value>Найти</value></data>
+  <data name="Editor_FindNext" xml:space="preserve"><value>Найти далее</value></data>
+  <data name="Editor_ReplaceBoxTooltip" xml:space="preserve"><value>Чем заменить</value></data>
+  <data name="Editor_ReplaceBox" xml:space="preserve"><value>Заменить на</value></data>
+  <data name="Editor_Replace" xml:space="preserve"><value>Заменить</value></data>
+  <data name="Editor_ReplaceAll" xml:space="preserve"><value>Заменить все</value></data>
+  <data name="Editor_CloseFind" xml:space="preserve"><value>Закрыть поиск</value></data>
+  <data name="Editor_CancelOperation" xml:space="preserve"><value>Отменить</value></data>
+  <data name="Editor_CancelOperationAutomation" xml:space="preserve"><value>Отменить операцию</value></data>
+  <data name="Editor_DocumentAutomation" xml:space="preserve"><value>Текст документа</value></data>
+  <data name="Editor_CanvasPlaceholder" xml:space="preserve"><value>Начните печатать, вставьте текст или перетащите сюда документ DOCX, ODT, PDF или TXT.</value></data>
+  <data name="Editor_TogglePanel" xml:space="preserve"><value>Панель</value></data>
+  <data name="Editor_ZoomOut" xml:space="preserve"><value>Уменьшить масштаб</value></data>
+  <data name="Editor_ZoomIn" xml:space="preserve"><value>Увеличить масштаб</value></data>
+  <data name="Suggestions_IssuesEmpty" xml:space="preserve"><value>Замечаний нет</value></data>
+  <data name="Suggestions_IssuesListAutomation" xml:space="preserve"><value>Список замечаний</value></data>
+  <data name="Suggestions_ApplySafeAutomation" xml:space="preserve"><value>Исправить все безопасные замечания</value></data>
+  <data name="Suggestions_WordTitle" xml:space="preserve"><value>Слово</value></data>
+  <data name="Suggestions_WordBackTooltip" xml:space="preserve"><value>Назад</value></data>
+  <data name="Suggestions_WordBackAutomation" xml:space="preserve"><value>Предыдущее слово</value></data>
+  <data name="Suggestions_WordEmptyTitle" xml:space="preserve"><value>Выделите слово</value></data>
+  <data name="Suggestions_WordEmptyHint" xml:space="preserve"><value>Дважды щёлкните слово в тексте — здесь появятся значение, синонимы, антонимы и перевод. Правый клик открывает действия WriteLite AI.</value></data>
+  <data name="Suggestions_Rewrite" xml:space="preserve"><value>Переписать</value></data>
+  <data name="Suggestions_ImproveStyle" xml:space="preserve"><value>Улучшить стиль</value></data>
+  <data name="Suggestions_GrammarAction" xml:space="preserve"><value>Грамматика</value></data>
+  <data name="Suggestions_CustomInstruction" xml:space="preserve"><value>Своя инструкция…</value></data>
+  <data name="Suggestions_SynonymsHint" xml:space="preserve"><value>Клик — заменить слово в тексте. Двойной клик — открыть статью.</value></data>
+  <data name="Status_WordsZero" xml:space="preserve"><value>0 СЛОВ</value></data>
+  <data name="Status_CharsZero" xml:space="preserve"><value>0 ЗНАКОВ</value></data>
+  <data name="Status_CharsFormat" xml:space="preserve"><value>{0} ЗНАКОВ</value></data>
+  <data name="Status_PagesOne" xml:space="preserve"><value>1 СТР.</value></data>
+  <data name="Status_PagesFormat" xml:space="preserve"><value>{0} СТР.</value></data>
+  <data name="Editor_BigDocument" xml:space="preserve"><value>БОЛЬШОЙ ДОКУМЕНТ · CTRL+ENTER</value></data>
+  <data name="Editor_FixedCount" xml:space="preserve"><value>ИСПРАВЛЕНО {0}</value></data>
+  <data name="Editor_OpeningCancelled" xml:space="preserve"><value>ОТКРЫТИЕ ОТМЕНЕНО</value></data>
+  <data name="Editor_SavingCancelled" xml:space="preserve"><value>СОХРАНЕНИЕ ОТМЕНЕНО</value></data>
+  <data name="Editor_NotMatched" xml:space="preserve"><value>Не найдено</value></data>
+  <data name="Editor_SearchFromStart" xml:space="preserve"><value>Поиск с начала</value></data>
+  <data name="Ambience_AtmosphereLabel" xml:space="preserve"><value>АТМОСФЕРА</value></data>
+  <data name="Ambience_Previous" xml:space="preserve"><value>Предыдущий</value></data>
+  <data name="Ambience_PlayTooltip" xml:space="preserve"><value>Включить атмосферу</value></data>
+  <data name="Ambience_Play" xml:space="preserve"><value>Воспроизведение</value></data>
+  <data name="Ambience_Next" xml:space="preserve"><value>Следующий</value></data>
+  <data name="Ambience_Repeat" xml:space="preserve"><value>Повторять трек</value></data>
+  <data name="Ambience_Volume" xml:space="preserve"><value>Громкость</value></data>
+  <data name="Ambience_Pause" xml:space="preserve"><value>Пауза</value></data>
+  <data name="Ambience_NoRepeat" xml:space="preserve"><value>Не повторять трек</value></data>
+  <data name="Converter_PageTitle" xml:space="preserve"><value>Конвертер документов</value></data>
+  <data name="Converter_Subtitle" xml:space="preserve"><value>Перевод между форматами документов</value></data>
+  <data name="Converter_SourceSection" xml:space="preserve"><value>ИСХОДНЫЙ ФАЙЛ</value></data>
+  <data name="Converter_NoFile" xml:space="preserve"><value>Файл не выбран</value></data>
+  <data name="Converter_DragHint" xml:space="preserve"><value>Перетащите файл сюда или выберите его вручную</value></data>
+  <data name="Converter_Choose" xml:space="preserve"><value>Выбрать…</value></data>
+  <data name="Converter_ChooseInputAutomation" xml:space="preserve"><value>Выбрать исходный файл</value></data>
+  <data name="Converter_ConvertTo" xml:space="preserve"><value>ПРЕОБРАЗОВАТЬ В</value></data>
+  <data name="Converter_TargetFormatAutomation" xml:space="preserve"><value>Целевой формат</value></data>
+  <data name="Converter_SaveAs" xml:space="preserve"><value>СОХРАНИТЬ КАК</value></data>
+  <data name="Converter_Change" xml:space="preserve"><value>Изменить…</value></data>
+  <data name="Converter_ChangeOutputAutomation" xml:space="preserve"><value>Изменить место сохранения</value></data>
+  <data name="Converter_Convert" xml:space="preserve"><value>Преобразовать</value></data>
+  <data name="Converter_ConvertAutomation" xml:space="preserve"><value>Преобразовать файл</value></data>
+  <data name="Converter_Cancel" xml:space="preserve"><value>Отменить</value></data>
+  <data name="Converter_CancelAutomation" xml:space="preserve"><value>Отменить преобразование</value></data>
+  <data name="Converter_ResultTitle" xml:space="preserve"><value>Готово</value></data>
+  <data name="Converter_OpenFile" xml:space="preserve"><value>Открыть файл</value></data>
+  <data name="Converter_OpenFolder" xml:space="preserve"><value>Открыть папку</value></data>
+  <data name="Converter_OpenInEditor" xml:space="preserve"><value>Открыть в редакторе</value></data>
+  <data name="Converter_ConvertAgain" xml:space="preserve"><value>Преобразовать ещё</value></data>
+  <data name="Converter_WhatIsConverted" xml:space="preserve"><value>ЧТО ПЕРЕНОСИТСЯ</value></data>
+  <data name="Converter_ConversionMatrixNote" xml:space="preserve"><value>Таблица поддерживаемых преобразований документов</value></data>
+  <data name="Converter_ChooseInputTitle" xml:space="preserve"><value>Выбрать исходный файл</value></data>
+  <data name="Converter_UnsupportedFormat" xml:space="preserve"><value>Формат файла не поддерживается</value></data>
+  <data name="Converter_TargetHintTxt" xml:space="preserve"><value>Обычный текст без форматирования</value></data>
+  <data name="Converter_TargetHintPdf" xml:space="preserve"><value>Портативный документ для печати и архивов</value></data>
+  <data name="Converter_TargetHintRich" xml:space="preserve"><value>Документ с разметкой, таблицами и стилями</value></data>
+  <data name="Converter_SaveResultTitle" xml:space="preserve"><value>Сохранить документ</value></data>
+  <data name="Converter_Cancelled" xml:space="preserve"><value>Преобразование отменено</value></data>
+  <data name="Converter_NoWriteAccess" xml:space="preserve"><value>Нет прав на запись в выбранную папку.</value></data>
+  <data name="Converter_FileBusy" xml:space="preserve"><value>Файл занят другой программой. Закройте его и попробуйте снова.</value></data>
+  <data name="Converter_GenericError" xml:space="preserve"><value>Произошла непредвиденная ошибка при преобразовании файла.</value></data>
+  <data name="Converter_ResultDetail" xml:space="preserve"><value>{0} → {1} · {2} · {3} · {4:0.0} с</value></data>
+  <data name="Converter_OpenFolderFailed" xml:space="preserve"><value>Не удалось открыть папку.</value></data>
+  <data name="Dict_Description" xml:space="preserve"><value>Толкование, переводы и формы слов из установленных словарей</value></data>
+  <data name="Dict_Back" xml:space="preserve"><value>Назад</value></data>
+  <data name="Dict_BackAutomation" xml:space="preserve"><value>Назад в истории поиска</value></data>
+  <data name="Dict_Forward" xml:space="preserve"><value>Вперёд</value></data>
+  <data name="Dict_ForwardAutomation" xml:space="preserve"><value>Вперёд по истории поиска</value></data>
+  <data name="Dict_SearchPlaceholder" xml:space="preserve"><value>Поиск слова</value></data>
+  <data name="Dict_SearchAutomation" xml:space="preserve"><value>Поиск в словаре</value></data>
+  <data name="Dict_MeaningLabel" xml:space="preserve"><value>ЗНАЧЕНИЕ</value></data>
+  <data name="Dict_TranslationLabel" xml:space="preserve"><value>ПЕРЕВОД</value></data>
+  <data name="Dict_SynonymsLabel" xml:space="preserve"><value>СИНОНИМЫ</value></data>
+  <data name="Dict_AntonymsLabel" xml:space="preserve"><value>АНТОНИМЫ</value></data>
+  <data name="Dict_FormsLabel" xml:space="preserve"><value>ФОРМЫ</value></data>
+  <data name="Dict_ExamplesLabel" xml:space="preserve"><value>ПРИМЕРЫ</value></data>
+  <data name="Dict_RelatedLabel" xml:space="preserve"><value>СВЯЗАННЫЕ СЛОВА</value></data>
+  <data name="Dict_LookupEmptyTitle" xml:space="preserve"><value>Словарь пока пуст</value></data>
+  <data name="Dict_LookupEmptyHint" xml:space="preserve"><value>Введите слово, чтобы найти его значение.</value></data>
+  <data name="Dict_LoadingTitle" xml:space="preserve"><value>Словарь загружается</value></data>
+  <data name="Dict_LoadingHint" xml:space="preserve"><value>Подождите несколько секунд и повторите поиск.</value></data>
+  <data name="Dict_SearchFailedTitle" xml:space="preserve"><value>Не удалось выполнить поиск</value></data>
+  <data name="Dict_SearchFailedHint" xml:space="preserve"><value>Проверьте словарные данные и повторите попытку.</value></data>
+  <data name="Dict_NotFoundTitle" xml:space="preserve"><value>Слово не найдено</value></data>
+  <data name="Dict_NotFoundHint" xml:space="preserve"><value>Слова "{0}" нет в установленных словарях.</value></data>
+  <data name="Dict_TranslationToRussian" xml:space="preserve"><value>ПЕРЕВОД НА РУССКИЙ</value></data>
+  <data name="Dict_TranslationToEnglish" xml:space="preserve"><value>ПЕРЕВОД НА АНГЛИЙСКИЙ</value></data>
+  <data name="Dict_Provenance" xml:space="preserve"><value>Источник</value></data>
+  <data name="Dict_Historical" xml:space="preserve"><value>историческое</value></data>
+  <data name="Dict_PosNoun" xml:space="preserve"><value>существительное</value></data>
+  <data name="Dict_PosVerb" xml:space="preserve"><value>глагол</value></data>
+  <data name="Dict_PosAdjective" xml:space="preserve"><value>прилагательное</value></data>
+  <data name="Dict_PosAdverb" xml:space="preserve"><value>наречие</value></data>
+  <data name="Dict_PosPronoun" xml:space="preserve"><value>местоимение</value></data>
+  <data name="Dict_PosNumeral" xml:space="preserve"><value>числительное</value></data>
+  <data name="Dict_PosPreposition" xml:space="preserve"><value>предлог</value></data>
+  <data name="Dict_PosConjunction" xml:space="preserve"><value>союз</value></data>
+  <data name="Dict_PosParticle" xml:space="preserve"><value>частица</value></data>
+  <data name="Dict_PosInterjection" xml:space="preserve"><value>междометие</value></data>
+  <data name="Editor_NoIssues" xml:space="preserve"><value>Замечаний нет</value></data>
+  <data name="Editor_FoundCount" xml:space="preserve"><value>Найдено: {0}</value></data>
+  <data name="Editor_ShownFiltered" xml:space="preserve"><value>Показано: {0} из {1}</value></data>
+  <data name="Editor_FilterCategoryEmpty" xml:space="preserve"><value>В этой категории пусто</value></data>
+  <data name="Editor_RemoveFilterHint" xml:space="preserve"><value>Снимите фильтр, чтобы увидеть остальные замечания.</value></data>
+  <data name="Editor_MatchOne" xml:space="preserve"><value>1 совпадение</value></data>
+  <data name="Editor_MatchMany" xml:space="preserve"><value>{0} совпадений</value></data>
+  <data name="Editor_ReplaceCount" xml:space="preserve"><value>Заменено: {0}</value></data>
+  <data name="EditorAi_WordMeaning" xml:space="preserve"><value>Значение «{0}»</value></data>
+  <data name="EditorAi_OpenInDictionary" xml:space="preserve"><value>Открыть «{0}» в словаре</value></data>
+  <data name="EditorAi_Explain" xml:space="preserve"><value>Объяснить</value></data>
+  <data name="EditorAi_TranslateToEnglish" xml:space="preserve"><value>Перевести на английский</value></data>
+  <data name="EditorAi_Rewrite" xml:space="preserve"><value>Переписать</value></data>
+  <data name="EditorAi_ImproveStyle" xml:space="preserve"><value>Улучшить стиль</value></data>
+  <data name="EditorAi_MakeFormal" xml:space="preserve"><value>Сделать формальнее</value></data>
+  <data name="EditorAi_MakeCasual" xml:space="preserve"><value>Сделать проще</value></data>
+  <data name="EditorAi_Simplify" xml:space="preserve"><value>Упростить</value></data>
+  <data name="EditorAi_Shorten" xml:space="preserve"><value>Сократить</value></data>
+  <data name="EditorAi_Expand" xml:space="preserve"><value>Расширить</value></data>
+  <data name="EditorAi_FixGrammar" xml:space="preserve"><value>Исправить грамматику</value></data>
+  <data name="EditorAi_CustomInstructionEllipsis" xml:space="preserve"><value>Своя инструкция…</value></data>
+  <data name="EditorAi_Formal" xml:space="preserve"><value>Формальнее</value></data>
+  <data name="EditorAi_Casual" xml:space="preserve"><value>Проще</value></data>
+  <data name="EditorAi_Grammar" xml:space="preserve"><value>Грамматика</value></data>
+  <data name="EditorAi_Translate" xml:space="preserve"><value>Перевод</value></data>
+  <data name="EditorAi_Processing" xml:space="preserve"><value>Обработка</value></data>
+  <data name="EditorAi_Cut" xml:space="preserve"><value>Вырезать</value></data>
+  <data name="EditorAi_Copy" xml:space="preserve"><value>Копировать</value></data>
+  <data name="EditorAi_Paste" xml:space="preserve"><value>Вставить</value></data>
+  <data name="EditorAi_SelectAll" xml:space="preserve"><value>Выделить всё</value></data>
+  <data name="EditorAi_Unavailable" xml:space="preserve"><value>AI недоступен</value></data>
+  <data name="EditorAi_UnavailableHint" xml:space="preserve"><value>Локальный движок ещё запускается. Попробуйте через несколько секунд.</value></data>
+  <data name="EditorAi_NothingToProcess" xml:space="preserve"><value>Нечего обрабатывать</value></data>
+  <data name="EditorAi_SelectSomething" xml:space="preserve"><value>Выделите слово, предложение или абзац.</value></data>
+  <data name="EditorAi_TextChanged" xml:space="preserve"><value>Текст изменился</value></data>
+  <data name="EditorAi_TextChangedHint" xml:space="preserve"><value>Документ был изменён во время обработки. Изменения не применены.</value></data>
+  <data name="EditorAi_DictionaryLoading" xml:space="preserve"><value>Словарь ещё загружается. Проверка текста продолжает работать.</value></data>
+  <data name="EditorAi_LookupFailed" xml:space="preserve"><value>Не удалось найти слово. Словарные данные недоступны.</value></data>
+  <data name="EditorAi_InstructionHint" xml:space="preserve"><value>Например: «перепиши этот абзац как университетское эссе» или «сделай описание увереннее».</value></data>
+  <data name="EditorAi_InstructionTitle" xml:space="preserve"><value>Что сделать с выделенным текстом?</value></data>
+  <data name="EditorAi_Execute" xml:space="preserve"><value>Выполнить</value></data>
+  <data name="EditorAi_Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="EditorDoc_RecentEmpty" xml:space="preserve"><value>Пока пусто</value></data>
+  <data name="EditorDoc_ClearRecent" xml:space="preserve"><value>Очистить список</value></data>
+  <data name="EditorDoc_OpenTitle" xml:space="preserve"><value>Открыть документ</value></data>
+  <data name="EditorDoc_Opening" xml:space="preserve"><value>ОТКРЫТИЕ</value></data>
+  <data name="EditorDoc_Opened" xml:space="preserve"><value>Документ открыт</value></data>
+  <data name="EditorDoc_OpenFailed" xml:space="preserve"><value>Не удалось открыть документ</value></data>
+  <data name="EditorDoc_FileUnavailable" xml:space="preserve"><value>Файл недоступен или повреждён. Проверьте, что он не открыт в другой программе.</value></data>
+  <data name="EditorDoc_SaveTitle" xml:space="preserve"><value>Сохранить документ</value></data>
+  <data name="EditorDoc_ExportTo" xml:space="preserve"><value>Экспорт в {0}</value></data>
+  <data name="EditorDoc_Exporting" xml:space="preserve"><value>ЭКСПОРТ</value></data>
+  <data name="EditorDoc_Saving" xml:space="preserve"><value>СОХРАНЕНИЕ</value></data>
+  <data name="EditorDoc_ExportedTo" xml:space="preserve"><value>Экспортировано в {0}</value></data>
+  <data name="EditorDoc_Saved" xml:space="preserve"><value>Документ сохранён</value></data>
+  <data name="EditorDoc_SaveFailed" xml:space="preserve"><value>Не удалось сохранить</value></data>
+  <data name="EditorDoc_NoWritePermission" xml:space="preserve"><value>Нет прав на запись в эту папку. Выберите другое расположение.</value></data>
+  <data name="EditorDoc_FileBusy" xml:space="preserve"><value>Файл занят другой программой. Закройте его и попробуйте снова.</value></data>
+  <data name="EditorDoc_UnexpectedSaveError" xml:space="preserve"><value>Произошла непредвиденная ошибка при записи файла.</value></data>
+  <data name="EditorDoc_UnsupportedFormat" xml:space="preserve"><value>Формат не поддерживается</value></data>
+  <data name="EditorDoc_SupportedFormats" xml:space="preserve"><value>WriteLite открывает документы DOCX, ODT, PDF и TXT.</value></data>
+  <data name="EditorDoc_RecoveryTitle" xml:space="preserve"><value>Восстановление документа</value></data>
+  <data name="EditorDoc_RecoveryMessage" xml:space="preserve"><value>WriteLite сохранил копию документа «{0}» от {1}, которая не была закрыта штатно.
+
+Восстановить её?</value></data>
+  <data name="EditorDoc_Restoring" xml:space="preserve"><value>ВОССТАНОВЛЕНИЕ</value></data>
+  <data name="EditorDoc_RestoredDocument" xml:space="preserve"><value>Восстановленный документ</value></data>
+  <data name="EditorDoc_RecoveryFailed" xml:space="preserve"><value>Не удалось восстановить</value></data>
+  <data name="EditorDoc_RecoveryCorrupted" xml:space="preserve"><value>Копия документа повреждена и была удалена.</value></data>
+  <data name="EditorDoc_UnsavedChangesTitle" xml:space="preserve"><value>Несохранённые изменения</value></data>
+  <data name="EditorDoc_UnsavedChangesMessage" xml:space="preserve"><value>В документе есть несохранённые изменения. Продолжить без сохранения?</value></data>
+  <data name="EditorFmt_ColourDefault" xml:space="preserve"><value>По умолчанию</value></data>
+  <data name="EditorFmt_ColourOrange" xml:space="preserve"><value>Оранжевый</value></data>
+  <data name="EditorFmt_ColourRed" xml:space="preserve"><value>Красный</value></data>
+  <data name="EditorFmt_ColourYellow" xml:space="preserve"><value>Жёлтый</value></data>
+  <data name="EditorFmt_ColourGreen" xml:space="preserve"><value>Зелёный</value></data>
+  <data name="EditorFmt_ColourGrey" xml:space="preserve"><value>Серый</value></data>
+  <data name="EditorFmt_ColourBlack" xml:space="preserve"><value>Чёрный</value></data>
+  <data name="EditorFmt_ColourWhite" xml:space="preserve"><value>Белый</value></data>
+  <data name="EditorFmt_StyleNormal" xml:space="preserve"><value>Обычный текст</value></data>
+  <data name="EditorFmt_Heading1" xml:space="preserve"><value>Заголовок 1</value></data>
+  <data name="EditorFmt_Heading2" xml:space="preserve"><value>Заголовок 2</value></data>
+  <data name="EditorFmt_Heading3" xml:space="preserve"><value>Заголовок 3</value></data>
+  <data name="EditorFmt_Heading4" xml:space="preserve"><value>Заголовок 4</value></data>
+  <data name="Notes_TrackedLabel" xml:space="preserve"><value>ЗАМЕТКИ</value></data>
+  <data name="Notes_PersonalSpaceTitle" xml:space="preserve"><value>Личное пространство</value></data>
+  <data name="Notes_PersonalSpaceSubtitle" xml:space="preserve"><value>Заметки, задачи, цели и списки под рукой</value></data>
+  <data name="Notes_NewNoteAutomation" xml:space="preserve"><value>Новая заметка</value></data>
+  <data name="Notes_NewNote" xml:space="preserve"><value>Новая заметка</value></data>
+  <data name="Notes_FilterTasks" xml:space="preserve"><value>Задачи</value></data>
+  <data name="Notes_FilterGoals" xml:space="preserve"><value>Цели</value></data>
+  <data name="Notes_FilterCompleted" xml:space="preserve"><value>Выполненные</value></data>
+  <data name="Notes_SearchPlaceholder" xml:space="preserve"><value>Поиск</value></data>
+  <data name="Notes_SearchAutomation" xml:space="preserve"><value>Поиск по заметкам</value></data>
+  <data name="Notes_SortAutomation" xml:space="preserve"><value>Порядок заметок</value></data>
+  <data name="Notes_SortModified" xml:space="preserve"><value>По изменению</value></data>
+  <data name="Notes_SortCreated" xml:space="preserve"><value>По созданию</value></data>
+  <data name="Notes_SortDueDate" xml:space="preserve"><value>По сроку</value></data>
+  <data name="Notes_SortTitle" xml:space="preserve"><value>По названию</value></data>
+  <data name="Notes_SortManual" xml:space="preserve"><value>Вручную</value></data>
+  <data name="Notes_EmptyTitle" xml:space="preserve"><value>Заметок пока нет</value></data>
+  <data name="Notes_EmptyHint" xml:space="preserve"><value>Создайте первую заметку, чтобы начать.</value></data>
+  <data name="Notes_EmptySearchTitle" xml:space="preserve"><value>Ничего не найдено</value></data>
+  <data name="Notes_EmptySearchHint" xml:space="preserve"><value>По запросу "{0}" нет ни одной заметки.</value></data>
+  <data name="Notes_EmptyTasksTitle" xml:space="preserve"><value>Задач пока нет</value></data>
+  <data name="Notes_EmptyTasksHint" xml:space="preserve"><value>Добавьте задачу, чтобы ничего не забыть.</value></data>
+  <data name="Notes_EmptyGoalsTitle" xml:space="preserve"><value>Целей пока нет</value></data>
+  <data name="Notes_EmptyGoalsHint" xml:space="preserve"><value>Поставьте цель и следите за прогрессом.</value></data>
+  <data name="Notes_EmptyCompletedTitle" xml:space="preserve"><value>Выполненных пока нет</value></data>
+  <data name="Notes_EmptyCompletedHint" xml:space="preserve"><value>Завершённые заметки появятся здесь.</value></data>
+  <data name="Notes_StatusInProgress" xml:space="preserve"><value>{0} В РАБОТЕ</value></data>
+  <data name="Notes_StatusCompleted" xml:space="preserve"><value>{0} ВЫПОЛНЕНО</value></data>
+  <data name="Notes_KindNote" xml:space="preserve"><value>Заметка</value></data>
+  <data name="Notes_KindTask" xml:space="preserve"><value>Задача</value></data>
+  <data name="Notes_KindChecklist" xml:space="preserve"><value>Список</value></data>
+  <data name="Notes_KindGoal" xml:space="preserve"><value>Цель</value></data>
+  <data name="Notes_DeleteConfirm" xml:space="preserve"><value>Удалить "{0}"?</value></data>
+  <data name="Notes_LocalStorage" xml:space="preserve"><value>ЛОКАЛЬНОЕ ХРАНИЛИЩЕ</value></data>
+  <data name="SETTINGS_SECTION_GENERAL" xml:space="preserve"><value>Общие</value></data>
+  <data name="SETTINGS_SECTION_GENERAL_DESC" xml:space="preserve"><value>Поведение WriteLite при запуске и в системном трее.</value></data>
+  <data name="SETTINGS_CHECKING" xml:space="preserve"><value>Проверка текста</value></data>
+  <data name="SETTINGS_CHECKING_DESC" xml:space="preserve"><value>Полностью включает или выключает анализ активных полей.</value></data>
+  <data name="SETTINGS_CHECKING_AP_NAME" xml:space="preserve"><value>Проверка текста включена</value></data>
+  <data name="SETTINGS_INDICATOR" xml:space="preserve"><value>Индикатор рядом с полем</value></data>
+  <data name="SETTINGS_INDICATOR_DESC" xml:space="preserve"><value>Плавающая метка с числом замечаний возле активного поля.</value></data>
+  <data name="SETTINGS_INDICATOR_AP_NAME" xml:space="preserve"><value>Показывать индикатор</value></data>
+  <data name="SETTINGS_AUTOSTART" xml:space="preserve"><value>Запуск вместе с Windows</value></data>
+  <data name="SETTINGS_AUTOSTART_AP_NAME" xml:space="preserve"><value>Запускать вместе с Windows</value></data>
+  <data name="SETTINGS_OPEN_MAIN" xml:space="preserve"><value>Открывать главное окно при запуске</value></data>
+  <data name="SETTINGS_OPEN_MAIN_DESC" xml:space="preserve"><value>Иначе WriteLite стартует свёрнутым в трей.</value></data>
+  <data name="SETTINGS_OPEN_MAIN_AP_NAME" xml:space="preserve"><value>Открывать главное окно при запуске</value></data>
+  <data name="SETTINGS_TRAY_CLOSE" xml:space="preserve"><value>Сворачивать в трей при закрытии</value></data>
+  <data name="SETTINGS_TRAY_CLOSE_DESC" xml:space="preserve"><value>Закрытие окна не завершает проверку в других приложениях.</value></data>
+  <data name="SETTINGS_TRAY_CLOSE_AP_NAME" xml:space="preserve"><value>Сворачивать в трей при закрытии</value></data>
+  <data name="SETTINGS_SECTION_CHECKING" xml:space="preserve"><value>Проверка</value></data>
+  <data name="SETTINGS_SECTION_CHECKING_DESC" xml:space="preserve"><value>Какие типы замечаний WriteLite показывает.</value></data>
+  <data name="SETTINGS_EXTENDED" xml:space="preserve"><value>Расширенная проверка</value></data>
+  <data name="SETTINGS_EXTENDED_DESC" xml:space="preserve"><value>Дополнительный языковой движок поверх быстрых правил.</value></data>
+  <data name="SETTINGS_EXTENDED_AP_NAME" xml:space="preserve"><value>Расширенная проверка</value></data>
+  <data name="SETTINGS_PUNCTUATION" xml:space="preserve"><value>Пунктуация</value></data>
+  <data name="SETTINGS_GRAMMAR" xml:space="preserve"><value>Грамматика</value></data>
+  <data name="SETTINGS_STYLE" xml:space="preserve"><value>Стиль</value></data>
+  <data name="SETTINGS_TYPOGRAPHY" xml:space="preserve"><value>Типографика</value></data>
+  <data name="SETTINGS_TYPOGRAPHY_DESC" xml:space="preserve"><value>Кавычки, тире и пробелы вокруг знаков.</value></data>
+  <data name="SETTINGS_REPEATS" xml:space="preserve"><value>Повторы</value></data>
+  <data name="SETTINGS_SAFE_ALL" xml:space="preserve"><value>Исправлять все безопасные замечания</value></data>
+  <data name="SETTINGS_SAFE_ALL_DESC" xml:space="preserve"><value>Кнопка «Исправить все» применяет только уверенные правки.</value></data>
+  <data name="SETTINGS_SAFE_ALL_AP_NAME" xml:space="preserve"><value>Безопасное исправление всех замечаний</value></data>
+  <data name="SETTINGS_SECTION_LANGUAGES" xml:space="preserve"><value>Языки</value></data>
+  <data name="SETTINGS_SECTION_LANGUAGES_DESC" xml:space="preserve"><value>Русская проверка доступна в beta; английская в разработке.</value></data>
+  <data name="SETTINGS_LANGUAGE" xml:space="preserve"><value>Язык проверки</value></data>
+  <data name="SETTINGS_LANGUAGE_DESC" xml:space="preserve"><value>Смешанный RU/EN текст определяется автоматически.</value></data>
+  <data name="SETTINGS_LANGUAGE_RUSSIAN" xml:space="preserve"><value>Русский</value></data>
+  <data name="SETTINGS_SECTION_UI" xml:space="preserve"><value>Интерфейс</value></data>
+  <data name="SETTINGS_SECTION_UI_DESC" xml:space="preserve"><value>Когда WriteLite появляется и как ведут себя подчёркивания.</value></data>
+  <data name="SETTINGS_DELAY" xml:space="preserve"><value>Задержка анализа</value></data>
+  <data name="SETTINGS_DELAY_DESC" xml:space="preserve"><value>Пауза после ввода перед проверкой, в миллисекундах.</value></data>
+  <data name="SETTINGS_DELAY_AP_NAME" xml:space="preserve"><value>Задержка анализа в миллисекундах</value></data>
+  <data name="SETTINGS_MAX_LENGTH" xml:space="preserve"><value>Максимальная длина текста</value></data>
+  <data name="SETTINGS_MAX_LENGTH_DESC" xml:space="preserve"><value>Более длинный текст проверяется частями.</value></data>
+  <data name="SETTINGS_MAX_LENGTH_AP_NAME" xml:space="preserve"><value>Максимальная длина текста</value></data>
+  <data name="SETTINGS_IDLE_GRACE" xml:space="preserve"><value>Пауза до скрытия интерфейса</value></data>
+  <data name="SETTINGS_IDLE_GRACE_DESC" xml:space="preserve"><value>Секунды бездействия, 2–30.</value></data>
+  <data name="SETTINGS_IDLE_GRACE_AP_NAME" xml:space="preserve"><value>Пауза до скрытия интерфейса в секундах</value></data>
+  <data name="SETTINGS_SHOW_GREEN" xml:space="preserve"><value>Показывать индикатор без ошибок</value></data>
+  <data name="SETTINGS_SHOW_GREEN_DESC" xml:space="preserve"><value>Спокойная отметка, когда замечаний нет.</value></data>
+  <data name="SETTINGS_SHOW_GREEN_AP_NAME" xml:space="preserve"><value>Показывать индикатор без ошибок</value></data>
+  <data name="SETTINGS_HIDE_PANEL" xml:space="preserve"><value>Скрывать панель после исправления</value></data>
+  <data name="SETTINGS_HIDE_PANEL_AP_NAME" xml:space="preserve"><value>Скрывать панель после успешного исправления</value></data>
+  <data name="SETTINGS_ONLY_EDITING" xml:space="preserve"><value>Показывать интерфейс только во время ввода</value></data>
+  <data name="SETTINGS_ONLY_EDITING_AP_NAME" xml:space="preserve"><value>Показывать интерфейс только во время ввода</value></data>
+  <data name="SETTINGS_LEXICAL_CARD" xml:space="preserve"><value>Словарная карточка по двойному щелчку</value></data>
+  <data name="SETTINGS_LEXICAL_CARD_DESC" xml:space="preserve"><value>Формы, синонимы и толкование прямо в поле ввода.</value></data>
+  <data name="SETTINGS_LEXICAL_CARD_AP_NAME" xml:space="preserve"><value>Словарная карточка по двойному щелчку</value></data>
+  <data name="SETTINGS_MINIMIZE_DUP" xml:space="preserve"><value>Минимизировать дублирование подчёркиваний</value></data>
+  <data name="SETTINGS_MINIMIZE_DUP_DESC" xml:space="preserve"><value>Делает линии WriteLite тоньше рядом с системной проверкой.</value></data>
+  <data name="SETTINGS_MINIMIZE_DUP_AP_NAME" xml:space="preserve"><value>Минимизировать дублирование с системной проверкой</value></data>
+  <data name="SETTINGS_SYSTEM_SPELLING_TITLE" xml:space="preserve"><value>Системная проверка орфографии</value></data>
+  <data name="SETTINGS_SYSTEM_SPELLING_BODY" xml:space="preserve"><value>WriteLite не отключает встроенную проверку Windows и браузеров: это небезопасно и не универсально. Чтобы убрать двойные волны, отключите проверку в самом приложении:</value></data>
+  <data name="SETTINGS_SYSTEM_SPELLING_EDGE" xml:space="preserve"><value>Edge / Chrome — Параметры → Языки → Проверка правописания.</value></data>
+  <data name="SETTINGS_SYSTEM_SPELLING_WORD" xml:space="preserve"><value>Word — Файл → Параметры → Правописание → «Проверять орфографию в процессе набора».</value></data>
+  <data name="SETTINGS_SYSTEM_SPELLING_NOTEPAD" xml:space="preserve"><value>Блокнот (Windows 11) — Параметры → Правописание.</value></data>
+  <data name="SETTINGS_SYSTEM_SPELLING_OUTLOOK" xml:space="preserve"><value>Outlook — Файл → Параметры → Почта → Орфография и автозамена.</value></data>
+  <data name="SETTINGS_SECTION_AI_DESC" xml:space="preserve"><value>Умные действия на этом компьютере. Текст не покидает ваш компьютер.</value></data>
+  <data name="SETTINGS_AI_ENABLE" xml:space="preserve"><value>Включить WriteAI</value></data>
+  <data name="SETTINGS_AI_PREFER" xml:space="preserve"><value>Использовать WriteAI, если сервер доступен</value></data>
+  <data name="SETTINGS_AI_PREFER_AP_NAME" xml:space="preserve"><value>Использовать WriteAI</value></data>
+  <data name="SETTINGS_AI_PROFILE" xml:space="preserve"><value>Профиль</value></data>
+  <data name="SETTINGS_AI_PROFILE_DESC" xml:space="preserve"><value>Lite не требует Python и сети; Quality сильнее нагружает CPU.</value></data>
+  <data name="SETTINGS_AI_PROFILE_AP_NAME" xml:space="preserve"><value>Профиль WriteAI</value></data>
+  <data name="SETTINGS_AI_ENDPOINT" xml:space="preserve"><value>Адрес сервера WriteAI</value></data>
+  <data name="SETTINGS_AI_ENDPOINT_DESC" xml:space="preserve"><value>Локальный адрес, по которому работает WriteAI.</value></data>
+  <data name="SETTINGS_AI_ENDPOINT_AP_NAME" xml:space="preserve"><value>Адрес сервера WriteAI</value></data>
+  <data name="SETTINGS_AI_PROBE" xml:space="preserve"><value>Проверить подключение</value></data>
+  <data name="SETTINGS_SECTION_SHORTCUTS" xml:space="preserve"><value>Сочетания клавиш</value></data>
+  <data name="SETTINGS_SECTION_SHORTCUTS_DESC" xml:space="preserve"><value>Щёлкните по сочетанию и нажмите новые клавиши. Escape — отмена.</value></data>
+  <data name="SETTINGS_SHORTCUTS_RESET" xml:space="preserve"><value>Сбросить все сочетания</value></data>
+  <data name="SETTINGS_SHORTCUTS_RESET_AP_NAME" xml:space="preserve"><value>Сбросить все сочетания клавиш</value></data>
+  <data name="SETTINGS_SECTION_PRIVACY" xml:space="preserve"><value>Приватность</value></data>
+  <data name="SETTINGS_PRIVACY_BODY" xml:space="preserve"><value>Проверка текста выполняется локально. WriteLite не отправляет текст во внешние ИИ-сервисы. Сведения о сторонних компонентах — в файле THIRD_PARTY_NOTICES.</value></data>
+  <data name="SETTINGS_AUTOSTART_ERROR" xml:space="preserve"><value>Не удалось изменить автозапуск.</value></data>
+  <data name="SETTINGS_AI_PROBE_HINT" xml:space="preserve"><value> Нажмите «Проверить подключение», чтобы увидеть текущее состояние.</value></data>
+  <data name="SETTINGS_AI_PROBE_CONNECTING" xml:space="preserve"><value>Проверка подключения…</value></data>
+  <data name="SETTINGS_AI_PROBE_MODE" xml:space="preserve"><value> Режим: {0}.</value></data>
+  <data name="Word_ChipReplaceHint" xml:space="preserve"><value>Клик — заменить в тексте, двойной клик — открыть статью</value></data>
+  <data name="Word_ChipViewHint" xml:space="preserve"><value>Двойной клик — открыть статью</value></data>
+  <data name="Word_InitialForm" xml:space="preserve"><value>нач. форма: {0}</value></data>
+  <data name="Word_NotInDictionaries" xml:space="preserve"><value>Слова нет в установленных словарях.</value></data>
+  <data name="Word_TranslationsEnglish" xml:space="preserve"><value>ПЕРЕВОД НА АНГЛИЙСКИЙ</value></data>
+  <data name="Word_TranslationsRussian" xml:space="preserve"><value>ПЕРЕВОД НА РУССКИЙ</value></data>
+  <data name="Words_HeaderDescription" xml:space="preserve"><value>Слова, которые WriteLite не подчёркивает, и правила, которые он не показывает.</value></data>
+  <data name="Words_TabCustomWords" xml:space="preserve"><value>Мои слова</value></data>
+  <data name="Words_TabIgnoredWords" xml:space="preserve"><value>Игнорируемые слова</value></data>
+  <data name="Words_TabIgnoredRules" xml:space="preserve"><value>Игнорируемые правила</value></data>
+  <data name="Words_TabDictionaries" xml:space="preserve"><value>Мои словари</value></data>
+  <data name="Words_NewWordPlaceholder" xml:space="preserve"><value>Добавьте слово, которое не нужно подчёркивать</value></data>
+  <data name="Words_NewWordDisabledPlaceholder" xml:space="preserve"><value>Список пополняется из панели замечаний</value></data>
+  <data name="Words_NewWordAutomation" xml:space="preserve"><value>Новое слово</value></data>
+  <data name="Words_AddButton" xml:space="preserve"><value>Добавить</value></data>
+  <data name="Words_SearchPlaceholder" xml:space="preserve"><value>Поиск</value></data>
+  <data name="Words_SearchAutomation" xml:space="preserve"><value>Поиск по списку</value></data>
+  <data name="Words_AddDictionaryButton" xml:space="preserve"><value>Добавить словарь</value></data>
+  <data name="Words_AddDictionaryDialogTitle" xml:space="preserve"><value>Добавить словарь</value></data>
+  <data name="Words_WordsListAutomation" xml:space="preserve"><value>Список слов</value></data>
+  <data name="Words_RemoveTooltip" xml:space="preserve"><value>Удалить</value></data>
+  <data name="Words_DictionariesListAutomation" xml:space="preserve"><value>Мои словари</value></data>
+  <data name="Words_ToggleDictionaryTooltip" xml:space="preserve"><value>Включить или отключить словарь</value></data>
+  <data name="Words_DictionaryEnabledAutomation" xml:space="preserve"><value>Словарь включён</value></data>
+  <data name="Words_RemoveDictionaryTooltip" xml:space="preserve"><value>Удалить словарь</value></data>
+  <data name="Words_EmptyListTitle" xml:space="preserve"><value>Список пуст</value></data>
+  <data name="Words_EmptyListHint" xml:space="preserve"><value>Добавьте имена, термины и сокращения, которые не нужно подчёркивать.</value></data>
+  <data name="Words_ClearListButton" xml:space="preserve"><value>Очистить список</value></data>
+  <data name="Words_OpenDictionaryButton" xml:space="preserve"><value>Открыть словарь</value></data>
+  <data name="Words_FooterHint" xml:space="preserve"><value>Временные "Игнорировать" из панели действуют до изменения текста и здесь не хранятся.</value></data>
+  <data name="Words_EmptyNotFoundTitle" xml:space="preserve"><value>Ничего не найдено</value></data>
+  <data name="Words_EmptyNotFoundHint" xml:space="preserve"><value>По запросу "{0}" совпадений нет.</value></data>
+  <data name="Words_EmptyIgnoredWordsTitle" xml:space="preserve"><value>Игнорируемых слов нет</value></data>
+  <data name="Words_EmptyIgnoredWordsHint" xml:space="preserve"><value>Слово попадает сюда, когда вы выбираете "Игнорировать" в панели замечаний.</value></data>
+  <data name="Words_EmptyIgnoredRulesTitle" xml:space="preserve"><value>Игнорируемых правил нет</value></data>
+  <data name="Words_EmptyIgnoredRulesHint" xml:space="preserve"><value>Правило попадает сюда, когда вы скрываете конкретный тип замечаний.</value></data>
+  <data name="Words_EmptyDictionaryTitle" xml:space="preserve"><value>Словарь пуст</value></data>
+  <data name="Words_FooterIgnoredRules" xml:space="preserve"><value>Показываются только нейтральные идентификаторы WriteLite (WL-…).</value></data>
+  <data name="Words_FooterIgnoredWords" xml:space="preserve"><value>Игнорируемое слово не проверяется, но остаётся в тексте без изменений.</value></data>
+  <data name="Words_FooterDictionaries" xml:space="preserve"><value>Встроенные словари WriteLite работают всегда и настройки не требуют.</value></data>
+  <data name="Words_FooterCustomWords" xml:space="preserve"><value>Слова из этого списка не считаются орфографическими ошибками.</value></data>
+  <data name="Words_EmptyDictionariesTitle" xml:space="preserve"><value>У вас пока нет собственных словарей</value></data>
+  <data name="Words_EmptyDictionariesHint" xml:space="preserve"><value>Добавьте свой словарь терминов, чтобы WriteLite учитывал его при проверке.</value></data>
+  <data name="Words_DictionaryAdded" xml:space="preserve"><value>Словарь "{0}" добавлен.</value></data>
+  <data name="Words_DictionariesDialogTitle" xml:space="preserve"><value>Мои словари</value></data>
+  <data name="Words_DictionaryAddFailed" xml:space="preserve"><value>Не удалось добавить словарь: файл не является словарём WriteLite или повреждён.</value></data>
+  <data name="Words_RemoveDictionaryConfirm" xml:space="preserve"><value>Удалить словарь "{0}"?</value></data>
+  <data name="Words_DictionaryRemoveFailed" xml:space="preserve"><value>Не удалось удалить словарь.</value></data>
+  <data name="Words_DictionaryStatusCorrupt" xml:space="preserve"><value>файл повреждён</value></data>
+  <data name="Words_DictionaryStatusDisabled" xml:space="preserve"><value>отключён</value></data>
+  <data name="Words_InvalidWordMessage" xml:space="preserve"><value>Введите корректное слово (1–64 символа).</value></data>
+  <data name="Words_ClearExceptionsConfirm" xml:space="preserve"><value>Очистить все сохранённые исключения?</value></data>
+  <data name="Words_ClearDictionaryConfirm" xml:space="preserve"><value>Удалить все слова из словаря?</value></data>
+  <data name="AiPreview_AutomationName" xml:space="preserve"><value>Предпросмотр результата WriteLite AI</value></data>
+  <data name="AiPreview_BackendDefault" xml:space="preserve"><value>Обработано локально.</value></data>
+  <data name="AiPreview_BackendOfflineRules" xml:space="preserve"><value>Локальная модель недоступна — применены офлайн-правила. Изменения ограничены пробелами, пунктуацией и повторами.</value></data>
+  <data name="AiPreview_BackendQwen" xml:space="preserve"><value>Обработано WriteAI на этом компьютере. Текст никуда не отправлялся.</value></data>
+  <data name="AiPreview_CancelAutomation" xml:space="preserve"><value>Отменить без изменений</value></data>
+  <data name="AiPreview_CancelledNotice" xml:space="preserve"><value>Обработка отменена. Текст не изменён.</value></data>
+  <data name="AiPreview_CancelProcessing" xml:space="preserve"><value>Отменить обработку</value></data>
+  <data name="AiPreview_Close" xml:space="preserve"><value>Закрыть предпросмотр</value></data>
+  <data name="AiPreview_CopyAutomation" xml:space="preserve"><value>Копировать предложенный вариант</value></data>
+  <data name="AiPreview_CopyFailedNotice" xml:space="preserve"><value>Не удалось скопировать: буфер обмена занят другим приложением.</value></data>
+  <data name="AiPreview_InsertBelow" xml:space="preserve"><value>Вставить ниже</value></data>
+  <data name="AiPreview_InsertBelowAutomation" xml:space="preserve"><value>Вставить ниже выделения</value></data>
+  <data name="AiPreview_NoOpNotice" xml:space="preserve"><value>Модель не нашла, что изменить: предложенный вариант совпадает с исходным.</value></data>
+  <data name="AiPreview_OriginalLabel" xml:space="preserve"><value>ИСХОДНЫЙ ТЕКСТ</value></data>
+  <data name="AiPreview_ProcessingFailed" xml:space="preserve"><value>Не удалось обработать текст. Локальная модель недоступна или занята.</value></data>
+  <data name="AiPreview_ProcessingLabel" xml:space="preserve"><value>ОБРАБОТКА</value></data>
+  <data name="AiPreview_ProcessingText" xml:space="preserve"><value>Локальная модель обрабатывает выделенный текст…</value></data>
+  <data name="AiPreview_ReplaceAutomation" xml:space="preserve"><value>Заменить выделенный текст</value></data>
+  <data name="AiPreview_Retry" xml:space="preserve"><value>Ещё раз</value></data>
+  <data name="AiPreview_RetryAutomation" xml:space="preserve"><value>Сгенерировать заново</value></data>
+  <data name="AiPreview_SuggestionLabel" xml:space="preserve"><value>ПРЕДЛОЖЕННЫЙ ВАРИАНТ</value></data>
+  <data name="Annot_Colour" xml:space="preserve"><value>Цвет</value></data>
+  <data name="Annot_ColourNeutral" xml:space="preserve"><value>Нейтральный</value></data>
+  <data name="Annot_NoteAutomation" xml:space="preserve"><value>Текст пометки</value></data>
+  <data name="Annot_NotePlaceholder" xml:space="preserve"><value>Что вы об этом думаете</value></data>
+  <data name="Annot_Tag" xml:space="preserve"><value>Метка</value></data>
+  <data name="Annot_TagAutomation" xml:space="preserve"><value>Метка пометки</value></data>
+  <data name="Annot_TagPlaceholder" xml:space="preserve"><value>Например: важное</value></data>
+  <data name="Annot_TrackedLabel" xml:space="preserve"><value>ПОМЕТКА</value></data>
+  <data name="Annot_TrackedThought" xml:space="preserve"><value>ВАША МЫСЛЬ</value></data>
+  <data name="Annot_WindowAutomation" xml:space="preserve"><value>Добавить пометку</value></data>
+  <data name="Annot_WindowTitle" xml:space="preserve"><value>Пометка</value></data>
+  <data name="App_EngineFallbackStatus" xml:space="preserve"><value>Используется базовая проверка WriteLite</value></data>
+  <data name="App_Exit" xml:space="preserve"><value>Выйти</value></data>
+  <data name="App_OpenFromTray" xml:space="preserve"><value>Открыть WriteLite</value></data>
+  <data name="App_PauseCheck" xml:space="preserve"><value>Приостановить проверку</value></data>
+  <data name="App_PopupLoadFailed" xml:space="preserve"><value>Не удалось загрузить словарные данные.</value></data>
+  <data name="App_ReplaceFailedCopied" xml:space="preserve"><value>Не удалось безопасно заменить слово. Вариант скопирован в буфер обмена.</value></data>
+  <data name="App_ResumeCheck" xml:space="preserve"><value>Продолжить проверку</value></data>
+  <data name="Bubble_ApplyAllSafe" xml:space="preserve"><value>Исправить все безопасные ошибки</value></data>
+  <data name="Bubble_Checking" xml:space="preserve"><value>Проверка текста…</value></data>
+  <data name="Bubble_CountAutomation" xml:space="preserve"><value>Замечания WriteLite</value></data>
+  <data name="Bubble_FoundCount" xml:space="preserve"><value>Найдено замечаний: {0}</value></data>
+  <data name="Bubble_HideIndicator" xml:space="preserve"><value>Скрыть индикатор</value></data>
+  <data name="Bubble_NoErrors" xml:space="preserve"><value>Ошибок не найдено</value></data>
+  <data name="Bubble_OpenMain" xml:space="preserve"><value>Открыть WriteLite</value></data>
+  <data name="Bubble_OpenPanel" xml:space="preserve"><value>Открыть панель замечаний</value></data>
+  <data name="Bubble_PenMenu" xml:space="preserve"><value>Меню WriteLite</value></data>
+  <data name="Bubble_WindowTitle" xml:space="preserve"><value>WriteLite — индикатор</value></data>
+  <data name="Chip_NoArticle" xml:space="preserve"><value>Нет статьи в установленных словарях</value></data>
+  <data name="Corr_AddComma" xml:space="preserve"><value>запятую</value></data>
+  <data name="Corr_AddDash" xml:space="preserve"><value>тире</value></data>
+  <data name="Corr_AddEllipsis" xml:space="preserve"><value>многоточие</value></data>
+  <data name="Corr_AddExclamation" xml:space="preserve"><value>восклицательный знак</value></data>
+  <data name="Corr_AddPeriod" xml:space="preserve"><value>точку</value></data>
+  <data name="Corr_AddQuestion" xml:space="preserve"><value>вопросительный знак</value></data>
+  <data name="Corr_AmbiguousRelocation" xml:space="preserve"><value>Фрагмент сместился — изменения не применены.</value></data>
+  <data name="Corr_Applied" xml:space="preserve"><value>Исправление применено.</value></data>
+  <data name="Corr_ApplyFailed" xml:space="preserve"><value>Не удалось применить исправление.</value></data>
+  <data name="Corr_Applying" xml:space="preserve"><value>Применяем исправление…</value></data>
+  <data name="Corr_Blocked" xml:space="preserve"><value>Исправление заблокировано.</value></data>
+  <data name="Corr_Cancelled" xml:space="preserve"><value>Исправление отменено.</value></data>
+  <data name="Corr_CardAutomationName" xml:space="preserve"><value>Исправление WriteLite</value></data>
+  <data name="Corr_CategoryDefault" xml:space="preserve"><value>Замечание</value></data>
+  <data name="Corr_CategoryDefaultUpper" xml:space="preserve"><value>ЗАМЕЧАНИЕ</value></data>
+  <data name="Corr_CategoryGrammarUpper" xml:space="preserve"><value>ГРАММАТИКА</value></data>
+  <data name="Corr_CategoryOrthographyUpper" xml:space="preserve"><value>ОРФОГРАФИЯ</value></data>
+  <data name="Corr_CategoryPunctuationUpper" xml:space="preserve"><value>ПУНКТУАЦИЯ</value></data>
+  <data name="Corr_CategoryReadability" xml:space="preserve"><value>Оформление</value></data>
+  <data name="Corr_CategoryReadabilityUpper" xml:space="preserve"><value>ОФОРМЛЕНИЕ</value></data>
+  <data name="Corr_CategoryStyleUpper" xml:space="preserve"><value>СТИЛЬ</value></data>
+  <data name="Corr_CertaintyCertain" xml:space="preserve"><value>Точно</value></data>
+  <data name="Corr_CertaintyDiscretion" xml:space="preserve"><value>На ваше усмотрение</value></data>
+  <data name="Corr_CertaintyLikely" xml:space="preserve"><value>Вероятно</value></data>
+  <data name="Corr_ClassError" xml:space="preserve"><value>Ошибка</value></data>
+  <data name="Corr_ClassStyle" xml:space="preserve"><value>Рекомендация</value></data>
+  <data name="Corr_ClassWarning" xml:space="preserve"><value>Возможная ошибка</value></data>
+  <data name="Corr_IdenticalCorrection" xml:space="preserve"><value>Исправление совпадает с исходным текстом.</value></data>
+  <data name="Corr_InsertMark" xml:space="preserve"><value>Вставить «{0}»</value></data>
+  <data name="Corr_NoConfidentFix" xml:space="preserve"><value>Нет уверенного исправления.</value></data>
+  <data name="Corr_NoConfidentFixForWord" xml:space="preserve"><value>…для «{0}».</value></data>
+  <data name="Corr_NoReplacementText" xml:space="preserve"><value>Нет текста для замены.</value></data>
+  <data name="Corr_NoSafeFixes" xml:space="preserve"><value>Нет безопасных исправлений.</value></data>
+  <data name="Corr_ProtectedTokenConflict" xml:space="preserve"><value>Нельзя править защищённый фрагмент.</value></data>
+  <data name="Corr_RangeUnavailable" xml:space="preserve"><value>Диапазон текста недоступен.</value></data>
+  <data name="Corr_ReadOnly" xml:space="preserve"><value>Поле только для чтения.</value></data>
+  <data name="Corr_Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="Corr_SourceDictionary" xml:space="preserve"><value>СЛОВАРЬ</value></data>
+  <data name="Corr_SourceRules" xml:space="preserve"><value>ПРАВИЛА</value></data>
+  <data name="Corr_TargetUnavailable" xml:space="preserve"><value>Целевой фрагмент недоступен.</value></data>
+  <data name="Corr_TextChangedRefresh" xml:space="preserve"><value>Текст изменился. Проверка обновлена.</value></data>
+  <data name="Corr_UnsupportedWritePattern" xml:space="preserve"><value>Прямая замена в этом поле не поддерживается.</value></data>
+  <data name="Corr_VerificationFailed" xml:space="preserve"><value>Проверка правки не пройдена.</value></data>
+  <data name="Corr_WordNotFound" xml:space="preserve"><value>Слово не найдено в тексте.</value></data>
+  <data name="Diag_AppBuild" xml:space="preserve"><value>Сборка: {0}</value></data>
+  <data name="Diag_AppRunning" xml:space="preserve"><value>WriteLite работает</value></data>
+  <data name="Diag_AppVersion" xml:space="preserve"><value>Версия: {0}</value></data>
+  <data name="Diag_CopyFailed" xml:space="preserve"><value>Не удалось скопировать отчёт.</value></data>
+  <data name="Diag_CopyReport" xml:space="preserve"><value>Копировать отчёт</value></data>
+  <data name="Diag_Description" xml:space="preserve"><value>Диагностика проверки: состояние движка, поля и системные параметры.</value></data>
+  <data name="Diag_EngineDuration" xml:space="preserve"><value>Длительность анализа</value></data>
+  <data name="Diag_EngineExtendedChecking" xml:space="preserve"><value>Расширенная проверка</value></data>
+  <data name="Diag_EngineIssueCount" xml:space="preserve"><value>Замечаний в последнем анализе</value></data>
+  <data name="Diag_EngineLastSuccess" xml:space="preserve"><value>Последний успешный анализ</value></data>
+  <data name="Diag_EngineRestarts" xml:space="preserve"><value>Перезапусков движка</value></data>
+  <data name="Diag_EngineStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="Diag_FieldBounds" xml:space="preserve"><value>Границы</value></data>
+  <data name="Diag_FieldControl" xml:space="preserve"><value>Элемент управления</value></data>
+  <data name="Diag_FieldDetected" xml:space="preserve"><value>Поле</value></data>
+  <data name="Diag_FieldIssueCount" xml:space="preserve"><value>Замечаний: {0}</value></data>
+  <data name="Diag_FieldProcess" xml:space="preserve"><value>Процесс</value></data>
+  <data name="Diag_FieldRead" xml:space="preserve"><value>Чтение</value></data>
+  <data name="Diag_FieldWrite" xml:space="preserve"><value>Запись</value></data>
+  <data name="Diag_OpenLogs" xml:space="preserve"><value>Открыть журналы</value></data>
+  <data name="Diag_OpenLogsFailed" xml:space="preserve"><value>Не удалось открыть папку с журналами.</value></data>
+  <data name="Diag_Refresh" xml:space="preserve"><value>Обновить</value></data>
+  <data name="Diag_ReportCopied" xml:space="preserve"><value>Отчёт скопирован в буфер обмена.</value></data>
+  <data name="Diag_RestartEngine" xml:space="preserve"><value>Перезапустить движок</value></data>
+  <data name="Diag_RestartFailed" xml:space="preserve"><value>Не удалось перезапустить движок.</value></data>
+  <data name="Diag_RestartSucceeded" xml:space="preserve"><value>Движок перезапущен.</value></data>
+  <data name="Diag_SectionApp" xml:space="preserve"><value>Приложение</value></data>
+  <data name="Diag_SectionEngine" xml:space="preserve"><value>Движок</value></data>
+  <data name="Diag_SectionEvents" xml:space="preserve"><value>События</value></data>
+  <data name="Diag_SectionEventsAutomation" xml:space="preserve"><value>События диагностики</value></data>
+  <data name="Diag_SectionField" xml:space="preserve"><value>Активное поле</value></data>
+  <data name="Diag_SectionSystem" xml:space="preserve"><value>Система</value></data>
+  <data name="Diag_SystemAnalysisQueues" xml:space="preserve"><value>Очереди анализа</value></data>
+  <data name="Diag_SystemAppMemory" xml:space="preserve"><value>Память WriteLite: {0} МБ</value></data>
+  <data name="Diag_SystemChildMemory" xml:space="preserve"><value>Память дочерних процессов</value></data>
+  <data name="Diag_SystemDpi" xml:space="preserve"><value>DPI / масштаб: {0}</value></data>
+  <data name="Diag_SystemWorkArea" xml:space="preserve"><value>Рабочая область</value></data>
+  <data name="Home_FeatureAccuracyDesc" xml:space="preserve"><value>Диапазон и исходный фрагмент проверяются перед показом и перед заменой.</value></data>
+  <data name="Home_FeatureAccuracyTitle" xml:space="preserve"><value>Точные исправления</value></data>
+  <data name="Home_FeatureExplanationDesc" xml:space="preserve"><value>Каждое замечание сопровождается причиной, а не только заменой.</value></data>
+  <data name="Home_FeatureExplanationTitle" xml:space="preserve"><value>Объяснение правила</value></data>
+  <data name="Home_FeaturePrivacyDesc" xml:space="preserve"><value>URL, адреса почты, пути, версии, JSON и команды не правятся.</value></data>
+  <data name="Home_FeaturePrivacyTitle" xml:space="preserve"><value>Защита данных в тексте</value></data>
+  <data name="Home_FeatureWordCardDesc" xml:space="preserve"><value>Двойной щелчок показывает формы, синонимы, определения и примеры.</value></data>
+  <data name="Home_FeatureWordCardTitle" xml:space="preserve"><value>Карточка слова</value></data>
+  <data name="Home_HowStep1Desc" xml:space="preserve"><value>Интерфейс появляется только после реального ввода в доступном поле.</value></data>
+  <data name="Home_HowStep1Title" xml:space="preserve"><value>Печатайте</value></data>
+  <data name="Home_HowStep2Desc" xml:space="preserve"><value>Волна отмечает слово, а пунктуационный маркер — место вставки.</value></data>
+  <data name="Home_HowStep2Title" xml:space="preserve"><value>Проверьте</value></data>
+  <data name="Home_HowStep3Desc" xml:space="preserve"><value>Один щелчок открывает объяснение и применяет выбранный вариант.</value></data>
+  <data name="Home_HowStep3Title" xml:space="preserve"><value>Исправьте</value></data>
+  <data name="Home_LabelLanguages" xml:space="preserve"><value>ЯЗЫКИ</value></data>
+  <data name="Home_LabelMonitoring" xml:space="preserve"><value>МОНИТОРИНГ</value></data>
+  <data name="Home_LabelProcessing" xml:space="preserve"><value>ОБРАБОТКА</value></data>
+  <data name="Home_OpenEditor" xml:space="preserve"><value>Открыть редактор</value></data>
+  <data name="Home_OpenSettings" xml:space="preserve"><value>Настройки проверки</value></data>
+  <data name="Home_PageTagline" xml:space="preserve"><value>ЛОКАЛЬНЫЙ ПОМОЩНИК ДЛЯ WINDOWS</value></data>
+  <data name="Home_PrivacyBody" xml:space="preserve"><value>Проверка в приложении выполняется на этом компьютере. Ни профилей, ни трекеров, ни обязательной регистрации.</value></data>
+  <data name="Home_PrivacyTitle" xml:space="preserve"><value>Ваш текст остаётся вашим</value></data>
+  <data name="Home_SectionFeatures" xml:space="preserve"><value>Возможности</value></data>
+  <data name="Home_SectionHowItWorks" xml:space="preserve"><value>Как это работает</value></data>
+  <data name="Home_SectionStatus" xml:space="preserve"><value>Состояние</value></data>
+  <data name="Home_StatusActive" xml:space="preserve"><value>Активен</value></data>
+  <data name="Home_StatusEngineDesc" xml:space="preserve"><value>Базовая проверка WriteLite</value></data>
+  <data name="Home_StatusLanguagesDesc" xml:space="preserve"><value>Смешанный текст, английский в разработке</value></data>
+  <data name="Home_StatusLocal" xml:space="preserve"><value>Локальная</value></data>
+  <data name="Home_StatusLocalDesc" xml:space="preserve"><value>Текст остаётся на этом устройстве</value></data>
+  <data name="Home_StatusPaused" xml:space="preserve"><value>На паузе</value></data>
+  <data name="Home_Subtitle" xml:space="preserve"><value>WriteLite находит ошибки в активных полях Windows, объясняет правило за каждым исправлением и работает на этом компьютере.</value></data>
+  <data name="Home_Title" xml:space="preserve"><value>Грамотный текст — там, где вы печатаете.</value></data>
+  <data name="LexPop_Antonyms" xml:space="preserve"><value>Антонимы</value></data>
+  <data name="LexPop_DefinitionNotFound" xml:space="preserve"><value>Определение не найдено.</value></data>
+  <data name="LexPop_ExamplesNotFound" xml:space="preserve"><value>Примеры не найдены.</value></data>
+  <data name="LexPop_Eyebrow" xml:space="preserve"><value>СЛОВАРЬ</value></data>
+  <data name="LexPop_Historical" xml:space="preserve"><value>историч.</value></data>
+  <data name="LexPop_LemmaLabel" xml:space="preserve"><value>Словарная форма: {0}</value></data>
+  <data name="LexPop_Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="LexPop_OpenFullArticleTooltip" xml:space="preserve"><value>Открыть полную статью в словаре</value></data>
+  <data name="LexPop_OpenInDictionary" xml:space="preserve"><value>В словаре</value></data>
+  <data name="LexPop_PartOfSpeechLabel" xml:space="preserve"><value>Часть речи: {0}</value></data>
+  <data name="LexPop_PosAdjective" xml:space="preserve"><value>прил.</value></data>
+  <data name="LexPop_PosAdverb" xml:space="preserve"><value>нар.</value></data>
+  <data name="LexPop_PosConjunction" xml:space="preserve"><value>союз</value></data>
+  <data name="LexPop_PosInterjection" xml:space="preserve"><value>межд.</value></data>
+  <data name="LexPop_PosNoun" xml:space="preserve"><value>сущ.</value></data>
+  <data name="LexPop_PosNumeral" xml:space="preserve"><value>числ.</value></data>
+  <data name="LexPop_PosParticle" xml:space="preserve"><value>част.</value></data>
+  <data name="LexPop_PosPreposition" xml:space="preserve"><value>предл.</value></data>
+  <data name="LexPop_PosPronoun" xml:space="preserve"><value>мест.</value></data>
+  <data name="LexPop_PosVerb" xml:space="preserve"><value>гл.</value></data>
+  <data name="LexPop_RelatedTo" xml:space="preserve"><value>Связано с: {0}</value></data>
+  <data name="LexPop_Relations" xml:space="preserve"><value>Связи</value></data>
+  <data name="LexPop_RoleAdverbial" xml:space="preserve"><value>Обстоятельство</value></data>
+  <data name="LexPop_RoleAttribute" xml:space="preserve"><value>Определение</value></data>
+  <data name="LexPop_RoleConjunction" xml:space="preserve"><value>Союз</value></data>
+  <data name="LexPop_RoleObject" xml:space="preserve"><value>Дополнение</value></data>
+  <data name="LexPop_RoleParticle" xml:space="preserve"><value>Частица</value></data>
+  <data name="LexPop_RolePredicate" xml:space="preserve"><value>Сказуемое</value></data>
+  <data name="LexPop_RolePrepositionalObject" xml:space="preserve"><value>Косвенное дополнение</value></data>
+  <data name="LexPop_RoleSubject" xml:space="preserve"><value>Подлежащее</value></data>
+  <data name="LexPop_RoleUndefined" xml:space="preserve"><value>Роль не определена</value></data>
+  <data name="LexPop_RoleUnknown" xml:space="preserve"><value>Неизвестная роль</value></data>
+  <data name="LexPop_SearchingLocal" xml:space="preserve"><value>Поиск в локальных словарях…</value></data>
+  <data name="LexPop_SynonymsNotFound" xml:space="preserve"><value>Синонимы не найдены.</value></data>
+  <data name="LexPop_TranslationNotFound" xml:space="preserve"><value>Перевод не найден.</value></data>
+  <data name="LexPop_WordDefinitions" xml:space="preserve"><value>Определения</value></data>
+  <data name="LexPop_WordExamples" xml:space="preserve"><value>Примеры</value></data>
+  <data name="LexPop_WordLabel" xml:space="preserve"><value>Слово: {0}</value></data>
+  <data name="LexPop_WordRole" xml:space="preserve"><value>Роль</value></data>
+  <data name="LexPop_WordSynonyms" xml:space="preserve"><value>Синонимы</value></data>
+  <data name="LexPop_WordTranslations" xml:space="preserve"><value>Переводы</value></data>
+  <data name="LocalAi_AiLayerDescription" xml:space="preserve"><value>Дополнительный слой после быстрых правил.</value></data>
+  <data name="LocalAi_BaseCheck" xml:space="preserve"><value>Базовая проверка WriteLite</value></data>
+  <data name="LocalAi_ConfigSection" xml:space="preserve"><value>Конфигурация</value></data>
+  <data name="LocalAi_DegradedState" xml:space="preserve"><value>Работает базовая проверка</value></data>
+  <data name="LocalAi_DictionariesLabel" xml:space="preserve"><value>СЛОВАРИ</value></data>
+  <data name="LocalAi_DictionariesLoaded" xml:space="preserve"><value>Загружены</value></data>
+  <data name="LocalAi_Disabled" xml:space="preserve"><value>Выключен</value></data>
+  <data name="LocalAi_Enabled" xml:space="preserve"><value>Включён</value></data>
+  <data name="LocalAi_EndpointDescription" xml:space="preserve"><value>Адрес локального сервера модели.</value></data>
+  <data name="LocalAi_EngineActive" xml:space="preserve"><value>Движок активен</value></data>
+  <data name="LocalAi_EngineDescription" xml:space="preserve"><value>Проверка выполняется на этом компьютере. Недоступность модели не отключает базовую проверку.</value></data>
+  <data name="LocalAi_EngineTitle" xml:space="preserve"><value>Локальный движок</value></data>
+  <data name="LocalAi_InternetLabel" xml:space="preserve"><value>ИНТЕРНЕТ</value></data>
+  <data name="LocalAi_InternetNotRequired" xml:space="preserve"><value>Не требуется</value></data>
+  <data name="LocalAi_ModelFormat" xml:space="preserve"><value>WriteLite · {0}</value></data>
+  <data name="LocalAi_ModelLabel" xml:space="preserve"><value>МОДЕЛЬ</value></data>
+  <data name="LocalAi_NotUsed" xml:space="preserve"><value>Не используется</value></data>
+  <data name="LocalAi_OpenSettings" xml:space="preserve"><value>Изменить в настройках</value></data>
+  <data name="LocalAi_PrivacyBody" xml:space="preserve"><value>Языковая модель и словари входят в комплект приложения и работают на CPU. Текст, проверяемый в локальном режиме, не покидает это устройство и не передаётся владельцу проекта.</value></data>
+  <data name="LocalAi_PrivacySection" xml:space="preserve"><value>Обработка данных</value></data>
+  <data name="LocalAi_ProfileDescription" xml:space="preserve"><value>Lite работает без Python и без сети; Quality нагружает CPU сильнее.</value></data>
+  <data name="Main_AboutAction" xml:space="preserve"><value>Открыть THIRD_PARTY_NOTICES</value></data>
+  <data name="Main_AboutBody" xml:space="preserve"><value>WriteLite — локальный помощник проверки русского текста.
+
+«Грамотный текст — там, где вы печатаете.»
+
+Проверка выполняется локально на этом компьютере. WriteLite использует сторонние компоненты с открытым исходным кодом — сведения в файле THIRD_PARTY_NOTICES.</value></data>
+  <data name="Main_CompatBody" xml:space="preserve"><value>WriteLite работает в активных редактируемых полях Windows, которые предоставляют совместимые UI Automation patterns.
+
+Статический текст, поля только для чтения и поля паролей игнорируются полностью — они не читаются и не анализируются.
+
+Некоторые многострочные, браузерные и нестандартные редакторы отдают текст для чтения, но не позволяют прямую замену: в таких полях WriteLite показывает замечания без кнопки исправления.</value></data>
+  <data name="Main_Restore" xml:space="preserve"><value>Восстановить</value></data>
+  <data name="Main_ThirdPartyNoticesMissing" xml:space="preserve"><value>Файл THIRD_PARTY_NOTICES.txt не найден.</value></data>
+  <data name="NoteCard_ActionsNote" xml:space="preserve"><value>Действия с заметкой</value></data>
+  <data name="NoteCard_CompletedAt" xml:space="preserve"><value>ВЫПОЛНЕНО {0}</value></data>
+  <data name="NoteCard_DayFew" xml:space="preserve"><value>ДНЯ</value></data>
+  <data name="NoteCard_DayMany" xml:space="preserve"><value>ДНЕЙ</value></data>
+  <data name="NoteCard_DayOne" xml:space="preserve"><value>ДЕНЬ</value></data>
+  <data name="NoteCard_DaysAgo" xml:space="preserve"><value>{0} {1} НАЗАД</value></data>
+  <data name="NoteCard_Delete" xml:space="preserve"><value>Удалить</value></data>
+  <data name="NoteCard_DueOverdue" xml:space="preserve"><value>ПРОСРОЧЕНО НА {0} {1}</value></data>
+  <data name="NoteCard_DueToday" xml:space="preserve"><value>СЕГОДНЯ</value></data>
+  <data name="NoteCard_DueTomorrow" xml:space="preserve"><value>ЗАВТРА</value></data>
+  <data name="NoteCard_DueYesterday" xml:space="preserve"><value>ВЧЕРА</value></data>
+  <data name="NoteCard_Duplicate" xml:space="preserve"><value>Дублировать</value></data>
+  <data name="NoteCard_HoursAgo" xml:space="preserve"><value>{0} Ч НАЗАД</value></data>
+  <data name="NoteCard_ItemFew" xml:space="preserve"><value>пункта</value></data>
+  <data name="NoteCard_ItemMany" xml:space="preserve"><value>пунктов</value></data>
+  <data name="NoteCard_ItemOne" xml:space="preserve"><value>пункт</value></data>
+  <data name="NoteCard_JustNow" xml:space="preserve"><value>ТОЛЬКО ЧТО</value></data>
+  <data name="NoteCard_MarkCompleted" xml:space="preserve"><value>Отметить выполненной</value></data>
+  <data name="NoteCard_MinutesAgo" xml:space="preserve"><value>{0} МИН НАЗАД</value></data>
+  <data name="NoteCard_ModifiedAt" xml:space="preserve"><value>ИЗМЕНЕНО {0}</value></data>
+  <data name="NoteCard_More" xml:space="preserve"><value>Ещё</value></data>
+  <data name="NoteCard_MoreItems" xml:space="preserve"><value>ещё {0} {1}</value></data>
+  <data name="NoteCard_Open" xml:space="preserve"><value>Открыть</value></data>
+  <data name="NoteCard_Pin" xml:space="preserve"><value>Закрепить</value></data>
+  <data name="NoteCard_PinNote" xml:space="preserve"><value>Закрепить заметку</value></data>
+  <data name="NoteCard_ReturnToWork" xml:space="preserve"><value>Вернуть в работу</value></data>
+  <data name="NoteCard_Unpin" xml:space="preserve"><value>Открепить</value></data>
+  <data name="NoteEdit_BodyAutomation" xml:space="preserve"><value>Текст заметки</value></data>
+  <data name="NoteEdit_BodyPlaceholder" xml:space="preserve"><value>О чём эта заметка</value></data>
+  <data name="NoteEdit_Category" xml:space="preserve"><value>Категория</value></data>
+  <data name="NoteEdit_CategoryPlaceholder" xml:space="preserve"><value>Например: работа</value></data>
+  <data name="NoteEdit_CloseNoSave" xml:space="preserve"><value>Закрыть без сохранения</value></data>
+  <data name="NoteEdit_Completed" xml:space="preserve"><value>Выполнено</value></data>
+  <data name="NoteEdit_CompletedAutomation" xml:space="preserve"><value>Отметить выполненной</value></data>
+  <data name="NoteEdit_CreatedModified" xml:space="preserve"><value>СОЗДАНО {0:d MMMM yyyy} · ИЗМЕНЕНО {1:d MMMM yyyy, HH:mm}</value></data>
+  <data name="NoteEdit_DeleteConfirm" xml:space="preserve"><value>Удалить эту заметку?</value></data>
+  <data name="NoteEdit_Due" xml:space="preserve"><value>Срок</value></data>
+  <data name="NoteEdit_DueAutomation" xml:space="preserve"><value>Срок выполнения</value></data>
+  <data name="NoteEdit_DueClear" xml:space="preserve"><value>Убрать срок</value></data>
+  <data name="NoteEdit_DueInWeek" xml:space="preserve"><value>Через неделю</value></data>
+  <data name="NoteEdit_DueToday" xml:space="preserve"><value>Сегодня</value></data>
+  <data name="NoteEdit_DueTomorrow" xml:space="preserve"><value>Завтра</value></data>
+  <data name="NoteEdit_ItemTextAutomation" xml:space="preserve"><value>Текст пункта</value></data>
+  <data name="NoteEdit_KindLabel" xml:space="preserve"><value>ЗАМЕТКА</value></data>
+  <data name="NoteEdit_NewItemAutomation" xml:space="preserve"><value>Новый пункт списка</value></data>
+  <data name="NoteEdit_NewItemPlaceholder" xml:space="preserve"><value>Новый пункт</value></data>
+  <data name="NoteEdit_Pin" xml:space="preserve"><value>Закрепить</value></data>
+  <data name="NoteEdit_PinAutomation" xml:space="preserve"><value>Закрепить заметку</value></data>
+  <data name="NoteEdit_RemoveItem" xml:space="preserve"><value>Удалить пункт</value></data>
+  <data name="NoteEdit_RemoveItemAutomation" xml:space="preserve"><value>Удалить пункт: {0}</value></data>
+  <data name="NoteEdit_TitleAutomation" xml:space="preserve"><value>Название заметки</value></data>
+  <data name="NoteEdit_TitlePlaceholder" xml:space="preserve"><value>Название</value></data>
+  <data name="NoteEdit_TrackedDetails" xml:space="preserve"><value>ДЕТАЛИ</value></data>
+  <data name="NoteEdit_TrackedItems" xml:space="preserve"><value>ПУНКТЫ</value></data>
+  <data name="NoteEdit_TrackedSteps" xml:space="preserve"><value>ШАГИ</value></data>
+  <data name="NoteEdit_TrackedText" xml:space="preserve"><value>ТЕКСТ</value></data>
+  <data name="NoteEdit_Unpin" xml:space="preserve"><value>Открепить</value></data>
+  <data name="NoteEdit_WindowAutomation" xml:space="preserve"><value>Редактор заметки</value></data>
+  <data name="Placeholder_DefaultAction" xml:space="preserve"><value>Открыть</value></data>
+  <data name="Placeholder_DefaultTitle" xml:space="preserve"><value>Раздел</value></data>
+  <data name="Reader_AddAnnotation" xml:space="preserve"><value>Добавить пометку</value></data>
+  <data name="Reader_AddBookmark" xml:space="preserve"><value>Добавить закладку</value></data>
+  <data name="Reader_AddBookmarkTooltip" xml:space="preserve"><value>Добавить закладку на текущем месте</value></data>
+  <data name="Reader_Annotate" xml:space="preserve"><value>Пометка</value></data>
+  <data name="Reader_AnnotateTooltip" xml:space="preserve"><value>Добавить пометку к выбранному фрагменту</value></data>
+  <data name="Reader_AnnotationSaved" xml:space="preserve"><value>ПОМЕТКА СОХРАНЕНА</value></data>
+  <data name="Reader_AnnotationsEmptyHint" xml:space="preserve"><value>Выделите фрагмент и нажмите «Пометка», чтобы записать свою мысль рядом с текстом.</value></data>
+  <data name="Reader_AnnotationsEmptyTitle" xml:space="preserve"><value>Пометок пока нет</value></data>
+  <data name="Reader_AutomationNameFormat" xml:space="preserve"><value>Чтение: {0}</value></data>
+  <data name="Reader_Back" xml:space="preserve"><value>← Библиотека</value></data>
+  <data name="Reader_BackAutomation" xml:space="preserve"><value>Вернуться к библиотеке</value></data>
+  <data name="Reader_Bookmark" xml:space="preserve"><value>Закладка</value></data>
+  <data name="Reader_BookmarkAdded" xml:space="preserve"><value>ЗАКЛАДКА ДОБАВЛЕНА</value></data>
+  <data name="Reader_BookmarksEmptyHint" xml:space="preserve"><value>Нажмите «Закладка», чтобы запомнить место. WriteLite и так помнит, где вы остановились.</value></data>
+  <data name="Reader_BookmarksEmptyTitle" xml:space="preserve"><value>Закладок пока нет</value></data>
+  <data name="Reader_BookTextAutomation" xml:space="preserve"><value>Текст книги</value></data>
+  <data name="Reader_Card" xml:space="preserve"><value>Карточка</value></data>
+  <data name="Reader_CardCreated" xml:space="preserve"><value>КАРТОЧКА СОЗДАНА</value></data>
+  <data name="Reader_CardsEmptyHint" xml:space="preserve"><value>Выделите фрагмент и нажмите «Карточка», чтобы превратить его в вопрос и ответ.</value></data>
+  <data name="Reader_CardsEmptyTitle" xml:space="preserve"><value>Карточек пока нет</value></data>
+  <data name="Reader_ClipboardBusy" xml:space="preserve"><value>БУФЕР ОБМЕНА ЗАНЯТ ДРУГОЙ ПРОГРАММОЙ</value></data>
+  <data name="Reader_CreateCard" xml:space="preserve"><value>Создать карточку</value></data>
+  <data name="Reader_CreateCardAi" xml:space="preserve"><value>Создать карточку с помощью WriteLite AI</value></data>
+  <data name="Reader_CreateCardTooltip" xml:space="preserve"><value>Создать карточку из выбранного фрагмента</value></data>
+  <data name="Reader_DeleteAnnotation" xml:space="preserve"><value>Удалить пометку</value></data>
+  <data name="Reader_DeleteBookmark" xml:space="preserve"><value>Удалить закладку</value></data>
+  <data name="Reader_DeleteCard" xml:space="preserve"><value>Удалить карточку</value></data>
+  <data name="Reader_DetachedMarkNote" xml:space="preserve"><value>Фрагмент не найден в текущем файле — пометка сохранена.</value></data>
+  <data name="Reader_DocumentFilter" xml:space="preserve"><value>Документы ({0})|{0}|Все файлы ({1})|{1}</value></data>
+  <data name="Reader_EditCard" xml:space="preserve"><value>Изменить</value></data>
+  <data name="Reader_FileNotFoundHint" xml:space="preserve"><value>«{0}» не удалось найти по прежнему пути. Все пометки, закладки и карточки проекта сохранены — укажите файл заново, и они вернутся на свои места.</value></data>
+  <data name="Reader_FileNotFoundTitle" xml:space="preserve"><value>Файл книги не найден</value></data>
+  <data name="Reader_FontLarger" xml:space="preserve"><value>Увеличить шрифт</value></data>
+  <data name="Reader_FontSizeLabel" xml:space="preserve"><value>РАЗМЕР</value></data>
+  <data name="Reader_FontSmaller" xml:space="preserve"><value>Уменьшить шрифт</value></data>
+  <data name="Reader_FragmentHighlighted" xml:space="preserve"><value>ФРАГМЕНТ ВЫДЕЛЕН</value></data>
+  <data name="Reader_FragmentNotFound" xml:space="preserve"><value>ФРАГМЕНТ НЕ НАЙДЕН В ЭТОМ ФАЙЛЕ</value></data>
+  <data name="Reader_Highlight" xml:space="preserve"><value>Выделить</value></data>
+  <data name="Reader_HighlightTooltip" xml:space="preserve"><value>Выделить выбранный фрагмент</value></data>
+  <data name="Reader_Hint" xml:space="preserve"><value>ВЫДЕЛИТЕ ТЕКСТ ДЛЯ ДЕЙСТВИЙ · F11 — ВО ВЕСЬ ЭКРАН</value></data>
+  <data name="Reader_LineSpacingAutomation" xml:space="preserve"><value>Межстрочный интервал</value></data>
+  <data name="Reader_LineSpacingLabel" xml:space="preserve"><value>ИНТЕРЛИНЬЯЖ</value></data>
+  <data name="Reader_NextPageAutomation" xml:space="preserve"><value>Следующая страница</value></data>
+  <data name="Reader_NextPageTooltip" xml:space="preserve"><value>Следующая страница</value></data>
+  <data name="Reader_OpenFailedHint" xml:space="preserve"><value>Файл повреждён или недоступен. Пометки и закладки проекта сохранены.</value></data>
+  <data name="Reader_OpenFailedTitle" xml:space="preserve"><value>Не удалось открыть книгу</value></data>
+  <data name="Reader_OpenInDictionary" xml:space="preserve"><value>Открыть «{0}» в словаре</value></data>
+  <data name="Reader_OpeningBook" xml:space="preserve"><value>ОТКРЫВАЕМ КНИГУ</value></data>
+  <data name="Reader_PageInputAutomation" xml:space="preserve"><value>Номер страницы</value></data>
+  <data name="Reader_PageInputTooltip" xml:space="preserve"><value>Номер страницы — введите и нажмите Enter</value></data>
+  <data name="Reader_PageOf" xml:space="preserve"><value>СТРАНИЦА {0} ИЗ {1}</value></data>
+  <data name="Reader_ParagraphOf" xml:space="preserve"><value>АБЗАЦ {0} ИЗ {1}</value></data>
+  <data name="Reader_PreviousPageAutomation" xml:space="preserve"><value>Предыдущая страница</value></data>
+  <data name="Reader_PreviousPageTooltip" xml:space="preserve"><value>Предыдущая страница</value></data>
+  <data name="Reader_RelocateButton" xml:space="preserve"><value>Указать файл заново</value></data>
+  <data name="Reader_RelocateDialogTitle" xml:space="preserve"><value>Указать файл книги</value></data>
+  <data name="Reader_SelectFragment" xml:space="preserve"><value>ВЫДЕЛИТЕ ФРАГМЕНТ ТЕКСТА</value></data>
+  <data name="Reader_TabAnnotations" xml:space="preserve"><value>Пометки</value></data>
+  <data name="Reader_TabBookmarks" xml:space="preserve"><value>Закладки</value></data>
+  <data name="Reader_TabCards" xml:space="preserve"><value>Карточки</value></data>
+  <data name="Reader_TintAmber" xml:space="preserve"><value>Оранжевым</value></data>
+  <data name="Reader_TintCoral" xml:space="preserve"><value>Красным</value></data>
+  <data name="Reader_TintNeutral" xml:space="preserve"><value>Нейтральным</value></data>
+  <data name="Reader_TintSage" xml:space="preserve"><value>Зелёным</value></data>
+  <data name="Reader_TogglePanelAutomation" xml:space="preserve"><value>Панель пометок</value></data>
+  <data name="Reader_TogglePanelTooltip" xml:space="preserve"><value>Показать или скрыть панель пометок</value></data>
+  <data name="Reader_WidthAutomation" xml:space="preserve"><value>Ширина колонки</value></data>
+  <data name="Reader_WidthLabel" xml:space="preserve"><value>ШИРИНА</value></data>
+  <data name="Reader_WordForDictionary" xml:space="preserve"><value>СЛОВО «{0}» — ПКМ ДЛЯ СЛОВАРЯ</value></data>
+  <data name="Reading_Continue" xml:space="preserve"><value>Продолжить чтение</value></data>
+  <data name="Reading_ContinueAutomation" xml:space="preserve"><value>Продолжить чтение: {0}</value></data>
+  <data name="Reading_ContinueTracked" xml:space="preserve"><value>ПРОДОЛЖИТЬ →</value></data>
+  <data name="Reading_Cover" xml:space="preserve"><value>Обложка</value></data>
+  <data name="Reading_CoverDialogTitle" xml:space="preserve"><value>Обложка книги</value></data>
+  <data name="Reading_CoverFilter" xml:space="preserve"><value>Изображения (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg|PNG (*.png)|*.png|JPEG (*.jpg;*.jpeg)|*.jpg;*.jpeg</value></data>
+  <data name="Reading_DeleteConfirm" xml:space="preserve"><value>Удалить проект «{0}»?
+
+Пометки, закладки и карточки будут удалены. Сам файл книги останется на месте.</value></data>
+  <data name="Reading_EmptyNoBooksHint" xml:space="preserve"><value>Откройте PDF, DOCX, ODT или TXT — WriteLite создаст проект чтения и запомнит вашу работу с книгой. Файл можно просто перетащить сюда.</value></data>
+  <data name="Reading_EmptyNoBooksPrivacy" xml:space="preserve"><value>Проекты хранятся на этом компьютере. Аккаунт не нужен, интернет не используется.</value></data>
+  <data name="Reading_EmptyNoBooksTitle" xml:space="preserve"><value>Здесь пока нет книг</value></data>
+  <data name="Reading_FileMissing" xml:space="preserve"><value>Файл не найден — пометки сохранены</value></data>
+  <data name="Reading_LibraryTitle" xml:space="preserve"><value>Библиотека</value></data>
+  <data name="Reading_MenuChooseCover" xml:space="preserve"><value>Выбрать обложку…</value></data>
+  <data name="Reading_MenuDeleteProject" xml:space="preserve"><value>Удалить проект</value></data>
+  <data name="Reading_MenuOpen" xml:space="preserve"><value>Открыть</value></data>
+  <data name="Reading_MenuRelocate" xml:space="preserve"><value>Указать файл заново…</value></data>
+  <data name="Reading_MenuRemoveCover" xml:space="preserve"><value>Убрать обложку</value></data>
+  <data name="Reading_MenuRename" xml:space="preserve"><value>Переименовать…</value></data>
+  <data name="Reading_MenuReplaceCover" xml:space="preserve"><value>Заменить обложку…</value></data>
+  <data name="Reading_NoProjectsTracked" xml:space="preserve"><value>НЕТ ПРОЕКТОВ ЧТЕНИЯ</value></data>
+  <data name="Reading_OpenBook" xml:space="preserve"><value>Открыть книгу</value></data>
+  <data name="Reading_OpenFailedMessage" xml:space="preserve"><value>Не удалось открыть файл. Возможно, он занят другой программой или недоступен.</value></data>
+  <data name="Reading_OpenFilter" xml:space="preserve"><value>Документы (*.pdf;*.docx;*.odt;*.txt)|*.pdf;*.docx;*.odt;*.txt|PDF (*.pdf)|*.pdf|Word (*.docx)|*.docx|OpenDocument (*.odt)|*.odt|Текст (*.txt)|*.txt</value></data>
+  <data name="Reading_ProjectAutomation" xml:space="preserve"><value>Проект чтения: {0}</value></data>
+  <data name="Reading_ProjectsSubtitle" xml:space="preserve"><value>Книга, ваше место в ней, пометки, закладки и карточки — всё возвращается там, где вы остановились.</value></data>
+  <data name="Reading_ProjectsTitle" xml:space="preserve"><value>Проекты чтения</value></data>
+  <data name="Reading_RelocateFilter" xml:space="preserve"><value>Документы (*.pdf;*.docx;*.odt;*.txt)|*.pdf;*.docx;*.odt;*.txt|Все файлы (*.*)|*.*</value></data>
+  <data name="Reading_RelocateTitle" xml:space="preserve"><value>Указать файл книги</value></data>
+  <data name="Reading_RenamePrompt" xml:space="preserve"><value>Название проекта</value></data>
+  <data name="Reading_TrackedLabel" xml:space="preserve"><value>ЧТЕНИЕ</value></data>
+  <data name="Reading_UnsupportedMessage" xml:space="preserve"><value>WriteLite пока открывает PDF, DOCX, ODT и TXT.</value></data>
+  <data name="Shortcut_AcceptSuggestion" xml:space="preserve"><value>Принять подсказку</value></data>
+  <data name="Shortcut_AllReset" xml:space="preserve"><value>Все сочетания возвращены к исходным.</value></data>
+  <data name="Shortcut_Bound" xml:space="preserve"><value>{0} — {1}</value></data>
+  <data name="Shortcut_CheckNow" xml:space="preserve"><value>Проверить сейчас</value></data>
+  <data name="Shortcut_ClickToChange" xml:space="preserve"><value>{0}: {1}. Нажмите, чтобы изменить.</value></data>
+  <data name="Shortcut_Dismiss" xml:space="preserve"><value>Закрыть текущее</value></data>
+  <data name="Shortcut_ErrorConflict" xml:space="preserve"><value>Это сочетание уже занято.</value></data>
+  <data name="Shortcut_ErrorConflictWith" xml:space="preserve"><value>Это сочетание уже занято: «{0}».</value></data>
+  <data name="Shortcut_ErrorFailed" xml:space="preserve"><value>Не удалось назначить сочетание.</value></data>
+  <data name="Shortcut_ErrorModifierRequired" xml:space="preserve"><value>Нужен модификатор: Ctrl, Alt или Shift.</value></data>
+  <data name="Shortcut_ErrorNoKey" xml:space="preserve"><value>Нажмите клавишу вместе с модификатором.</value></data>
+  <data name="Shortcut_ErrorNotRebindable" xml:space="preserve"><value>Это сочетание изменить нельзя.</value></data>
+  <data name="Shortcut_ErrorReservedKey" xml:space="preserve"><value>Эта клавиша занята системой.</value></data>
+  <data name="Shortcut_ErrorUnknown" xml:space="preserve"><value>Неизвестное сочетание.</value></data>
+  <data name="Shortcut_FullScreen" xml:space="preserve"><value>Во весь экран</value></data>
+  <data name="Shortcut_NewDocument" xml:space="preserve"><value>Новый документ</value></data>
+  <data name="Shortcut_NextPage" xml:space="preserve"><value>Следующая страница</value></data>
+  <data name="Shortcut_NotRebindable" xml:space="preserve"><value> · изменить нельзя</value></data>
+  <data name="Shortcut_OpenWriteLite" xml:space="preserve"><value>Открыть WriteLite</value></data>
+  <data name="Shortcut_PressKeys" xml:space="preserve"><value>Нажмите клавиши…</value></data>
+  <data name="Shortcut_PreviousPage" xml:space="preserve"><value>Предыдущая страница</value></data>
+  <data name="Shortcut_ResetName" xml:space="preserve"><value>Вернуть исходное сочетание: {0}</value></data>
+  <data name="Shortcut_ResetTooltip" xml:space="preserve"><value>Вернуть исходное сочетание</value></data>
+  <data name="Shortcut_Restored" xml:space="preserve"><value>Восстановлено: {0} — {1}</value></data>
+  <data name="Shortcut_ScopeApp" xml:space="preserve"><value>Внутри WriteLite</value></data>
+  <data name="Shortcut_ScopeGlobal" xml:space="preserve"><value>Системное — работает в любом приложении</value></data>
+  <data name="Shortcut_SectionGlobal" xml:space="preserve"><value>Система</value></data>
+  <data name="Shortcut_SectionWindow" xml:space="preserve"><value>Окно</value></data>
+  <data name="Study_AiAutomation" xml:space="preserve"><value>Создать карточку с помощью WriteLite AI</value></data>
+  <data name="Study_AiCompose" xml:space="preserve"><value>Составить с помощью WriteLite AI</value></data>
+  <data name="Study_BackAutomation" xml:space="preserve"><value>Обратная сторона карточки</value></data>
+  <data name="Study_BackPlaceholder" xml:space="preserve"><value>Объяснение, ответ или контекст</value></data>
+  <data name="Study_CancelDraftAutomation" xml:space="preserve"><value>Отменить составление карточки</value></data>
+  <data name="Study_DraftingStatus" xml:space="preserve"><value>СОСТАВЛЯЕМ…</value></data>
+  <data name="Study_DraftStatus" xml:space="preserve"><value>ЧЕРНОВИК ОТ WRITELITE AI</value></data>
+  <data name="Study_FrontAutomation" xml:space="preserve"><value>Лицевая сторона карточки</value></data>
+  <data name="Study_FrontPlaceholder" xml:space="preserve"><value>Вопрос, понятие или цитата</value></data>
+  <data name="Study_StatusCancelled" xml:space="preserve"><value>ОТМЕНЕНО</value></data>
+  <data name="Study_StatusFailed" xml:space="preserve"><value>НЕ УДАЛОСЬ СОСТАВИТЬ КАРТОЧКУ</value></data>
+  <data name="Study_StatusFillRequired" xml:space="preserve"><value>ЗАПОЛНИТЕ ХОТЯ БЫ ОДНУ СТОРОНУ</value></data>
+  <data name="Study_StatusNotConfigured" xml:space="preserve"><value>ЛОКАЛЬНАЯ МОДЕЛЬ НЕ ПОДКЛЮЧЕНА</value></data>
+  <data name="Study_StatusUnavailable" xml:space="preserve"><value>МОДЕЛЬ НЕ ОТВЕЧАЕТ · НАПИШИТЕ ВРУЧНУЮ</value></data>
+  <data name="Study_StatusUnusable" xml:space="preserve"><value>ОТВЕТ НЕ РАЗОБРАН · ПОПРОБУЙТЕ СНОВА</value></data>
+  <data name="Study_TrackedBack" xml:space="preserve"><value>ОБРАТНАЯ СТОРОНА</value></data>
+  <data name="Study_TrackedFront" xml:space="preserve"><value>ЛИЦЕВАЯ СТОРОНА</value></data>
+  <data name="Study_TrackedLabel" xml:space="preserve"><value>КАРТОЧКА</value></data>
+  <data name="Study_TrackedLocalModel" xml:space="preserve"><value>ЛОКАЛЬНАЯ МОДЕЛЬ · БЕЗ ИНТЕРНЕТА</value></data>
+  <data name="Study_WindowAutomation" xml:space="preserve"><value>Карточка из текста</value></data>
+  <data name="Study_WindowTitle" xml:space="preserve"><value>Карточка</value></data>
+</root>

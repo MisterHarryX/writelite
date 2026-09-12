@@ -107,6 +107,7 @@ public sealed class WriteLiteJavaResolver : IWriteLiteJavaResolver
         }
         catch
         {
+            // A broken path segment must not abort discovery; keep scanning.
             return false;
         }
     }
@@ -144,6 +145,7 @@ public sealed class WriteLiteJavaResolver : IWriteLiteJavaResolver
             }
             catch
             {
+                // A malformed PATH segment must not stop discovery.
                 continue;
             }
 

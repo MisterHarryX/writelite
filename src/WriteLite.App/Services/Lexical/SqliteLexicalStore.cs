@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.IO;
 using Microsoft.Data.Sqlite;
+using WriteLite.Language.Russian;
 
 namespace WriteLite.Services.Lexical;
 
@@ -130,7 +131,7 @@ public sealed class SqliteLexicalStore : IDisposable
     }
 
     private static string LanguageCode(LexicalLanguage language)
-        => language == LexicalLanguage.English ? "en" : "ru";
+        => language == LexicalLanguage.English ? "en" : RussianLanguageProfile.IsoCode;
 
     private static string Normalize(string value, LexicalLanguage language)
     {

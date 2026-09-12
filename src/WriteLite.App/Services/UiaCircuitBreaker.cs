@@ -7,7 +7,7 @@ public sealed class UiaCircuitBreaker
 {
     private readonly object _gate = new();
     private readonly Dictionary<string, DateTimeOffset> _openUntil = new(StringComparer.Ordinal);
-    private static readonly TimeSpan DefaultCooldown = TimeSpan.FromSeconds(8);
+    private static TimeSpan DefaultCooldown => WriteLiteDefaults.Analysis.UiaCircuitBreakerCooldown;
 
     public bool IsOpen(string? targetId)
     {

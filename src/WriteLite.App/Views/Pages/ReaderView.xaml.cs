@@ -6,6 +6,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using WriteLite.Documents;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Lexical;
 using WriteLite.Services.Reading;
@@ -40,7 +41,7 @@ namespace WriteLite.Views.Pages;
 public partial class ReaderView : UserControl
 {
     /// <summary>Quiet period before a scroll counts as a new reading position.</summary>
-    private static readonly TimeSpan PositionSaveDelay = TimeSpan.FromMilliseconds(700);
+    private static readonly TimeSpan PositionSaveDelay = WriteLiteDefaults.Debounce.ReaderPositionSaveDelay;
 
     /// <summary>Width of the marks panel when it is shown.</summary>
     private const double PanelWidth = 340;
@@ -95,7 +96,7 @@ public partial class ReaderView : UserControl
         // One timer for the status line rather than a fire-and-forget delay per
         // message: an acknowledgement queued before the reader left the page used to
         // come back two seconds later and redraw a summary for a book that was closed.
-        _announceTimer.Interval = TimeSpan.FromSeconds(2);
+        _announceTimer.Interval = WriteLiteDefaults.Application.ReaderAnnounceDelay;
         _announceTimer.Tick += (_, _) =>
         {
             _announceTimer.Stop();
@@ -152,7 +153,7 @@ public partial class ReaderView : UserControl
         _typographyAnchor = null;
 
         TitleText.Text = project.Title;
-        AutomationProperties.SetName(this, $"Чтение: {project.Title}");
+        AutomationProperties.SetName(this, string.Format(Strings.Reader_AutomationNameFormat, project.Title));
         RenderTypographyControls(project.Typography);
         RenderSummary();
 
@@ -200,14 +201,14 @@ public partial class ReaderView : UserControl
         }
         catch (DocumentFormatException exception)
         {
-            ShowError("Не удалось открыть книгу", exception.UserMessage);
+            ShowError(Strings.Reader_OpenFailedTitle, exception.UserMessage);
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("reading-open-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("reading-open-failed", exception);
             ShowError(
-                "Не удалось открыть книгу",
-                "Файл повреждён или недоступен. Пометки и закладки проекта сохранены.");
+                Strings.Reader_OpenFailedTitle,
+                Strings.Reader_OpenFailedHint);
         }
     }
 
@@ -254,9 +255,8 @@ public partial class ReaderView : UserControl
         LoadingState.Visibility = Visibility.Collapsed;
         SetActionsEnabled(false);
         ShowError(
-            "Файл книги не найден",
-            $"«{_project?.SourceFileName}» не удалось найти по прежнему пути. " +
-            "Все пометки, закладки и карточки проекта сохранены — укажите файл заново, и они вернутся на свои места.");
+            Strings.Reader_FileNotFoundTitle,
+            string.Format(Strings.Reader_FileNotFoundHint, _project?.SourceFileName));
 
         RelocateButton.Visibility = Visibility.Visible;
     }
@@ -300,8 +300,8 @@ public partial class ReaderView : UserControl
 
         var dialog = new OpenFileDialog
         {
-            Title = "Указать файл книги",
-            Filter = "Документы (*.pdf;*.docx;*.odt;*.txt)|*.pdf;*.docx;*.odt;*.txt|Все файлы (*.*)|*.*",
+            Title = Strings.Reader_RelocateDialogTitle,
+            Filter = string.Format(Strings.Reader_DocumentFilter, "*.pdf;*.docx;*.odt;*.txt", "*.*"),
             CheckFileExists = true
         };
 
@@ -505,7 +505,7 @@ public partial class ReaderView : UserControl
             return true;
         }
 
-        Announce("ВЫДЕЛИТЕ ФРАГМЕНТ ТЕКСТА");
+        Announce(Strings.Reader_SelectFragment);
         return false;
     }
 
@@ -543,7 +543,7 @@ public partial class ReaderView : UserControl
         }
 
         Paint(anchor, tint);
-        Commit("ФРАГМЕНТ ВЫДЕЛЕН");
+        Commit(Strings.Reader_FragmentHighlighted);
     }
 
     private void Annotate_Click(object sender, RoutedEventArgs e) => AddAnnotation(CaptureSelection());
@@ -579,7 +579,7 @@ public partial class ReaderView : UserControl
 
         Paint(anchor, editor.Tint);
         ShowPanelTab(PanelTab.Annotations);
-        Commit("ПОМЕТКА СОХРАНЕНА");
+        Commit(Strings.Reader_AnnotationSaved);
     }
 
     private void Card_Click(object sender, RoutedEventArgs e) =>
@@ -618,7 +618,7 @@ public partial class ReaderView : UserControl
         });
 
         ShowPanelTab(PanelTab.Cards);
-        Commit("КАРТОЧКА СОЗДАНА");
+        Commit(Strings.Reader_CardCreated);
     }
 
     private void Bookmark_Click(object sender, RoutedEventArgs e) => AddBookmark(CaptureSelection());
@@ -644,7 +644,7 @@ public partial class ReaderView : UserControl
         });
 
         ShowPanelTab(PanelTab.Bookmarks);
-        Commit("ЗАКЛАДКА ДОБАВЛЕНА");
+        Commit(Strings.Reader_BookmarkAdded);
     }
 
     /// <summary>
@@ -801,12 +801,12 @@ public partial class ReaderView : UserControl
         {
             (PanelEmptyTitle.Text, PanelEmptyHint.Text) = _tab switch
             {
-                PanelTab.Bookmarks => ("Закладок пока нет",
-                    "Нажмите «Закладка», чтобы запомнить место. WriteLite и так помнит, где вы остановились."),
-                PanelTab.Cards => ("Карточек пока нет",
-                    "Выделите фрагмент и нажмите «Карточка», чтобы превратить его в вопрос и ответ."),
-                _ => ("Пометок пока нет",
-                    "Выделите фрагмент и нажмите «Пометка», чтобы записать свою мысль рядом с текстом.")
+                PanelTab.Bookmarks => (Strings.Reader_BookmarksEmptyTitle,
+                    Strings.Reader_BookmarksEmptyHint),
+                PanelTab.Cards => (Strings.Reader_CardsEmptyTitle,
+                    Strings.Reader_CardsEmptyHint),
+                _ => (Strings.Reader_AnnotationsEmptyTitle,
+                    Strings.Reader_AnnotationsEmptyHint)
             };
         }
 
@@ -832,7 +832,7 @@ public partial class ReaderView : UserControl
                     Unpaint(annotation.Anchor);
                     Commit();
                 },
-                "Удалить пометку"));
+                Strings.Reader_DeleteAnnotation));
 
             var quote = new Border { Style = (Style)FindResource("WlQuoteBlock"), Margin = new Thickness(0, 8, 0, 0) };
             quote.Child = new TextBlock
@@ -886,7 +886,7 @@ public partial class ReaderView : UserControl
                     _project.Bookmarks.Remove(bookmark);
                     Commit();
                 },
-                "Удалить закладку",
+                Strings.Reader_DeleteBookmark,
                 $"{(int)Math.Round(bookmark.Fraction * 100)}%"));
 
             body.Children.Add(new TextBlock
@@ -927,7 +927,7 @@ public partial class ReaderView : UserControl
                     _project.Cards.Remove(card);
                     Commit();
                 },
-                "Удалить карточку",
+                Strings.Reader_DeleteCard,
                 card.DraftedByAi ? "AI" : null));
 
             body.Children.Add(new TextBlock
@@ -949,7 +949,7 @@ public partial class ReaderView : UserControl
             var edit = new System.Windows.Controls.Button
             {
                 Style = (Style)FindResource("WlTextButton"),
-                Content = "Изменить",
+                Content = Strings.Reader_EditCard,
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
                 Margin = new Thickness(-6, 6, 0, 0)
             };
@@ -1087,7 +1087,7 @@ public partial class ReaderView : UserControl
         var text = new TextBlock
         {
             Style = (Style)FindResource("WlCaption"),
-            Text = "Фрагмент не найден в текущем файле — пометка сохранена.",
+            Text = Strings.Reader_DetachedMarkNote,
             Margin = new Thickness(0, 8, 0, 0),
             TextWrapping = TextWrapping.Wrap
         };
@@ -1133,7 +1133,7 @@ public partial class ReaderView : UserControl
         var resolution = ReadingAnchorResolver.Resolve(_document.Text, anchor);
         if (!resolution.IsPlaced)
         {
-            Announce("ФРАГМЕНТ НЕ НАЙДЕН В ЭТОМ ФАЙЛЕ");
+            Announce(Strings.Reader_FragmentNotFound);
             return;
         }
 
@@ -1286,7 +1286,7 @@ public partial class ReaderView : UserControl
         var block = BlockIndexAt(position) + 1;
         Controls.Type.SetTracked(
             LocationText,
-            _document.BlockCount > 0 ? $"АБЗАЦ {block} ИЗ {_document.BlockCount}" : string.Empty);
+            _document.BlockCount > 0 ? string.Format(Strings.Reader_ParagraphOf, block, _document.BlockCount) : string.Empty);
     }
 
     // ── Pages ────────────────────────────────────────────────────────────────
@@ -1364,7 +1364,7 @@ public partial class ReaderView : UserControl
 
         RenderProgress(offset);
         RenderPage(offset, force: true);
-        Announce($"СТРАНИЦА {clamped} ИЗ {_pagination.PageCount}");
+        Announce(string.Format(Strings.Reader_PageOf, clamped, _pagination.PageCount));
     }
 
     /// <summary>Turns back one page. Public because the shell binds a shortcut to it.</summary>
@@ -1582,7 +1582,7 @@ public partial class ReaderView : UserControl
         }
 
         RememberWord(word, selection.Start);
-        Announce($"СЛОВО «{word.ToUpperInvariant()}» — ПКМ ДЛЯ СЛОВАРЯ");
+        Announce(string.Format(Strings.Reader_WordForDictionary, word.ToUpperInvariant()));
     }
 
     private void RememberWord(string word, int offset)
@@ -1642,36 +1642,36 @@ public partial class ReaderView : UserControl
 
         var highlight = new MenuItem
         {
-            Header = "Выделить",
+            Header = Strings.Reader_Highlight,
             IsEnabled = hasSelection,
             Style = TryFindResource("WlMenuItem") as Style
         };
 
-        highlight.Items.Add(TintItem("Оранжевым", HighlightTint.Amber, selection));
-        highlight.Items.Add(TintItem("Зелёным", HighlightTint.Sage, selection));
-        highlight.Items.Add(TintItem("Красным", HighlightTint.Coral, selection));
-        highlight.Items.Add(TintItem("Нейтральным", HighlightTint.Neutral, selection));
+        highlight.Items.Add(TintItem(Strings.Reader_TintAmber, HighlightTint.Amber, selection));
+        highlight.Items.Add(TintItem(Strings.Reader_TintSage, HighlightTint.Sage, selection));
+        highlight.Items.Add(TintItem(Strings.Reader_TintCoral, HighlightTint.Coral, selection));
+        highlight.Items.Add(TintItem(Strings.Reader_TintNeutral, HighlightTint.Neutral, selection));
         menu.Items.Add(highlight);
 
-        menu.Items.Add(Action("Добавить пометку", hasSelection, () => AddAnnotation(selection)));
-        menu.Items.Add(Action("Создать карточку", hasSelection, () => CreateCard(selection, useAi: false)));
+        menu.Items.Add(Action(Strings.Reader_AddAnnotation, hasSelection, () => AddAnnotation(selection)));
+        menu.Items.Add(Action(Strings.Reader_CreateCard, hasSelection, () => CreateCard(selection, useAi: false)));
 
         if (_drafts?.IsAvailable == true)
         {
             menu.Items.Add(Action(
-                "Создать карточку с помощью WriteLite AI",
+                Strings.Reader_CreateCardAi,
                 hasSelection,
                 () => CreateCard(selection, useAi: true)));
         }
 
         menu.Items.Add(new Separator { Style = TryFindResource("WlMenuSeparator") as Style });
-        menu.Items.Add(Action("Добавить закладку", true, () => AddBookmark(selection)));
+        menu.Items.Add(Action(Strings.Reader_AddBookmark, true, () => AddBookmark(selection)));
 
         var word = selection is null ? null : WordNavigation.Normalize(selection.Text);
         if (word is not null)
         {
             menu.Items.Add(new Separator { Style = TryFindResource("WlMenuSeparator") as Style });
-            menu.Items.Add(Action($"Открыть «{word}» в словаре", true, () =>
+            menu.Items.Add(Action(string.Format(Strings.Reader_OpenInDictionary, word), true, () =>
             {
                 RememberWord(word, selection!.Start);
                 WordNavigationRequested?.Invoke(word);
@@ -1682,7 +1682,7 @@ public partial class ReaderView : UserControl
 
         // Copy runs off the snapshot too. ApplicationCommands.Copy would be routed to a
         // control whose selection the popup has already taken focus away from.
-        menu.Items.Add(Action("Копировать", hasSelection, () => CopySelection(selection!)));
+        menu.Items.Add(Action(Strings.EditorAi_Copy, hasSelection, () => CopySelection(selection!)));
     }
 
     private void CopySelection(ReaderSelection selection)
@@ -1695,8 +1695,8 @@ public partial class ReaderView : UserControl
         {
             // Another process is holding the clipboard open. Worth saying, not worth
             // losing the reader's place over.
-            CompatibilityLogger.Technical("reading-copy-failed", $"type={exception.GetType().Name}");
-            Announce("БУФЕР ОБМЕНА ЗАНЯТ ДРУГОЙ ПРОГРАММОЙ");
+            CompatibilityLogger.Technical("reading-copy-failed", exception);
+            Announce(Strings.Reader_ClipboardBusy);
         }
     }
 

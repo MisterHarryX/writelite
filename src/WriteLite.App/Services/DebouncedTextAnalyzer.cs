@@ -37,14 +37,14 @@ public sealed class DebouncedTextAnalyzer
     /// <summary>Updates debounce delay without restarting the monitor.</summary>
     public void SetDebounce(TimeSpan debounce)
     {
-        if (debounce < TimeSpan.FromMilliseconds(50))
+        if (debounce < WriteLiteDefaults.Debounce.DebounceSetClampMin)
         {
-            debounce = TimeSpan.FromMilliseconds(50);
+            debounce = WriteLiteDefaults.Debounce.DebounceSetClampMin;
         }
 
-        if (debounce > TimeSpan.FromSeconds(10))
+        if (debounce > WriteLiteDefaults.Debounce.DebounceSetClampMax)
         {
-            debounce = TimeSpan.FromSeconds(10);
+            debounce = WriteLiteDefaults.Debounce.DebounceSetClampMax;
         }
 
         _debounce = debounce;

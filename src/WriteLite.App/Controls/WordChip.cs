@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
+using WriteLite.Resources;
 using WriteLite.Services.Lexical;
 using Button = System.Windows.Controls.Button;
 using Cursors = System.Windows.Input.Cursors;
@@ -80,6 +81,6 @@ public sealed class WordChip : Button
         // content that should be readable and selectable, it simply is not a link.
         chip.Cursor = navigable ? Cursors.Hand : Cursors.Arrow;
         chip.Focusable = navigable;
-        chip.ToolTip = navigable ? null : "Нет статьи в установленных словарях";
+        chip.ToolTip = navigable ? null : Strings.Chip_NoArticle;
     }
 }

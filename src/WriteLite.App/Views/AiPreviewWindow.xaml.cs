@@ -2,6 +2,7 @@
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Ai;
 using Brush = System.Windows.Media.Brush;
@@ -76,18 +77,18 @@ public partial class AiPreviewWindow : Window
         {
             if (ReferenceEquals(_generation, generation))
             {
-                SetNotice("Обработка отменена. Текст не изменён.");
+                SetNotice(Strings.AiPreview_CancelledNotice);
                 DisableAcceptance();
             }
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("ai-preview-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("ai-preview-failed", exception);
             if (ReferenceEquals(_generation, generation))
             {
                 SetNotice(exception is InvalidOperationException
                     ? exception.Message
-                    : "Не удалось обработать текст. Локальная модель недоступна или занята.");
+                    : Strings.AiPreview_ProcessingFailed);
                 DisableAcceptance();
             }
         }
@@ -128,15 +129,14 @@ public partial class AiPreviewWindow : Window
 
         BackendText.Text = result.Backend switch
         {
-            "writelite-qwen" => "Обработано WriteAI на этом компьютере. Текст никуда не отправлялся.",
-            "offline-rules" => "Локальная модель недоступна — применены офлайн-правила. " +
-                               "Изменения ограничены пробелами, пунктуацией и повторами.",
-            _ => "Обработано локально."
+            "writelite-qwen" => Strings.AiPreview_BackendQwen,
+            "offline-rules" => Strings.AiPreview_BackendOfflineRules,
+            _ => Strings.AiPreview_BackendDefault
         };
 
         if (result.IsNoOp)
         {
-            SetNotice("Модель не нашла, что изменить: предложенный вариант совпадает с исходным.");
+            SetNotice(Strings.AiPreview_NoOpNotice);
         }
         else if (result.Backend == "offline-rules"
                  && result.Operation is not (RewriteOperation.Grammar
@@ -209,7 +209,7 @@ public partial class AiPreviewWindow : Window
     private void StopGeneration_Click(object sender, RoutedEventArgs e)
     {
         CancelGeneration();
-        SetNotice("Обработка отменена. Текст не изменён.");
+        SetNotice(Strings.AiPreview_CancelledNotice);
         DisableAcceptance();
     }
 
@@ -229,7 +229,7 @@ public partial class AiPreviewWindow : Window
         catch (System.Runtime.InteropServices.ExternalException)
         {
             // Another process owns the clipboard; nothing here is worth an error dialog.
-            SetNotice("Не удалось скопировать: буфер обмена занят другим приложением.");
+            SetNotice(Strings.AiPreview_CopyFailedNotice);
         }
     }
 

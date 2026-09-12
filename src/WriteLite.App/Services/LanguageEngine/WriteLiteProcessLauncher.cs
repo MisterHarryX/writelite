@@ -88,6 +88,7 @@ public sealed class WriteLiteProcessLauncher : IWriteLiteProcessLauncher
                 }
                 catch
                 {
+                    // A vanished process counts as exited.
                     return true;
                 }
             }
@@ -103,6 +104,7 @@ public sealed class WriteLiteProcessLauncher : IWriteLiteProcessLauncher
                 }
                 catch
                 {
+                    // A vanished process has no exit code to report.
                     return -1;
                 }
             }
@@ -124,6 +126,7 @@ public sealed class WriteLiteProcessLauncher : IWriteLiteProcessLauncher
             }
             catch
             {
+                // The window may be gone; the process is still alive and will be killed later.
                 return false;
             }
         }
@@ -156,6 +159,7 @@ public sealed class WriteLiteProcessLauncher : IWriteLiteProcessLauncher
             }
             catch
             {
+                // A vanished process needs no wait.
                 return Task.CompletedTask;
             }
         }

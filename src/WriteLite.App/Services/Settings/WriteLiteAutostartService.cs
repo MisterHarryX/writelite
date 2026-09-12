@@ -80,10 +80,12 @@ public sealed class WriteLiteAutostartService : IWriteLiteAutostartService
                 var value = key?.GetValue(RunValueName) as string;
                 return !string.IsNullOrWhiteSpace(value);
             }
-            catch
-            {
-                return false;
-            }
+catch (Exception exception)
+        {
+            // The registry may reject the read (policy/permissions); autostart is off by default.
+            CompatibilityLogger.Technical("autostart-read-failed", $"type={exception.GetType().Name}");
+            return false;
+        }
         }
     }
 

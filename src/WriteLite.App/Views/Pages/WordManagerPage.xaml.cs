@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.LanguageEngine;
 using WriteLite.Services.Lexical;
@@ -140,19 +141,19 @@ public partial class WordManagerPage : UserControl
 
         if (!string.IsNullOrEmpty(query))
         {
-            EmptyTitle.Text = "Ничего не найдено";
-            EmptyHint.Text = $"По запросу «{query}» совпадений нет.";
+            EmptyTitle.Text = Strings.Words_EmptyNotFoundTitle;
+            EmptyHint.Text = string.Format(Strings.Words_EmptyNotFoundHint, query);
             return;
         }
 
         (EmptyTitle.Text, EmptyHint.Text) = Current switch
         {
-            Tab.IgnoredWords => ("Игнорируемых слов нет",
-                "Слово попадает сюда, когда вы выбираете «Игнорировать» в панели замечаний."),
-            Tab.IgnoredRules => ("Игнорируемых правил нет",
-                "Правило попадает сюда, когда вы скрываете конкретный тип замечаний."),
-            _ => ("Словарь пуст",
-                "Добавьте имена, термины и сокращения, которые не нужно подчёркивать.")
+            Tab.IgnoredWords => (Strings.Words_EmptyIgnoredWordsTitle,
+                Strings.Words_EmptyIgnoredWordsHint),
+            Tab.IgnoredRules => (Strings.Words_EmptyIgnoredRulesTitle,
+                Strings.Words_EmptyIgnoredRulesHint),
+            _ => (Strings.Words_EmptyDictionaryTitle,
+                Strings.Words_EmptyListHint)
         };
     }
 
@@ -177,15 +178,15 @@ public partial class WordManagerPage : UserControl
         WordInput.IsEnabled = canAdd;
         AddButton.IsEnabled = canAdd;
         WordInput.Tag = canAdd
-            ? "Добавьте слово, которое не нужно подчёркивать"
-            : "Список пополняется из панели замечаний";
+            ? Strings.Words_NewWordPlaceholder
+            : Strings.Words_NewWordDisabledPlaceholder;
 
         FooterHint.Text = Current switch
         {
-            Tab.IgnoredRules => "Показываются только нейтральные идентификаторы WriteLite (WL-…).",
-            Tab.IgnoredWords => "Игнорируемое слово не проверяется, но остаётся в тексте без изменений.",
-            Tab.Dictionaries => "Встроенные словари WriteLite работают всегда и настройки не требуют.",
-            _ => "Слова из этого списка не считаются орфографическими ошибками."
+            Tab.IgnoredRules => Strings.Words_FooterIgnoredRules,
+            Tab.IgnoredWords => Strings.Words_FooterIgnoredWords,
+            Tab.Dictionaries => Strings.Words_FooterDictionaries,
+            _ => Strings.Words_FooterCustomWords
         };
 
         Reload();
@@ -210,7 +211,7 @@ public partial class WordManagerPage : UserControl
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("user-dictionaries-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("user-dictionaries-failed", exception);
             rows = [];
         }
 
@@ -227,8 +228,8 @@ public partial class WordManagerPage : UserControl
         EmptyAction.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
         if (empty)
         {
-            EmptyTitle.Text = "У вас пока нет собственных словарей";
-            EmptyHint.Text = "Добавьте свой словарь терминов, чтобы WriteLite учитывал его при проверке.";
+            EmptyTitle.Text = Strings.Words_EmptyDictionariesTitle;
+            EmptyHint.Text = Strings.Words_EmptyDictionariesHint;
         }
     }
 
@@ -236,7 +237,7 @@ public partial class WordManagerPage : UserControl
     {
         var dialog = new WpfOpenFileDialog
         {
-            Title = "Добавить словарь",
+            Title = Strings.Words_AddDictionaryDialogTitle,
             Filter = "Словарь WriteLite (*.json)|*.json",
             CheckFileExists = true,
             Multiselect = false
@@ -252,15 +253,15 @@ public partial class WordManagerPage : UserControl
             var imported = await _packs.ImportAsync(dialog.FileName);
             ReloadDictionaries();
             MessageBox.Show(
-                $"Словарь «{imported.Name}» добавлен.",
-                "Мои словари", MessageBoxButton.OK, MessageBoxImage.Information);
+                string.Format(Strings.Words_DictionaryAdded, imported.Name),
+                Strings.Words_DictionariesDialogTitle, MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("user-dictionary-import-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("user-dictionary-import-failed", exception);
             MessageBox.Show(
-                "Не удалось добавить словарь: файл не является словарём WriteLite или повреждён.",
-                "Мои словари", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Strings.Words_DictionaryAddFailed,
+                Strings.Words_DictionariesDialogTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -285,7 +286,7 @@ public partial class WordManagerPage : UserControl
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("user-dictionary-toggle-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("user-dictionary-toggle-failed", exception);
             toggle.IsChecked = row.IsEnabled;
         }
     }
@@ -298,8 +299,8 @@ public partial class WordManagerPage : UserControl
         }
 
         if (MessageBox.Show(
-                $"Удалить словарь «{row.Name}»?",
-                "Мои словари", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                string.Format(Strings.Words_RemoveDictionaryConfirm, row.Name),
+                Strings.Words_DictionariesDialogTitle, MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
         {
             return;
         }
@@ -312,8 +313,8 @@ public partial class WordManagerPage : UserControl
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("user-dictionary-remove-failed", $"type={exception.GetType().Name}");
-            MessageBox.Show("Не удалось удалить словарь.", "Мои словари", MessageBoxButton.OK, MessageBoxImage.Warning);
+            CompatibilityLogger.Technical("user-dictionary-remove-failed", exception);
+            MessageBox.Show(Strings.Words_DictionaryRemoveFailed, Strings.Words_DictionariesDialogTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -332,11 +333,11 @@ public partial class WordManagerPage : UserControl
 
             if (!pack.IsValid)
             {
-                parts.Add("файл повреждён");
+                parts.Add(Strings.Words_DictionaryStatusCorrupt);
             }
             else if (!pack.IsEnabled)
             {
-                parts.Add("отключён");
+                parts.Add(Strings.Words_DictionaryStatusDisabled);
             }
 
             return new DictionaryRow(pack, pack.Name, string.Join(" · ", parts), pack.IsEnabled);
@@ -355,7 +356,7 @@ public partial class WordManagerPage : UserControl
         var word = (WordInput.Text ?? string.Empty).Trim();
         if (word.Length < 1 || word.Length > 64 || word.Any(char.IsControl))
         {
-            MessageBox.Show("Введите корректное слово (1–64 символа).", "Менеджер слов", MessageBoxButton.OK);
+            MessageBox.Show(Strings.Words_InvalidWordMessage, Strings.Nav_WordsManager, MessageBoxButton.OK);
             return;
         }
 
@@ -367,12 +368,8 @@ public partial class WordManagerPage : UserControl
 
     private void WordInput_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Enter)
-        {
-            return;
-        }
+        if (!e.SubmitPressed()) return;
 
-        e.Handled = true;
         Add_Click(sender, e);
     }
 
@@ -435,12 +432,12 @@ public partial class WordManagerPage : UserControl
 
         var question = Current switch
         {
-            Tab.IgnoredWords => "Очистить все сохранённые исключения?",
-            Tab.IgnoredRules => "Очистить все сохранённые исключения?",
-            _ => "Удалить все слова из словаря?"
+            Tab.IgnoredWords => Strings.Words_ClearExceptionsConfirm,
+            Tab.IgnoredRules => Strings.Words_ClearExceptionsConfirm,
+            _ => Strings.Words_ClearDictionaryConfirm
         };
 
-        if (MessageBox.Show(question, "Менеджер слов", MessageBoxButton.YesNo, MessageBoxImage.Question)
+        if (MessageBox.Show(question, Strings.Nav_WordsManager, MessageBoxButton.YesNo, MessageBoxImage.Question)
             != MessageBoxResult.Yes)
         {
             return;

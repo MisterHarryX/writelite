@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using WriteLite.AI.Contracts;
+using WriteLite.Language.Russian;
 
 namespace WriteLite.AI.Local;
 
@@ -123,6 +124,15 @@ public sealed class QwenModelBackend : IAsyncDisposable
     /// A wedged local server must not leave a preview in processing for 90 seconds.
     /// </summary>
     public TimeSpan InstructionTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+    // AI.Local не читает engine-config WriteLite.App (слой не должен зависеть от App).
+    // Значения зеркалят model-секцию engine-config.json; App заводит их через
+    // LocalAiOptions из WriteLiteDefaults.Model, дефолты сохраняют прежнее поведение,
+    // когда App их не проставляет.
+    public TimeSpan HealthProbeTimeout { get; set; } = TimeSpan.FromSeconds(2);
+    public TimeSpan ServerStartupPollInterval { get; set; } = TimeSpan.FromMilliseconds(250);
+    public int ServerStartupPollAttempts { get; set; } = 20;
+    public TimeSpan ProcessKillWaitTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
     /// <summary>Floor for the completion budget: enough for one short text field.</summary>
     public int MaxNewTokens { get; set; } = 96;
@@ -275,8 +285,10 @@ public sealed class QwenModelBackend : IAsyncDisposable
             await EnsureServerAsync(cancellationToken).ConfigureAwait(false);
             return _http is not null;
         }
-        catch
+        catch (Exception exception)
         {
+            // Server may fail to start (port busy, missing model); the caller sees unavailable.
+            LocalAiDiagnostics.Technical("qwen-server-start-failed", $"type={exception.GetType().Name}");
             return false;
         }
     }
@@ -327,7 +339,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
             return null;
         }
 
-        if (LanguageDetector.Detect(text) != "ru")
+        if (LanguageDetector.Detect(text) != RussianLanguageProfile.IsoCode)
         {
             LocalAiDiagnostics.Technical("qwen-fallback-used", "reason=unsupported-language");
             return null;
@@ -380,7 +392,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
     public int WedgeThreshold { get; set; } = 2;
 
     /// <summary>Minimum gap between recovery attempts — the guard against restart loops.</summary>
-    public TimeSpan RecoveryCooldown { get; set; } = TimeSpan.FromSeconds(30);
+    public TimeSpan RecoveryCooldown { get; set; } = TimeSpan.FromSeconds(15);
 
     /// <summary>Recovery attempts before giving up and staying in <see cref="LocalAiBackendState.Failed"/>.</summary>
     public int MaxRecoveryAttempts { get; set; } = 3;
@@ -543,6 +555,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
         }
         catch (OperationCanceledException)
         {
+            // Expected: the delay is cancelled precisely so the method completes on cancellation.
         }
     }
 
@@ -628,7 +641,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
             var userContent = JsonSerializer.Serialize(
                 new Dictionary<string, string?>
                 {
-                    ["language"] = "ru",
+                    ["language"] = RussianLanguageProfile.IsoCode,
                     ["text"] = text
                 },
                 PromptJsonOptions);
@@ -961,7 +974,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
 
             return new QwenInferenceResult(
                 CorrectedText: text,
-                Language: "ru",
+                Language: RussianLanguageProfile.IsoCode,
                 ModelVersion: DefaultModelVersion,
                 SchemaVersion: AiSchema.CurrentVersion,
                 Uncertain: true,
@@ -1124,17 +1137,18 @@ public sealed class QwenModelBackend : IAsyncDisposable
         return DefaultEndpoint;
     }
 
-    private static bool ProbeHealth(string endpoint)
+    private bool ProbeHealth(string endpoint)
     {
         try
         {
-            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            using var client = new HttpClient { Timeout = HealthProbeTimeout };
             var baseUri = endpoint.EndsWith('/') ? endpoint : endpoint + "/";
             var response = client.GetAsync(baseUri + "health").GetAwaiter().GetResult();
             return response.IsSuccessStatusCode;
         }
         catch
         {
+            // Endpoint unreachable or busy; the probe just reports not healthy.
             return false;
         }
     }
@@ -1196,7 +1210,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
             TryAssignToKillOnCloseJob(proc);
             lock (_gate) _server = proc;
 
-            for (var i = 0; i < 20; i++)
+            for (var i = 0; i < ServerStartupPollAttempts; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (ProbeHealth(DefaultEndpoint))
@@ -1204,13 +1218,15 @@ public sealed class QwenModelBackend : IAsyncDisposable
                     return DefaultEndpoint;
                 }
 
-                await Task.Delay(250, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(ServerStartupPollInterval, cancellationToken).ConfigureAwait(false);
             }
 
             return DefaultEndpoint;
         }
-        catch
+        catch (Exception exception)
         {
+            // Startup racing (cancellation, endpoint never healthy); report no endpoint.
+            LocalAiDiagnostics.Technical("qwen-startup-failed", $"type={exception.GetType().Name}");
             return null;
         }
     }
@@ -1242,6 +1258,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
         }
         catch
         {
+            // A failed size probe excludes the candidate from the budget check.
             return -1;
         }
     }
@@ -1374,7 +1391,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
             try
             {
                 proc.Kill(entireProcessTree: true);
-                using var exitTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                using var exitTimeout = new CancellationTokenSource(ProcessKillWaitTimeout);
                 await proc.WaitForExitAsync(exitTimeout.Token).ConfigureAwait(false);
             }
             catch

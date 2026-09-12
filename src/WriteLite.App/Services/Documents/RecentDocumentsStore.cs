@@ -66,7 +66,7 @@ public sealed class RecentDocumentsStore
             }
             catch (Exception exception) when (exception is IOException or JsonException or UnauthorizedAccessException)
             {
-                CompatibilityLogger.Technical("recent-documents-load-failed", $"type={exception.GetType().Name}");
+                CompatibilityLogger.Technical("recent-documents-load-failed", exception);
                 _cache = [];
             }
 
@@ -115,7 +115,7 @@ public sealed class RecentDocumentsStore
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            CompatibilityLogger.Technical("recent-documents-save-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("recent-documents-save-failed", exception);
         }
     }
 }

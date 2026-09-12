@@ -29,7 +29,7 @@ namespace WriteLite.Services.Grammar;
 /// span. A sentence that already carries a comma is one where the writer made a decision, and
 /// these rules are for sentences with no punctuation at all.</para>
 /// </remarks>
-public sealed partial class RussianClauseBoundaryAnalyzer
+public sealed partial class RussianClauseBoundaryAnalyzer : GrammarAnalyzerBase
 {
     private readonly RussianFormIndex? _index;
 
@@ -42,12 +42,6 @@ public sealed partial class RussianClauseBoundaryAnalyzer
         "перед тем как", "прежде чем", "как только", "с тех пор как",
         "когда", "если", "хотя", "пока", "поскольку", "раз",
     ];
-
-    /// <summary>Nominative personal pronouns — the only ones that can be a clause subject.</summary>
-    private static readonly HashSet<string> NominativePronouns = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "я", "ты", "он", "она", "оно", "мы", "вы", "они",
-    };
 
     /// <summary>
     /// Words before «поэтому» that make it adverbial rather than a conjunction.
@@ -68,13 +62,11 @@ public sealed partial class RussianClauseBoundaryAnalyzer
     /// <summary>How far after the pronoun its predicate may be.</summary>
     private const int PredicateWindow = 3;
 
-    public void Collect(
+    protected override void CollectCore(
         string text,
         IReadOnlyList<(int Start, int End)> protectedSpans,
         ICollection<TextIssue> issues)
     {
-        if (string.IsNullOrWhiteSpace(text)) return;
-
         CollectSubordinateClauseEnd(text, protectedSpans, issues);
         CollectPairedConjunction(text, protectedSpans, issues);
         CollectConsequenceConjunction(text, protectedSpans, issues);
@@ -87,7 +79,7 @@ public sealed partial class RussianClauseBoundaryAnalyzer
         IReadOnlyList<(int Start, int End)> protectedSpans,
         ICollection<TextIssue> issues)
     {
-        foreach (var (sentenceStart, sentenceLength) in Sentences(text))
+        foreach (var (sentenceStart, sentenceLength) in RussianTokens.Sentences(text))
         {
             if (sentenceLength < 20) continue;
 
@@ -102,7 +94,7 @@ public sealed partial class RussianClauseBoundaryAnalyzer
 
             for (var i = conjunctionTokens + MinSubordinateTokens; i < tokens.Count - 1; i++)
             {
-                if (!NominativePronouns.Contains(tokens[i].Value)) continue;
+                if (!RussianTokens.NominativePronouns.Contains(tokens[i].Value)) continue;
 
                 // The writer has already punctuated this stretch; leave it alone.
                 if (sentence[..tokens[i].Start].IndexOfAny([',', ';', ':', '—', '(']) >= 0) break;
@@ -236,19 +228,6 @@ public sealed partial class RussianClauseBoundaryAnalyzer
                 LinguisticCategory: LinguisticIssueCategory.PunctuationRecommendation,
                 Confidence: 0.83));
         }
-    }
-
-    private static IEnumerable<(int Start, int Length)> Sentences(string text)
-    {
-        var start = 0;
-        for (var i = 0; i < text.Length; i++)
-        {
-            if (text[i] is not ('.' or '!' or '?' or '…' or '\n')) continue;
-            if (i + 1 > start) yield return (start, i + 1 - start);
-            start = i + 1;
-        }
-
-        if (start < text.Length) yield return (start, text.Length - start);
     }
 
     /// <summary>The last letter of the preceding word, then an isolated «то».</summary>

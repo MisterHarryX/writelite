@@ -39,25 +39,25 @@ public static class Motion
     // these. Keep the two in step.
 
     /// <summary>Press feedback. Short enough to feel like contact, not a transition.</summary>
-    public static readonly Duration Press = new(TimeSpan.FromMilliseconds(90));
+    public static readonly Duration Press = WriteLiteDefaults.Motion.Press;
 
     /// <summary>Release from press. Deliberately slower than the press itself.</summary>
-    public static readonly Duration Release = new(TimeSpan.FromMilliseconds(150));
+    public static readonly Duration Release = WriteLiteDefaults.Motion.Release;
 
     /// <summary>Hover and focus colour changes.</summary>
-    public static readonly Duration Hover = new(TimeSpan.FromMilliseconds(140));
+    public static readonly Duration Hover = WriteLiteDefaults.Motion.Hover;
 
     /// <summary>Popovers, dropdowns and tooltips.</summary>
-    public static readonly Duration Popover = new(TimeSpan.FromMilliseconds(160));
+    public static readonly Duration Popover = WriteLiteDefaults.Motion.Popover;
 
     /// <summary>Content reveals, page changes and the navigation indicator.</summary>
-    public static readonly Duration Micro = new(TimeSpan.FromMilliseconds(200));
+    public static readonly Duration Micro = WriteLiteDefaults.Motion.Micro;
 
     /// <summary>Gap between staggered siblings. Long enough to read as a cascade.</summary>
-    public static readonly TimeSpan StaggerStep = TimeSpan.FromMilliseconds(40);
+    public static readonly TimeSpan StaggerStep = WriteLiteDefaults.Motion.StaggerStep;
 
     /// <summary>Distance a revealing element rises through. Small on purpose.</summary>
-    public const double RevealOffset = 6;
+    public static readonly double RevealOffset = WriteLiteDefaults.Motion.RevealOffset;
 
     /// <summary>
     /// The website's editorial curve. Frozen and shared: one instance serves every
@@ -124,7 +124,7 @@ public static class Motion
     public static readonly DependencyProperty PressScaleProperty =
         DependencyProperty.RegisterAttached(
             "PressScale", typeof(double), typeof(Motion),
-            new PropertyMetadata(0.985));
+            new PropertyMetadata(WriteLiteDefaults.Motion.PressScale));
 
     public static void SetPressScale(DependencyObject element, double value) => element.SetValue(PressScaleProperty, value);
 
@@ -342,7 +342,7 @@ public static class Motion
     /// <param name="element">The element to reveal. Made visible if it is not already.</param>
     /// <param name="delay">Stagger offset for siblings revealed together.</param>
     /// <param name="offset">Rise distance; pass 0 for a pure fade.</param>
-    public static void Reveal(FrameworkElement element, TimeSpan delay = default, double offset = RevealOffset)
+    public static void Reveal(FrameworkElement element, TimeSpan delay = default, double? offset = null)
     {
         element.Visibility = Visibility.Visible;
         element.Opacity = 1;
@@ -359,6 +359,7 @@ public static class Motion
         // rendering surface that never appears, an element detached mid-flight —
         // leaves the content permanently invisible. This way the worst case is that
         // the reveal is not seen, never that the article is not.
+        var riseOffset = offset ?? RevealOffset;
         var translate = new TranslateTransform(0, 0);
         element.RenderTransform = translate;
 
@@ -367,7 +368,7 @@ public static class Motion
             BeginTime = delay,
             EasingFunction = Editorial
         };
-        var rise = new DoubleAnimation(offset, 0, Micro)
+        var rise = new DoubleAnimation(riseOffset, 0, Micro)
         {
             BeginTime = delay,
             EasingFunction = Editorial

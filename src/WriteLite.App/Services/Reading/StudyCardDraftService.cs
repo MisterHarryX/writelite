@@ -62,10 +62,10 @@ public sealed record StudyCardDraftResult(
 public sealed class StudyCardDraftService(IEditorAiService? ai)
 {
     /// <summary>Longest passage sent to the model. Beyond a paragraph a card stops being a card.</summary>
-    private const int MaxPassage = 1200;
+    private static readonly int MaxPassage = WriteLiteDefaults.TextLimits.StudyCardMaxPassage;
 
     /// <summary>How long the reader waits before the attempt is called off.</summary>
-    private static readonly TimeSpan DraftTimeout = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan DraftTimeout = WriteLiteDefaults.Debounce.StudyCardDraftTimeout;
 
     private readonly IEditorAiService? _ai = ai;
 

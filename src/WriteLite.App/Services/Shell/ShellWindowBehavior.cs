@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using WriteLite.Interop;
 
 namespace WriteLite.Services.Shell;
 
@@ -40,11 +41,6 @@ public sealed class ShellWindowBehavior : IDisposable
 {
     private const int WmGetMinMaxInfo = 0x0024;
     private const int WmDpiChanged = 0x02E0;
-    private const int MonitorDefaultToNearest = 0x00000002;
-
-    private const int SwpNoZOrder = 0x0004;
-    private const int SwpNoActivate = 0x0010;
-    private const int SwpFrameChanged = 0x0020;
 
     private const uint AbmGetState = 0x00000004;
     private const uint AbmGetAutoHideBarEx = 0x0000000B;
@@ -189,8 +185,8 @@ public sealed class ShellWindowBehavior : IDisposable
                 // it a suggested rectangle computed from the old monitor. Re-asking
                 // for the frame makes Windows send a fresh WM_GETMINMAXINFO, which is
                 // the only value that is right for the monitor it has landed on.
-                SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0,
-                    SwpNoZOrder | SwpNoActivate | SwpFrameChanged | 0x0001 /* SWP_NOSIZE */ | 0x0002 /* SWP_NOMOVE */);
+                User32.SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0,
+                    User32.SwpNoZOrder | User32.SwpNoActivate | User32.SwpFrameChanged | User32.SwpNoSize | User32.SwpNoMove);
                 break;
         }
 
@@ -200,41 +196,42 @@ public sealed class ShellWindowBehavior : IDisposable
     /// <summary>Answers <c>WM_GETMINMAXINFO</c> with the work area, or the whole monitor in fullscreen.</summary>
     private void ApplyMaximizedBounds(IntPtr hwnd, IntPtr lParam)
     {
-        var monitor = MonitorFromWindow(hwnd, MonitorDefaultToNearest);
+        var monitor = User32.MonitorFromWindow(hwnd);
         if (monitor == IntPtr.Zero)
         {
             return;
         }
 
-        var info = new MonitorInfo { cbSize = Marshal.SizeOf<MonitorInfo>() };
-        if (!GetMonitorInfo(monitor, ref info))
+        if (!User32.TryGetMonitorInfo(monitor, out var info))
         {
             return;
         }
 
-        var monitorRect = info.rcMonitor.ToPixelRect();
-        var workRect = info.rcWork.ToPixelRect();
+        var monitorRect = ToPixelRect(info.rcMonitor);
+        var workRect = ToPixelRect(info.rcWork);
 
         var placement = IsFullScreen
             ? WindowPlacementMath.ForFullScreen(monitorRect)
             : WindowPlacementMath.ForWorkArea(monitorRect, workRect, FindAutoHideEdge(info.rcMonitor));
 
         var minMax = Marshal.PtrToStructure<MinMaxInfo>(lParam);
-        minMax.ptMaxPosition = new Point(placement.X, placement.Y);
-        minMax.ptMaxSize = new Point(placement.Width, placement.Height);
+        minMax.ptMaxPosition = new NativePoint { X = placement.X, Y = placement.Y };
+        minMax.ptMaxSize = new NativePoint { X = placement.Width, Y = placement.Height };
 
         // The tracking maximum has to be raised as well: it defaults to the work area
         // of the *primary* monitor, which would cap a fullscreen window on a taller
         // secondary screen at the primary's height.
-        minMax.ptMaxTrackSize = new Point(
-            Math.Max(minMax.ptMaxTrackSize.x, placement.Width),
-            Math.Max(minMax.ptMaxTrackSize.y, placement.Height));
+        minMax.ptMaxTrackSize = new NativePoint
+        {
+            X = Math.Max(minMax.ptMaxTrackSize.X, placement.Width),
+            Y = Math.Max(minMax.ptMaxTrackSize.Y, placement.Height)
+        };
 
         Marshal.StructureToPtr(minMax, lParam, fDeleteOld: true);
     }
 
     /// <summary>Which edge of this monitor holds an auto-hiding taskbar, if any.</summary>
-    private static ScreenEdge FindAutoHideEdge(Rect32 monitor)
+    private static ScreenEdge FindAutoHideEdge(NativeRect monitor)
     {
         try
         {
@@ -276,47 +273,16 @@ public sealed class ShellWindowBehavior : IDisposable
 
     // ── Interop ──────────────────────────────────────────────────────────────
 
-    [StructLayout(LayoutKind.Sequential)]
-    private struct Point
-    {
-        public int x;
-        public int y;
-
-        public Point(int x, int y)
-        {
-            this.x = x;
-            this.y = y;
-        }
-    }
+    private static PixelRect ToPixelRect(NativeRect r) => new(r.Left, r.Top, r.Right, r.Bottom);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct MinMaxInfo
     {
-        public Point ptReserved;
-        public Point ptMaxSize;
-        public Point ptMaxPosition;
-        public Point ptMinTrackSize;
-        public Point ptMaxTrackSize;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct Rect32
-    {
-        public int left;
-        public int top;
-        public int right;
-        public int bottom;
-
-        public PixelRect ToPixelRect() => new(left, top, right, bottom);
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MonitorInfo
-    {
-        public int cbSize;
-        public Rect32 rcMonitor;
-        public Rect32 rcWork;
-        public int dwFlags;
+        public NativePoint ptReserved;
+        public NativePoint ptMaxSize;
+        public NativePoint ptMaxPosition;
+        public NativePoint ptMinTrackSize;
+        public NativePoint ptMaxTrackSize;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -326,20 +292,9 @@ public sealed class ShellWindowBehavior : IDisposable
         public IntPtr hWnd;
         public uint uCallbackMessage;
         public uint uEdge;
-        public Rect32 rc;
+        public NativeRect rc;
         public IntPtr lParam;
     }
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, int flags);
-
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);
-
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, int flags);
 
     [DllImport("shell32.dll", CallingConvention = CallingConvention.StdCall)]
     private static extern IntPtr SHAppBarMessage(uint message, ref AppBarData data);

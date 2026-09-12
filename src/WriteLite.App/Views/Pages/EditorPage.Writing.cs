@@ -43,7 +43,7 @@ public sealed partial class EditorPage
     /// must never wait behind an optional suggestion, and at this spacing the deterministic
     /// findings have been on screen for most of a second before the model is asked anything.
     /// </remarks>
-    private static readonly TimeSpan WritingDelay = TimeSpan.FromMilliseconds(900);
+    private static readonly TimeSpan WritingDelay = WriteLiteDefaults.Debounce.EditingWritingDelay;
 
     /// <summary>Attaches the writing-assistance layer. Absent service leaves the editor unchanged.</summary>
     public void BindWritingAssistance(WritingAssistanceService? writing)
@@ -103,7 +103,7 @@ public sealed partial class EditorPage
         }
         catch (Exception ex)
         {
-            CompatibilityLogger.Technical("editor-writing-assist-failed", $"type={ex.GetType().Name}");
+            CompatibilityLogger.Technical("editor-writing-assist-failed", ex);
         }
     }
 
@@ -125,8 +125,7 @@ public sealed partial class EditorPage
             return;
         }
 
-        var index = _index;
-        if (index is null || index.IsStale(_documentGeneration))
+        if (CurrentIndex is not { } index)
         {
             _ghost.Clear();
             return;

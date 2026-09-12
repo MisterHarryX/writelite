@@ -87,7 +87,7 @@ public static partial class ChtobyAnalyzer
                 continue;
             }
 
-            if (IsClauseStart(text, m.Index))
+            if (RussianTokens.IsClauseStart(text, m.Index))
             {
                 continue;
             }
@@ -97,7 +97,7 @@ public static partial class ChtobyAnalyzer
                 continue;
             }
 
-            var prev = PreviousNonWhitespace(text, m.Index - 1);
+            var prev = RussianTokens.PreviousNonWhitespace(text, m.Index - 1);
             if (!char.IsLetter(prev) && prev is not '»' and not '"' and not '”' and not ')')
             {
                 continue;
@@ -224,47 +224,6 @@ public static partial class ChtobyAnalyzer
         }
 
         return i >= 0 && text[i] == ',';
-    }
-
-    private static bool IsClauseStart(string text, int index)
-    {
-        if (index <= 0)
-        {
-            return true;
-        }
-
-        var i = index - 1;
-        while (i >= 0 && char.IsWhiteSpace(text[i]))
-        {
-            if (text[i] is '\n' or '\r')
-            {
-                return true;
-            }
-
-            i--;
-        }
-
-        if (i < 0)
-        {
-            return true;
-        }
-
-        return text[i] is '.' or '!' or '?' or '…' or ':' or ';' or '—' or '(' or '«' or '"';
-    }
-
-    private static char PreviousNonWhitespace(string text, int index)
-    {
-        while (index >= 0)
-        {
-            if (!char.IsWhiteSpace(text[index]))
-            {
-                return text[index];
-            }
-
-            index--;
-        }
-
-        return '\0';
     }
 
     private static string SafeSlice(string text, int start, int length)

@@ -6,7 +6,7 @@ namespace WriteLite.Services;
 /// <summary>Presentation constants for the transparent overlay only; never applied to target text.</summary>
 public static class InlineIssuePresentation
 {
-    public const double UnderlineThickness = IssueUnderlineTheme.DefaultThickness;
+    public static readonly double UnderlineThickness = IssueUnderlineTheme.DefaultThickness;
 
     public static MediaColor ColorFor(IssueCategory category)
         => IssueUnderlineTheme.ForCategory(category).Color;

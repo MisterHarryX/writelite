@@ -20,7 +20,7 @@ namespace WriteLite.Services.Reading;
 public static class DocumentFingerprint
 {
     /// <summary>How much of the file is hashed. Large enough to pass any header and front matter.</summary>
-    private const int PrefixBytes = 4 * 1024 * 1024;
+    private static readonly int PrefixBytes = WriteLiteDefaults.Memory.DocumentFingerprintPrefixBytes;
 
     public static string Compute(string path)
     {

@@ -12,10 +12,10 @@ public sealed class TextFieldMonitor : IDisposable
     private const uint EventSystemForeground = 0x0003;
     private const uint WineventOutOfContext = 0x0000;
     private const uint WineventSkipOwnProcess = 0x0002;
-    private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(800);
-    private static readonly TimeSpan AnalysisDebounce = TimeSpan.FromMilliseconds(900);
-    private static readonly TimeSpan CorrectionSuppression = TimeSpan.FromMilliseconds(450);
-    private static readonly TimeSpan IdleTickInterval = TimeSpan.FromMilliseconds(500);
+    private static readonly TimeSpan PollInterval = WriteLiteDefaults.Analysis.TextFieldPollInterval;
+    private static readonly TimeSpan AnalysisDebounce = WriteLiteDefaults.Analysis.TextFieldDeepDebounceDefault;
+    private static readonly TimeSpan CorrectionSuppression = WriteLiteDefaults.Analysis.TextFieldCorrectionSuppression;
+    private static readonly TimeSpan IdleTickInterval = WriteLiteDefaults.Analysis.TextFieldIdleTickInterval;
 
     private readonly Dispatcher _dispatcher;
     private readonly DebouncedTextAnalyzer _fastAnalysisRunner;
@@ -60,7 +60,7 @@ public sealed class TextFieldMonitor : IDisposable
         _dispatcher = dispatcher;
         _uiState = uiState ?? new UiInteractionStateMachine();
         _isFullDictionaryLoaded = isFullDictionaryLoaded ?? (() => true);
-        _fastAnalysisRunner = new DebouncedTextAnalyzer(analyzer, TimeSpan.FromMilliseconds(180));
+        _fastAnalysisRunner = new DebouncedTextAnalyzer(analyzer, WriteLiteDefaults.Analysis.TextFieldFastDebounce);
         _deepAnalysisRunner = deepAnalyzer is null ? null : new DebouncedTextAnalyzer(deepAnalyzer, AnalysisDebounce);
         _pollTimer = new DispatcherTimer(
             PollInterval,
@@ -122,7 +122,7 @@ public sealed class TextFieldMonitor : IDisposable
     private static string? TryGetProcessName(int processId)
     {
         try { return Process.GetProcessById(processId).ProcessName; }
-        catch { return null; }
+        catch { return null; } // process may have exited between the id lookup and the name read
     }
 
     /// <summary>Applies analysis debounce from settings without restarting monitoring.</summary>
@@ -130,12 +130,12 @@ public sealed class TextFieldMonitor : IDisposable
     {
         if (_deepAnalysisRunner is null)
         {
-            _fastAnalysisRunner.SetDebounce(Clamp(delay, 120, 220));
+            _fastAnalysisRunner.SetDebounce(Clamp(delay, WriteLiteDefaults.Analysis.TextFieldFastDebounceClampMin.TotalMilliseconds, WriteLiteDefaults.Analysis.TextFieldFastDebounceClampMax.TotalMilliseconds));
             return;
         }
 
-        _fastAnalysisRunner.SetDebounce(TimeSpan.FromMilliseconds(180));
-        _deepAnalysisRunner.SetDebounce(Clamp(delay, 700, 1200));
+        _fastAnalysisRunner.SetDebounce(WriteLiteDefaults.Analysis.TextFieldFastDebounce);
+        _deepAnalysisRunner.SetDebounce(Clamp(delay, WriteLiteDefaults.Analysis.TextFieldDeepDebounceClampMin.TotalMilliseconds, WriteLiteDefaults.Analysis.TextFieldDeepDebounceClampMax.TotalMilliseconds));
     }
 
     private static TimeSpan Clamp(TimeSpan value, double minimumMs, double maximumMs)
@@ -189,7 +189,7 @@ public sealed class TextFieldMonitor : IDisposable
     /// waited on indefinitely. Nothing is blocked meanwhile; the timeout exists so the log
     /// says which application was responsible.
     /// </remarks>
-    private static readonly TimeSpan FocusSubscriptionTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan FocusSubscriptionTimeout = WriteLiteDefaults.Analysis.FocusSubscriptionTimeout;
 
     private void SubscribeFocusEventsInBackground()
     {
@@ -508,7 +508,7 @@ public sealed class TextFieldMonitor : IDisposable
     private Task<AutomationElement?> GetFocusedElementAsync(CancellationToken cancellationToken)
         => RunBoundedUiaAsync(
             () => FocusedControlResolver.Resolve().Element,
-            TimeSpan.FromMilliseconds(700),
+            WriteLiteDefaults.Analysis.UiaResolveTimeout,
             cancellationToken);
 
     private async Task ProcessElementAsync(AutomationElement? element, bool force, CancellationToken cancellationToken)
@@ -778,7 +778,7 @@ public sealed class TextFieldMonitor : IDisposable
 
             CompatibilityLogger.State("candidate-rejected_no-supported-parent");
             return null;
-        }, TimeSpan.FromMilliseconds(700), cancellationToken).ConfigureAwait(false);
+        }, WriteLiteDefaults.Analysis.UiaResolveTimeout, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<ElementReadResult> ReadElementAsync(AutomationElement element, CancellationToken cancellationToken)
@@ -838,7 +838,7 @@ public sealed class TextFieldMonitor : IDisposable
 
             cancellationToken.ThrowIfCancellationRequested();
             return ElementReadResult.Read(processId, target, read.Text);
-        }, TimeSpan.FromMilliseconds(1200), cancellationToken).ConfigureAwait(false);
+        }, WriteLiteDefaults.Analysis.UiaReadTimeout, cancellationToken).ConfigureAwait(false);
     }
 
     private void LogElementOnce(

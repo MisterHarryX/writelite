@@ -131,7 +131,7 @@ public sealed partial class WritingAssistanceService
         }
         catch (Exception ex)
         {
-            CompatibilityLogger.Technical("writing-assist-failed", $"type={ex.GetType().Name}");
+            CompatibilityLogger.Technical("writing-assist-failed", ex);
             return WritingSuggestion.None;
         }
 

@@ -19,8 +19,93 @@
     <InternalsVisibleTo Include="WriteLite.Tests" />
   </ItemGroup>
   <ItemGroup>
+    <!-- The single engineering-config source (engine-config.json, read by
+         WriteLiteDefaults). Embedded, not Content, so the shipped values are part of
+         the assembly and there is exactly one place to change every tuning constant,
+         performance limit and hardcoded threshold. -->
+    <EmbeddedResource Include="Services\engine-config.json" LogicalName="WriteLite.Services.engine-config.json" />
+  </ItemGroup>
+  <!-- All UI strings live in Resources\Strings.resx. The inline task below regenerates
+     WriteLite.Resources.Strings (a typed static class) on every build; XAML uses
+     {x:Static res:Strings.X} and code uses Resources.Strings.X, so every reference is
+     checked against the resx keys at build time and a missing string cannot ship. -->
+  <UsingTask TaskName="GenerateStringsSource" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <ResxPath ParameterType="System.String" Required="true" />
+      <OutputPath ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Using Namespace="System.Text" />
+      <Using Namespace="System.Xml.Linq" />
+      <Code Type="Fragment" Language="cs">
+        string Esc(string s)
+        {
+            return s.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", "\\t");
+        }
+
+        Log.LogMessage(MessageImportance.Normal, "GenerateStringsSource: {0} -> {1}", ResxPath, OutputPath);
+        try
+        {
+            var doc = XDocument.Load(ResxPath);
+            var entries = doc.Root.Elements("data")
+                .Select(e => e.Attribute("name")?.Value)
+                .Where(n => !string.IsNullOrEmpty(n))
+                .ToList();
+            var sb = new StringBuilder();
+            sb.AppendLine("// &lt;auto-generated /&gt;");
+            sb.AppendLine("#nullable enable");
+            sb.AppendLine("using System.Globalization;");
+            sb.AppendLine("using System.Resources;");
+            sb.AppendLine();
+            sb.AppendLine("namespace WriteLite.Resources;");
+            sb.AppendLine();
+            sb.AppendLine("public static class Strings");
+            sb.AppendLine("{");
+            sb.AppendLine("    private static readonly ResourceManager Manager = new(\"WriteLite.Resources.Strings\", typeof(Strings).Assembly);");
+            sb.AppendLine();
+            sb.AppendLine("    /// &lt;summary&gt;Culture used by lookups; null uses the invariant value.&lt;/summary&gt;");
+            sb.AppendLine("    public static CultureInfo? ResourceCulture { get; set; }");
+            sb.AppendLine();
+            foreach (var key in entries)
+            {
+                sb.AppendLine($"    public static string {key} => Get(\"{Esc(key)}\");");
+            }
+            sb.AppendLine();
+            sb.AppendLine("    private static string Get(string key) => Manager.GetString(key, ResourceCulture) ?? key;");
+            sb.AppendLine("}");
+            File.WriteAllText(OutputPath, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            Log.LogMessage(MessageImportance.Low, "GenerateStringsSource: wrote {0} ({1} keys)", OutputPath, entries.Count);
+        }
+        catch (Exception ex)
+        {
+            Log.LogErrorFromException(ex, showStackTrace: true);
+            Success = false;
+        }
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <PropertyGroup>
+    <StringsResxPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\Resources\Strings.resx'))</StringsResxPath>
+    <StringsGeneratedPath>$(MSBuildProjectDirectory)\obj\$(Configuration)\$(TargetFramework)\Strings.g.cs</StringsGeneratedPath>
+  </PropertyGroup>
+
+  <Target Name="GenerateStringsSource" BeforeTargets="MarkupCompilePass1;CoreCompile">
+    <GenerateStringsSource ResxPath="$(StringsResxPath)" OutputPath="$(StringsGeneratedPath)" />
+    <ItemGroup>
+      <Compile Include="$(StringsGeneratedPath)" />
+      <FileWrites Include="$(StringsGeneratedPath)" />
+    </ItemGroup>
+  </Target>
+  <ItemGroup>
     <Content Include="..\..\assets\WriteLite.ico" Link="assets\WriteLite.ico" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\resources\rules\**\*.json" Link="resources\rules\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <!-- Declarative regex-wordlists: read at load time by RuleRegexFactory, translated
+         into ordinary compiled regex rules alongside the JSON rule-pack. -->
+    <Content Include="..\..\resources\rules\**\*.yaml" Link="resources\rules\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <!-- Lexical resources, minus the raw source corpus under source/, which is build input.
 
          NOT excluded, though measured as duplication in Phase 7 §58: writelight-lexical-open.json
@@ -83,6 +168,10 @@
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
 
     <PackageReference Include="WeCantSpell.Hunspell" Version="5.0.1" />
+
+    <!-- Compact, declarative rule lists (rules/regex.yaml) whose regexes are composed
+         at load time by RuleRegexFactory instead of being hand-typed into rule-pack JSON. -->
+    <PackageReference Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
 </Project>
 

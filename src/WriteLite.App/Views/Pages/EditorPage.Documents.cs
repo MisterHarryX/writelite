@@ -5,6 +5,7 @@ using System.Windows.Documents;
 using System.Windows.Threading;
 using WriteLite.Documents;
 using WriteLite.Documents.Model;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Documents;
 using DragEventArgs = System.Windows.DragEventArgs;
@@ -124,7 +125,7 @@ public partial class EditorPage
         Controls.Type.SetTracked(
             FormatChip,
             _workspace.CurrentFormat == DocumentFormat.Unknown
-                ? "ЧЕРНОВИК"
+                ? Strings.Chips_Draft
                 : DocumentFormats.DisplayName(_workspace.CurrentFormat));
 
         RebuildRecentMenu();
@@ -166,7 +167,7 @@ public partial class EditorPage
         {
             RecentMenu.Items.Add(new MenuItem
             {
-                Header = "Пока пусто",
+                Header = Strings.EditorDoc_RecentEmpty,
                 IsEnabled = false,
                 Style = TryFindResource("WlMenuItem") as Style
             });
@@ -194,7 +195,7 @@ public partial class EditorPage
 
         var clear = new MenuItem
         {
-            Header = "Очистить список",
+            Header = Strings.EditorDoc_ClearRecent,
             Style = TryFindResource("WlMenuItem") as Style
         };
         clear.Click += (_, _) =>
@@ -262,7 +263,7 @@ public partial class EditorPage
 
         var dialog = new OpenFileDialog
         {
-            Title = "Открыть документ",
+            Title = Strings.EditorDoc_OpenTitle,
             Filter = DocumentFormats.OpenFilter,
             CheckFileExists = true
         };
@@ -294,7 +295,7 @@ public partial class EditorPage
         _fileOperation = new CancellationTokenSource();
         var token = _fileOperation.Token;
 
-        ShowProgress("ОТКРЫТИЕ");
+        ShowProgress(Strings.EditorDoc_Opening);
 
         try
         {
@@ -303,27 +304,27 @@ public partial class EditorPage
             token.ThrowIfCancellationRequested();
 
             LoadIntoEditor(result.Document);
-            ReportWarnings(result.Warnings, "Документ открыт");
+            ReportWarnings(result.Warnings, Strings.EditorDoc_Opened);
 
             MarkClean();
             UpdateDocumentChrome();
-            await ScheduleAnalysisAsync(TimeSpan.FromMilliseconds(120));
+            await ScheduleAnalysisAsync(WriteLiteDefaults.Debounce.EditorPostEditRescanDelay);
         }
         catch (OperationCanceledException)
         {
-            Controls.Type.SetTracked(StatusText, "ОТКРЫТИЕ ОТМЕНЕНО");
+            Controls.Type.SetTracked(StatusText, Strings.Editor_OpeningCancelled);
         }
         catch (DocumentFormatException exception)
         {
             CompatibilityLogger.Technical("document-open-failed", $"reason={exception.Message}");
-            ShowError("Не удалось открыть документ", exception.UserMessage);
+            ShowError(Strings.EditorDoc_OpenFailed, exception.UserMessage);
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("document-open-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("document-open-failed", exception);
             ShowError(
-                "Не удалось открыть документ",
-                "Файл недоступен или повреждён. Проверьте, что он не открыт в другой программе.");
+                Strings.EditorDoc_OpenFailed,
+                Strings.EditorDoc_FileUnavailable);
         }
         finally
         {
@@ -394,7 +395,7 @@ public partial class EditorPage
 
         var dialog = new SaveFileDialog
         {
-            Title = "Сохранить документ",
+            Title = Strings.EditorDoc_SaveTitle,
             Filter = DocumentFormats.SaveFilter,
             FilterIndex = format switch
             {
@@ -431,7 +432,7 @@ public partial class EditorPage
 
         var dialog = new SaveFileDialog
         {
-            Title = $"Экспорт в {DocumentFormats.DisplayName(format)}",
+            Title = string.Format(Strings.EditorDoc_ExportTo, DocumentFormats.DisplayName(format)),
             Filter = $"{DocumentFormats.DisplayName(format)} (*{DocumentFormats.Extension(format)})|*{DocumentFormats.Extension(format)}",
             FileName = _workspace.SuggestFileName(format),
             AddExtension = true
@@ -451,7 +452,7 @@ public partial class EditorPage
         _fileOperation = new CancellationTokenSource();
         var token = _fileOperation.Token;
 
-        ShowProgress(isExport ? "ЭКСПОРТ" : "СОХРАНЕНИЕ");
+        ShowProgress(isExport ? Strings.EditorDoc_Exporting : Strings.EditorDoc_Saving);
 
         try
         {
@@ -475,32 +476,30 @@ public partial class EditorPage
             ReportWarnings(
                 result.Warnings,
                 isExport
-                    ? $"Экспортировано в {DocumentFormats.DisplayName(format)}"
-                    : "Документ сохранён");
+                    ? string.Format(Strings.EditorDoc_ExportedTo, DocumentFormats.DisplayName(format))
+                    : Strings.EditorDoc_Saved);
         }
         catch (OperationCanceledException)
         {
-            Controls.Type.SetTracked(StatusText, "СОХРАНЕНИЕ ОТМЕНЕНО");
+            Controls.Type.SetTracked(StatusText, Strings.Editor_SavingCancelled);
         }
         catch (DocumentFormatException exception)
         {
             CompatibilityLogger.Technical("document-save-failed", $"reason={exception.Message}");
-            ShowError("Не удалось сохранить", exception.UserMessage);
+            ShowError(Strings.EditorDoc_SaveFailed, exception.UserMessage);
         }
         catch (UnauthorizedAccessException)
         {
-            ShowError("Не удалось сохранить", "Нет прав на запись в эту папку. Выберите другое расположение.");
+            ShowError(Strings.EditorDoc_SaveFailed, Strings.EditorDoc_NoWritePermission);
         }
         catch (IOException)
         {
-            ShowError(
-                "Не удалось сохранить",
-                "Файл занят другой программой. Закройте его и попробуйте снова.");
+            ShowError(Strings.EditorDoc_SaveFailed, Strings.EditorDoc_FileBusy);
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("document-save-failed", $"type={exception.GetType().Name}");
-            ShowError("Не удалось сохранить", "Произошла непредвиденная ошибка при записи файла.");
+            CompatibilityLogger.Technical("document-save-failed", exception);
+            ShowError(Strings.EditorDoc_SaveFailed, Strings.EditorDoc_UnexpectedSaveError);
         }
         finally
         {
@@ -548,8 +547,8 @@ public partial class EditorPage
         if (DocumentFormats.FromPath(path) == DocumentFormat.Unknown)
         {
             ShowError(
-                "Формат не поддерживается",
-                "WriteLite открывает документы DOCX, ODT, PDF и TXT.");
+                Strings.EditorDoc_UnsupportedFormat,
+                Strings.EditorDoc_SupportedFormats);
             return;
         }
 
@@ -572,7 +571,7 @@ public partial class EditorPage
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("editor-autosave-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("editor-autosave-failed", exception);
         }
     }
 
@@ -613,10 +612,11 @@ public partial class EditorPage
         var snapshot = orphans[0];
 
         var restore = AskConfirmation(
-            "Восстановление документа",
-            $"WriteLite сохранил копию документа «{snapshot.DisplayName}» " +
-            $"от {snapshot.SavedAt:dd.MM.yyyy HH:mm}, которая не была закрыта штатно.\n\n" +
-            "Восстановить её?");
+            Strings.EditorDoc_RecoveryTitle,
+            string.Format(
+                Strings.EditorDoc_RecoveryMessage,
+                snapshot.DisplayName,
+                snapshot.SavedAt.ToString("dd.MM.yyyy HH:mm")));
 
         if (!restore)
         {
@@ -629,7 +629,7 @@ public partial class EditorPage
 
     private async Task RestoreAsync(RecoverySnapshot snapshot)
     {
-        ShowProgress("ВОССТАНОВЛЕНИЕ");
+        ShowProgress(Strings.EditorDoc_Restoring);
 
         try
         {
@@ -645,18 +645,18 @@ public partial class EditorPage
             }
             else
             {
-                _workspace.Reset("Восстановленный документ");
+                _workspace.Reset(Strings.EditorDoc_RestoredDocument);
             }
 
             Recovery.DiscardSnapshot(snapshot);
             MarkDirty();
             UpdateDocumentChrome();
-            await ScheduleAnalysisAsync(TimeSpan.FromMilliseconds(120));
+            await ScheduleAnalysisAsync(WriteLiteDefaults.Debounce.EditorPostEditRescanDelay);
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("document-recovery-failed", $"type={exception.GetType().Name}");
-            ShowError("Не удалось восстановить", "Копия документа повреждена и была удалена.");
+            CompatibilityLogger.Technical("document-recovery-failed", exception);
+            ShowError(Strings.EditorDoc_RecoveryFailed, Strings.EditorDoc_RecoveryCorrupted);
             Recovery.DiscardSnapshot(snapshot);
         }
         finally
@@ -745,7 +745,7 @@ public partial class EditorPage
         }
 
         return AskConfirmation(
-            "Несохранённые изменения",
-            "В документе есть несохранённые изменения. Продолжить без сохранения?");
+            Strings.EditorDoc_UnsavedChangesTitle,
+            Strings.EditorDoc_UnsavedChangesMessage);
     }
 }

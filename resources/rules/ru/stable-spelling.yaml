@@ -1,0 +1,330 @@
+# Stable spelling corrections — the single declarative table of curated typo→correction
+# pairs for BOTH pipelines that own per-word spelling:
+#
+#   - the per-word spell checker (LocalSpellChecker, lane `spell`), where a curated typo
+#     must win over the generic Hunspell ranker (StableCorrectionsTests); and
+#   - the Lite offline corrector (LocalCorrectionEngine in WriteLite.AI.Local, lane `ai`),
+#     whose ruSpelling table is GENERATED from this file at build time
+#     (lite-rules.template.json + MSBuild task in WriteLite.AI.Local.csproj).
+#
+# This file is NOT part of the regex rule-pack (RuleRegexFactory ignores the `stableSpelling:`
+# section), so it never becomes a TextIssue rule.
+#
+# Lane semantics (optional per entry; default is `spell`):
+#   spell  — served by the per-word spell checker only (today's StableCorrections behaviour)
+#   ai     — embedded into lite-rules.json, served by the Lite/AI corrector only
+#   both   — served by both lanes (exactly the entries that previously lived in both tables)
+#
+# Keys are folded: lower case with ё collapsed to е (CorrectionCandidateValidityPolicy.FoldSpelling),
+# which is exactly how the old in-code table was written. Add a typo here and it is served by the
+# same CheckWord path, with the same PreserveCase handling, as any other entry.
+
+stableSpelling:
+  # Common typos the generic ranker gets wrong outright.
+  - id: tvoi
+    from: "тваи"
+    to: "твои"
+  - id: hochu
+    from: "хочю"
+    to: "хочу"
+  - id: nuzhno
+    from: "нужю"
+    to: "нужно"
+  - id: voobshchem
+    from: "вообщем"
+    to: "в общем"
+    lane: both
+  - id: vobshchem
+    from: "вобщем"
+    to: "в общем"
+    lane: both
+  - id: privet
+    from: "пливет"
+    to: "привет"
+  - id: slovarnoe
+    from: "славерное"
+    to: "словарное"
+  - id: ispravlenie
+    from: "испарвление"
+    to: "исправление"
+  - id: proveryaemoe
+    from: "проверямое"
+    to: "проверяемое"
+  - id: slovarennoe
+    from: "словареное"
+    to: "словарное"
+
+  # Vowel confusions where a competing real word outranks the intended one.
+  - id: dela
+    from: "дила"
+    to: "дела"
+  - id: vrode
+    from: "вроди"
+    to: "вроде"
+    lane: both
+  - id: delam
+    from: "дилам"
+    to: "делам"
+  - id: simpatichnyy
+    from: "симпотичный"
+    to: "симпатичный"
+    lane: both
+  - id: ekstremalnyy
+    from: "экстримальный"
+    to: "экстремальный"
+  - id: posetit
+    from: "поситить"
+    to: "посетить"
+  - id: interesno
+    from: "интиресно"
+    to: "интересно"
+
+  # Doubled or dropped consonants.
+  - id: grammatika
+    from: "граматика"
+    to: "грамматика"
+  - id: gramotnyy
+    from: "грамматный"
+    to: "грамотный"
+  - id: professiya
+    from: "професия"
+    to: "профессия"
+  - id: kolichestvo
+    from: "колличество"
+    to: "количество"
+  - id: russkiy
+    from: "руский"
+    to: "русский"
+  - id: programma
+    from: "програма"
+    to: "программа"
+  - id: rasschitat
+    from: "расчитать"
+    to: "рассчитать"
+  - id: agentstvo
+    from: "агенство"
+    to: "агентство"
+    lane: both
+
+  # Voiced/voiceless and silent consonants.
+  - id: zdes
+    from: "сдесь"
+    to: "здесь"
+  - id: sdelat
+    from: "зделать"
+    to: "сделать"
+  - id: sdelal
+    from: "зделал"
+    to: "сделал"
+  - id: sdelali
+    from: "зделали"
+    to: "сделали"
+  - id: sdelayu
+    from: "зделаю"
+    to: "сделаю"
+  - id: izvinite
+    from: "извените"
+    to: "извините"
+    lane: both
+  - id: chuvstvovat
+    from: "чуствовать"
+    to: "чувствовать"
+  - id: uchastvovat
+    from: "учавствовать"
+    to: "участвовать"
+    lane: both
+
+  # Word forms that are simply not standard Russian.
+  - id: budushchiy
+    from: "будующий"
+    to: "будущий"
+  - id: sleduyushchiy
+    from: "следущий"
+    to: "следующий"
+  - id: sleduyushchey
+    from: "следущей"
+    to: "следующей"
+  - id: kardinalno
+    from: "координально"
+    to: "кардинально"
+  - id: prishel
+    from: "пришол"
+    to: "пришёл"
+  - id: ushel
+    from: "ушол"
+    to: "ушёл"
+  - id: nashol
+    from: "нашол"
+    to: "нашёл"
+
+  # жи/ши, ча/ща, чу/щу.
+  - id: zhizn
+    from: "жызнь"
+    to: "жизнь"
+  - id: mashina
+    from: "машына"
+    to: "машина"
+  - id: malyshi
+    from: "малышы"
+    to: "малыши"
+
+  # Hard sign before я/е/ю after a prefix.
+  - id: obyasnit
+    from: "обьяснить"
+    to: "объяснить"
+  - id: obyavlenie
+    from: "обьявление"
+    to: "объявление"
+  - id: obem
+    from: "обьем"
+    to: "объём"
+  - id: podezd
+    from: "подьезд"
+    to: "подъезд"
+
+  # Written together but must be separate, and the reverse.
+  - id: vryad-li
+    from: "врятли"
+    to: "вряд ли"
+  - id: navryad-li
+    from: "наврятли"
+    to: "навряд ли"
+  - id: potomu-chto
+    from: "потомучто"
+    to: "потому что"
+    lane: both
+  - id: kak-budto
+    from: "какбудто"
+    to: "как будто"
+    lane: both
+  - id: v-kurse
+    from: "вкурсе"
+    to: "в курсе"
+  - id: v-techenie
+    from: "втечении"
+    to: "в течение"
+
+  # Entries previously shipped only in lite-rules.json (the Lite/AI corrector lane `ai`).
+  # They are kept out of the spell lane on purpose (default lane is `spell`): the spell
+  # checker surfaces a red underline per wrong word, and not every colloquialism below is
+  # one the product wants to flag in formal text.
+  - id: ne-byl
+    from: "небыл"
+    to: "не был"
+    lane: ai
+  - id: ne-byla
+    from: "небыла"
+    to: "не была"
+    lane: ai
+  - id: ne-bylo
+    from: "небыло"
+    to: "не было"
+    lane: ai
+  - id: ne-byli
+    from: "небыли"
+    to: "не были"
+    lane: ai
+  - id: izvini
+    from: "извени"
+    to: "извини"
+    lane: ai
+  - id: zdravstvuyte
+    from: "здраствуйте"
+    to: "здравствуйте"
+    lane: ai
+  - id: zdraste
+    from: "здрасте"
+    to: "здравствуйте"
+    lane: ai
+  - id: spasibo-bolshoe
+    from: "спасибобольшое"
+    to: "спасибо большое"
+    lane: ai
+  - id: tak-kak
+    from: "таккак"
+    to: "так как"
+    lane: ai
+  - id: vse-ravno
+    from: "всеравно"
+    to: "всё равно"
+    lane: ai
+  - id: vse-ravno-2
+    from: "все-равно"
+    to: "всё равно"
+    lane: ai
+  - id: chto-li
+    from: "чтоли"
+    to: "что ли"
+    lane: ai
+  - id: sednya
+    from: "седня"
+    to: "сегодня"
+    lane: ai
+  - id: schas
+    from: "щас"
+    to: "сейчас"
+    lane: ai
+  - id: skoka
+    from: "скока"
+    to: "сколько"
+    lane: ai
+  - id: che
+    from: "че"
+    to: "что"
+    lane: ai
+  - id: chyo
+    from: "чё"
+    to: "что"
+    lane: ai
+  - id: tozh
+    from: "тож"
+    to: "тоже"
+    lane: ai
+  - id: niche
+    from: "ниче"
+    to: "ничего"
+    lane: ai
+  - id: krasava
+    from: "красава"
+    to: "красавчик"
+    lane: ai
+  - id: budushchego
+    from: "будующего"
+    to: "будущего"
+    lane: ai
+  - id: professionalnyy
+    from: "профессианальный"
+    to: "профессиональный"
+    lane: ai
+  - id: intsindent
+    from: "инциндент"
+    to: "инцидент"
+    lane: ai
+  - id: komprometirovat
+    from: "компроментировать"
+    to: "компрометировать"
+    lane: ai
+  - id: pretsedent
+    from: "прецендент"
+    to: "прецедент"
+    lane: ai
+  - id: rasschitan
+    from: "расчитан"
+    to: "рассчитан"
+    lane: ai
+  - id: rasschitana
+    from: "расчитана"
+    to: "рассчитана"
+    lane: ai
+  - id: rasschitano
+    from: "расчитано"
+    to: "рассчитано"
+    lane: ai
+  - id: podcherkom
+    from: "подчерком"
+    to: "подчёрком"
+    lane: ai
+  - id: pocherkom
+    from: "почерком"
+    to: "почерком"
+    lane: ai

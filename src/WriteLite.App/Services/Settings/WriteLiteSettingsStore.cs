@@ -110,7 +110,7 @@ public sealed class WriteLiteSettingsStore : IWriteLiteSettingsStore
         }
         catch (Exception ex)
         {
-            CompatibilityLogger.Technical("settings-load-failed", $"type={ex.GetType().Name}");
+            CompatibilityLogger.Technical("settings-load-failed", ex);
             return new WriteLiteAppSettings();
         }
     }
@@ -242,19 +242,19 @@ public sealed class WriteLiteSettingsStore : IWriteLiteSettingsStore
         s.LocalAiEnabled = true;
         s.PreferQwen = true;
         s.LocalAiProfile = "Standard";
-        s.QwenEndpoint = "http://127.0.0.1:8742";
+        s.QwenEndpoint = WriteLiteDefaults.Model.QwenDefaultEndpoint;
         s.SchemaVersion = CurrentSchemaVersion;
     }
 
     private static WriteLiteAppSettings Normalize(WriteLiteAppSettings s)
     {
-        s.AnalysisDelayMs = Math.Clamp(s.AnalysisDelayMs, 100, 5000);
-        s.MaxTextLength = Math.Clamp(s.MaxTextLength, 500, 100_000);
+        s.AnalysisDelayMs = Math.Clamp(s.AnalysisDelayMs, WriteLiteDefaults.Debounce.AnalysisDelayMsClampMin, WriteLiteDefaults.Debounce.AnalysisDelayMsClampMax);
+        s.MaxTextLength = Math.Clamp(s.MaxTextLength, WriteLiteDefaults.Debounce.MaxTextLengthClampMin, WriteLiteDefaults.Debounce.MaxTextLengthClampMax);
         s.Language = "ru-RU";
         s.SchemaVersion = Math.Max(CurrentSchemaVersion, s.SchemaVersion);
-        s.AiDebounceMs = Math.Clamp(s.AiDebounceMs, 1500, 2000);
-        s.AiMinTextLength = Math.Clamp(s.AiMinTextLength, 4, 200);
-        s.AiMaxTextLength = Math.Clamp(s.AiMaxTextLength, 200, 20_000);
+        s.AiDebounceMs = Math.Clamp(s.AiDebounceMs, WriteLiteDefaults.Debounce.AiDebounceMsClampMin, WriteLiteDefaults.Debounce.AiDebounceMsClampMax);
+        s.AiMinTextLength = Math.Clamp(s.AiMinTextLength, WriteLiteDefaults.Debounce.AiMinTextLengthClampMin, WriteLiteDefaults.Debounce.AiMinTextLengthClampMax);
+        s.AiMaxTextLength = Math.Clamp(s.AiMaxTextLength, WriteLiteDefaults.Debounce.AiMaxTextLengthClampMin, WriteLiteDefaults.Debounce.AiMaxTextLengthClampMax);
 
         var profile = (s.LocalAiProfile ?? string.Empty).Trim();
         s.LocalAiProfile = KnownProfiles.Contains(profile) ? profile : "Standard";
@@ -265,7 +265,7 @@ public sealed class WriteLiteSettingsStore : IWriteLiteSettingsStore
             || endpointUri.Scheme != Uri.UriSchemeHttp
             || endpointUri.Host is not ("127.0.0.1" or "localhost" or "::1"))
         {
-            endpoint = "http://127.0.0.1:8742";
+            endpoint = WriteLiteDefaults.Model.QwenDefaultEndpoint;
         }
 
         s.QwenEndpoint = endpoint;

@@ -186,8 +186,10 @@ public sealed class WriteLiteOrchestratingAnalyzer : ITextAnalyzer, ITextAnalysi
         {
             return _signals.For(word);
         }
-        catch
+        catch (Exception exception)
         {
+            // A transient engine failure simply yields no signal; log it so repeated misses are visible.
+            CompatibilityLogger.Technical("orchestrator-signals-lookup-failed", exception);
             return null;
         }
     }
@@ -215,8 +217,10 @@ public sealed class WriteLiteOrchestratingAnalyzer : ITextAnalyzer, ITextAnalysi
             {
                 if (!_isKnownWord(word)) return false;
             }
-            catch
+            catch (Exception exception)
             {
+                // A lexicon lookup failure cannot prove a word known; treat as unknown.
+                CompatibilityLogger.Technical("orchestrator-lexicon-lookup-failed", exception);
                 return false;
             }
         }
@@ -437,7 +441,7 @@ public sealed class WriteLiteOrchestratingAnalyzer : ITextAnalyzer, ITextAnalysi
         finally
         {
             try { _punctuationGate.Release(); }
-            catch (ObjectDisposedException) { }
+            catch (ObjectDisposedException) { } // gate may be disposed concurrently during shutdown
         }
     }
 

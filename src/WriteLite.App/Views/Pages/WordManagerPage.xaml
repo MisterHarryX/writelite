@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:WriteLite.Controls"
+             xmlns:res="clr-namespace:WriteLite.Resources"
              Background="{DynamicResource WlBgBase}"
              FontFamily="{DynamicResource WlFont}">
     <!--
@@ -24,18 +25,18 @@
         <controls:SectionHeader x:Name="Header"
                                 Grid.Row="0"
                                 Index="04"
-                                Title="Менеджер слов"
-                                Description="Слова, которые WriteLite не подчёркивает, и правила, которые он не показывает." />
+                                Title="{x:Static res:Strings.Nav_WordsManager}"
+                                Description="{x:Static res:Strings.Words_HeaderDescription}" />
 
         <!-- Tabs -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,14,0,0">
-            <RadioButton x:Name="TabWords" Style="{DynamicResource WlTabButton}" Content="Мои слова"
+            <RadioButton x:Name="TabWords" Style="{DynamicResource WlTabButton}" Content="{x:Static res:Strings.Words_TabCustomWords}"
                          GroupName="WordTabs" IsChecked="True" Checked="Tab_Checked" />
-            <RadioButton x:Name="TabIgnoredWords" Style="{DynamicResource WlTabButton}" Content="Игнорируемые слова"
+            <RadioButton x:Name="TabIgnoredWords" Style="{DynamicResource WlTabButton}" Content="{x:Static res:Strings.Words_TabIgnoredWords}"
                          GroupName="WordTabs" Checked="Tab_Checked" />
-            <RadioButton x:Name="TabIgnoredRules" Style="{DynamicResource WlTabButton}" Content="Игнорируемые правила"
+            <RadioButton x:Name="TabIgnoredRules" Style="{DynamicResource WlTabButton}" Content="{x:Static res:Strings.Words_TabIgnoredRules}"
                          GroupName="WordTabs" Checked="Tab_Checked" />
-            <RadioButton x:Name="TabDictionaries" Style="{DynamicResource WlTabButton}" Content="Мои словари"
+            <RadioButton x:Name="TabDictionaries" Style="{DynamicResource WlTabButton}" Content="{x:Static res:Strings.Words_TabDictionaries}"
                          GroupName="WordTabs" Checked="Tab_Checked" />
         </StackPanel>
 
@@ -50,9 +51,9 @@
             <TextBox x:Name="WordInput" Grid.Column="0"
                      Style="{DynamicResource WlTextInput}"
                      MinHeight="34"
-                     Tag="Добавьте слово, которое не нужно подчёркивать"
+                     Tag="{x:Static res:Strings.Words_NewWordPlaceholder}"
                      KeyDown="WordInput_KeyDown"
-                     AutomationProperties.Name="Новое слово" />
+                     AutomationProperties.Name="{x:Static res:Strings.Words_NewWordAutomation}" />
 
             <Button x:Name="AddButton" Grid.Column="1"
                     Style="{DynamicResource WlPrimaryButton}"
@@ -62,15 +63,15 @@
                 <StackPanel Orientation="Horizontal">
                     <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconPlus}"
                           Stroke="{DynamicResource WlOnBrand}" Margin="0,0,7,0" />
-                    <TextBlock Text="Добавить" VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Static res:Strings.Words_AddButton}" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
             <TextBox x:Name="SearchBox" Grid.Column="2"
                      Style="{DynamicResource WlSearchInput}"
-                     Tag="Поиск"
+                     Tag="{x:Static res:Strings.Words_SearchPlaceholder}"
                      TextChanged="Search_Changed"
-                     AutomationProperties.Name="Поиск по списку" />
+                     AutomationProperties.Name="{x:Static res:Strings.Words_SearchAutomation}" />
         </Grid>
 
         <!-- The dictionaries tab has one action, and it opens a file picker rather
@@ -84,7 +85,7 @@
                 <StackPanel Orientation="Horizontal">
                     <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconPlus}"
                           Stroke="{DynamicResource WlOnBrand}" Margin="0,0,7,0" />
-                    <TextBlock Text="Добавить словарь" VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Static res:Strings.Words_AddDictionaryButton}" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -96,14 +97,14 @@
                          Style="{DynamicResource WlListBox}"
                          ItemContainerStyle="{DynamicResource WlListRow}"
                          Margin="0,4"
-                         AutomationProperties.Name="Список слов">
+                         AutomationProperties.Name="{x:Static res:Strings.Words_WordsListAutomation}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <DockPanel>
                                 <Button DockPanel.Dock="Right"
                                         Style="{DynamicResource WlIconButton}"
                                         Width="24" Height="24"
-                                        ToolTip="Удалить"
+                                        ToolTip="{x:Static res:Strings.Words_RemoveTooltip}"
                                         Click="RemoveEntry_Click"
                                         CommandParameter="{Binding}">
                                     <Path Style="{DynamicResource WlIconSm}"
@@ -137,7 +138,7 @@
                          ItemContainerStyle="{DynamicResource WlCardRow}"
                          Margin="0,4"
                          Visibility="Collapsed"
-                         AutomationProperties.Name="Мои словари">
+                         AutomationProperties.Name="{x:Static res:Strings.Words_DictionariesListAutomation}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Grid Margin="0,4">
@@ -159,8 +160,8 @@
                                           IsChecked="{Binding IsEnabled, Mode=OneWay}"
                                           VerticalAlignment="Center"
                                           Margin="16,0,0,0"
-                                          ToolTip="Включить или отключить словарь"
-                                          AutomationProperties.Name="Словарь включён"
+                                          ToolTip="{x:Static res:Strings.Words_ToggleDictionaryTooltip}"
+                                          AutomationProperties.Name="{x:Static res:Strings.Words_DictionaryEnabledAutomation}"
                                           Checked="DictionaryEnabled_Changed"
                                           Unchecked="DictionaryEnabled_Changed"
                                           Tag="{Binding}" />
@@ -170,7 +171,7 @@
                                         Width="26" Height="26"
                                         Margin="12,0,0,0"
                                         VerticalAlignment="Center"
-                                        ToolTip="Удалить словарь"
+                                        ToolTip="{x:Static res:Strings.Words_RemoveDictionaryTooltip}"
                                         Click="RemoveDictionary_Click"
                                         CommandParameter="{Binding}">
                                     <Path Style="{DynamicResource WlIconSm}"
@@ -192,17 +193,17 @@
                           HorizontalAlignment="Center" />
                     <TextBlock x:Name="EmptyTitle"
                                Style="{DynamicResource WlCardTitle}"
-                               Text="Список пуст"
+                               Text="{x:Static res:Strings.Words_EmptyListTitle}"
                                TextAlignment="Center"
                                Margin="0,14,0,0" />
                     <TextBlock x:Name="EmptyHint"
                                Style="{DynamicResource WlSecondary}"
-                               Text="Добавьте имена, термины и сокращения, которые не нужно подчёркивать."
+                               Text="{x:Static res:Strings.Words_EmptyListHint}"
                                TextAlignment="Center"
                                Margin="0,6,0,0" />
                     <Button x:Name="EmptyAction"
                             Style="{DynamicResource WlSecondaryButton}"
-                            Content="Добавить словарь"
+                            Content="{x:Static res:Strings.Words_AddDictionaryButton}"
                             HorizontalAlignment="Center"
                             Margin="0,16,0,0"
                             Visibility="Collapsed"
@@ -215,8 +216,8 @@
         <Grid Grid.Row="4" Margin="0,14,0,0">
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="ClearButton" Style="{DynamicResource WlDangerButton}"
-                        Content="Очистить список" Click="Clear_Click" />
-                <Button Style="{DynamicResource WlTextButton}" Content="Открыть словарь"
+                        Content="{x:Static res:Strings.Words_ClearListButton}" Click="Clear_Click" />
+                <Button Style="{DynamicResource WlTextButton}" Content="{x:Static res:Strings.Words_OpenDictionaryButton}"
                         Margin="8,0,0,0" Click="OpenDictionary_Click" />
             </StackPanel>
             <TextBlock x:Name="FooterHint"
@@ -225,7 +226,7 @@
                        VerticalAlignment="Center"
                        MaxWidth="420"
                        TextAlignment="Right"
-                       Text="Временные «Игнорировать» из панели действуют до изменения текста и здесь не хранятся." />
+                       Text="{x:Static res:Strings.Words_FooterHint}" />
         </Grid>
     </Grid>
 </UserControl>

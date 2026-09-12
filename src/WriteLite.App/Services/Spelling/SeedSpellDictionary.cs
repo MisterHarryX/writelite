@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using WriteLite.Language.Russian;
 
 namespace WriteLite.Services.Spelling;
 
@@ -24,7 +25,7 @@ public sealed class SeedSpellDictionary : ISpellDictionary
     }
 
     public bool IsFullDictionaryLoaded => false;
-    public string Language => "ru";
+    public string Language => RussianLanguageProfile.IsoCode;
 
     public DictionaryMetadata Metadata => new(
         Stats.Source,
@@ -34,7 +35,7 @@ public sealed class SeedSpellDictionary : ISpellDictionary
         Stats.RussianWordCount,
         null,
         SchemaVersion: 1,
-        Language: "ru");
+        Language: RussianLanguageProfile.IsoCode);
 
     public SpellDictionaryStats Stats { get; }
 

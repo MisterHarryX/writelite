@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:WriteLite.Controls"
+        xmlns:res="clr-namespace:WriteLite.Resources"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="WriteLite"
         Width="1240"
@@ -80,7 +81,7 @@
                         <Border Width="1" Height="14" Background="{DynamicResource WlLineStrong}" Margin="13,0" />
                         <TextBlock x:Name="PageNameText"
                                    Style="{DynamicResource WlMonoLabel}"
-                                   controls:Type.Tracked="ГЛАВНАЯ"
+                                   controls:Type.Tracked="{x:Static res:Strings.Main_PageName_Home}"
                                    VerticalAlignment="Center" />
                     </StackPanel>
 
@@ -93,7 +94,7 @@
                                  VerticalAlignment="Center" Margin="0,0,8,0" />
                         <TextBlock x:Name="EngineStateText"
                                    Style="{DynamicResource WlMonoLabel}"
-                                   controls:Type.Tracked="ЛОКАЛЬНАЯ ПРОВЕРКА"
+                                   controls:Type.Tracked="{x:Static res:Strings.Main_EngineState}"
                                    Foreground="{DynamicResource WlTextSubtle}"
                                    VerticalAlignment="Center" />
                     </StackPanel>
@@ -101,21 +102,21 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal"
                                 VerticalAlignment="Center"
                                 shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                        <Button Style="{DynamicResource WlWindowButton}" ToolTip="Свернуть" Click="Minimize_Click"
-                                AutomationProperties.Name="Свернуть окно">
+                        <Button Style="{DynamicResource WlWindowButton}" ToolTip="{x:Static res:Strings.Main_Minimize}" Click="Minimize_Click"
+                                AutomationProperties.Name="{x:Static res:Strings.Main_MinimizeWindow}">
                             <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconMinimize}"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                         </Button>
                         <Button x:Name="MaximizeButton" Style="{DynamicResource WlWindowButton}"
-                                ToolTip="Развернуть" Click="Maximize_Click"
-                                AutomationProperties.Name="Развернуть окно">
+                                ToolTip="{x:Static res:Strings.Main_Maximize}" Click="Maximize_Click"
+                                AutomationProperties.Name="{x:Static res:Strings.Main_MaximizeWindow}">
                             <Path x:Name="MaximizeIcon" Style="{DynamicResource WlIconSm}"
                                   Width="12" Height="12"
                                   Data="{DynamicResource WlIconMaximize}"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                         </Button>
-                        <Button Style="{DynamicResource WlWindowCloseButton}" ToolTip="Свернуть в трей" Click="Close_Click"
-                                AutomationProperties.Name="Закрыть окно">
+                        <Button Style="{DynamicResource WlWindowCloseButton}" ToolTip="{x:Static res:Strings.Main_CloseToTray}" Click="Close_Click"
+                                AutomationProperties.Name="{x:Static res:Strings.Main_CloseWindow}">
                             <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconClose}"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                         </Button>
@@ -133,11 +134,11 @@
                         <controls:AmbienceBar x:Name="Ambience" Margin="0,8,0,4" />
                         <Border Style="{DynamicResource WlHairline}" Margin="8,8,8,8" />
                         <Button x:Name="ExitButton" Style="{DynamicResource WlNavButton}"
-                                Content="Завершить WriteLite" Click="Exit_Click"
-                                ToolTip="Полностью закрыть WriteLite" />
+                                Content="{x:Static res:Strings.Main_Exit}" Click="Exit_Click"
+                                ToolTip="{x:Static res:Strings.Main_Exit_Tooltip}" />
                         <TextBlock x:Name="RailFootnote"
                                    Style="{DynamicResource WlMonoLabel}"
-                                   controls:Type.Tracked="BETA · ЛОКАЛЬНО"
+                                   controls:Type.Tracked="{x:Static res:Strings.Main_Footnote}"
                                    Foreground="{DynamicResource WlTextMuted}"
                                    Margin="10,10,0,2" />
                     </StackPanel>
@@ -156,56 +157,56 @@
                         <StackPanel x:Name="NavStack">
                             <TextBlock x:Name="GroupWorkspace"
                                        Style="{DynamicResource WlMonoLabel}"
-                                       controls:Type.Tracked="РАБОЧЕЕ ПРОСТРАНСТВО"
+                                       controls:Type.Tracked="{x:Static res:Strings.Main_GroupWorkspace}"
                                        Foreground="{DynamicResource WlTextMuted}"
                                        Margin="12,10,0,8" />
 
                             <controls:NavItem x:Name="NavHome" GroupName="MainNav" IsChecked="True"
-                                              Index="01" Label="Главная" Icon="{DynamicResource WlIconHome}"
+                                              Index="01" Label="{x:Static res:Strings.Nav_Home}" Icon="{DynamicResource WlIconHome}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavPanel" GroupName="MainNav"
-                                              Index="02" Label="Редактор" Icon="{DynamicResource WlIconEditor}"
+                                              Index="02" Label="{x:Static res:Strings.Nav_Editor}" Icon="{DynamicResource WlIconEditor}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavReading" GroupName="MainNav"
-                                              Index="03" Label="Чтение" Icon="{DynamicResource WlIconReading}"
-                                              ToolTip="Проекты чтения: пометки, закладки и карточки"
+                                              Index="03" Label="{x:Static res:Strings.Nav_Reading}" Icon="{DynamicResource WlIconReading}"
+                                              ToolTip="{x:Static res:Strings.Nav_Reading_Tooltip}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavNotes" GroupName="MainNav"
-                                              Index="04" Label="Заметки" Icon="{DynamicResource WlIconNotes}"
-                                              ToolTip="Заметки, задачи, цели и списки"
+                                              Index="04" Label="{x:Static res:Strings.Nav_Notes}" Icon="{DynamicResource WlIconNotes}"
+                                              ToolTip="{x:Static res:Strings.Nav_Notes_Tooltip}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavConverter" GroupName="MainNav"
-                                              Index="05" Label="Конвертер" Icon="{DynamicResource WlIconConvert}"
-                                              ToolTip="Преобразование документов между форматами"
+                                              Index="05" Label="{x:Static res:Strings.Nav_Converter}" Icon="{DynamicResource WlIconConvert}"
+                                              ToolTip="{x:Static res:Strings.Nav_Converter_Tooltip}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavDictionary" GroupName="MainNav"
-                                              Index="06" Label="Словарь" Icon="{DynamicResource WlIconDictionary}"
+                                              Index="06" Label="{x:Static res:Strings.Nav_Dictionary}" Icon="{DynamicResource WlIconDictionary}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavWords" GroupName="MainNav"
-                                              Index="07" Label="Менеджер слов" Icon="{DynamicResource WlIconWords}"
+                                              Index="07" Label="{x:Static res:Strings.Nav_WordsManager}" Icon="{DynamicResource WlIconWords}"
                                               Checked="Nav_Checked" />
 
                             <TextBlock x:Name="GroupSystem"
                                        Style="{DynamicResource WlMonoLabel}"
-                                       controls:Type.Tracked="СИСТЕМА"
+                                       controls:Type.Tracked="{x:Static res:Strings.Main_GroupSystem}"
                                        Foreground="{DynamicResource WlTextMuted}"
                                        Margin="12,22,0,8" />
 
                             <controls:NavItem x:Name="NavLocalAi" GroupName="MainNav"
-                                              Index="08" Label="WriteAI" Icon="{DynamicResource WlIconEngine}"
-                                              ToolTip="Локальный движок и модель"
+                                              Index="08" Label="{x:Static res:Strings.Nav_LocalAi}" Icon="{DynamicResource WlIconEngine}"
+                                              ToolTip="{x:Static res:Strings.Nav_LocalAi_Tooltip}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavApps" GroupName="MainNav"
-                                              Index="09" Label="Совместимость" Icon="{DynamicResource WlIconApps}"
+                                              Index="09" Label="{x:Static res:Strings.Nav_Compatibility}" Icon="{DynamicResource WlIconApps}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavSettings" GroupName="MainNav"
-                                              Index="10" Label="Настройки" Icon="{DynamicResource WlIconSettings}"
+                                              Index="10" Label="{x:Static res:Strings.Common_Settings}" Icon="{DynamicResource WlIconSettings}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavDiagnostics" GroupName="MainNav"
-                                              Index="11" Label="Диагностика" Icon="{DynamicResource WlIconDiagnostics}"
+                                              Index="11" Label="{x:Static res:Strings.Nav_Diagnostics}" Icon="{DynamicResource WlIconDiagnostics}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavAbout" GroupName="MainNav"
-                                              Index="12" Label="О программе" Icon="{DynamicResource WlIconAbout}"
+                                              Index="12" Label="{x:Static res:Strings.Nav_About}" Icon="{DynamicResource WlIconAbout}"
                                               Checked="Nav_Checked" />
                         </StackPanel>
                       </Grid>

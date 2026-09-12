@@ -114,6 +114,7 @@ public sealed class HunspellSpellingLexicon : ISpellingLexicon, IDisposable
             }
             catch
             {
+                // A native suggester failure must not crash spelling; offer no candidates.
                 return [];
             }
         }
@@ -154,8 +155,10 @@ public sealed class HunspellSpellingLexicon : ISpellingLexicon, IDisposable
             var line = reader.ReadLine();
             return int.TryParse(line?.Trim(), out var n) ? n : 0;
         }
-        catch
+        catch (Exception exception)
         {
+            // Missing or unreadable dic leaves the header count at zero; the dialog is covered by the caller.
+            CompatibilityLogger.Technical("hunspell-dic-header-failed", $"type={exception.GetType().Name}");
             return 0;
         }
     }

@@ -1,4 +1,5 @@
 using WriteLite.Models;
+using WriteLite.Resources;
 
 namespace WriteLite.Services;
 
@@ -12,13 +13,13 @@ public static class CorrectionPresentation
             var mark = issue.Replacement ?? string.Empty;
             return mark switch
             {
-                "." => "Добавить точку",
-                "," => "Добавить запятую",
-                "!" => "Добавить восклицательный знак",
-                "?" => "Добавить вопросительный знак",
-                "…" => "Добавить многоточие",
-                "—" => "Добавить тире",
-                _ => $"Вставить «{mark}»"
+                "." => Strings.Corr_AddPeriod,
+                "," => Strings.Corr_AddComma,
+                "!" => Strings.Corr_AddExclamation,
+                "?" => Strings.Corr_AddQuestion,
+                "…" => Strings.Corr_AddEllipsis,
+                "—" => Strings.Corr_AddDash,
+                _ => string.Format(Strings.Corr_InsertMark, mark)
             };
         }
 
@@ -41,7 +42,7 @@ public static class CorrectionPresentation
 
         if (string.IsNullOrWhiteSpace(issue.Replacement))
         {
-            return string.IsNullOrEmpty(issue.Original) ? "Рекомендация" : issue.Original;
+            return string.IsNullOrEmpty(issue.Original) ? Strings.Corr_ClassStyle : issue.Original;
         }
 
         return $"{issue.Original} → {issue.Replacement}";
@@ -68,7 +69,7 @@ public static class CorrectionPresentation
             });
         }
 
-        return issue.Replacement ?? "Исправить";
+        return issue.Replacement ?? Strings.Common_Fix;
     }
 
     /// <summary>

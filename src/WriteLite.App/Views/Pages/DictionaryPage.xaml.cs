@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using WriteLite.Controls;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Lexical;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
@@ -33,7 +34,7 @@ public partial class DictionaryPage : UserControl
     /// skeleton for 20 ms reads as a glitch. The placeholder is for the case where the
     /// pack is still warming up in the background at startup, which genuinely takes time.
     /// </remarks>
-    private static readonly TimeSpan SkeletonDelay = TimeSpan.FromMilliseconds(140);
+    private static readonly TimeSpan SkeletonDelay = WriteLiteDefaults.Debounce.DictionarySkeletonDelay;
 
     /// <summary>Trail length. Long enough to retrace a session, short enough to stay a line.</summary>
     private const int MaxHistory = 40;
@@ -70,12 +71,8 @@ public partial class DictionaryPage : UserControl
 
     private void SearchBox_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Enter)
-        {
-            return;
-        }
+        if (!e.SubmitPressed()) return;
 
-        e.Handled = true;
         _ = ShowWordAsync((SearchBox.Text ?? string.Empty).Trim());
     }
 
@@ -111,15 +108,15 @@ public partial class DictionaryPage : UserControl
 
         if (string.IsNullOrWhiteSpace(word))
         {
-            ShowLookupMessage("Найдите слово",
-                "Введите слово, чтобы увидеть его значение, формы, синонимы, антонимы и перевод.");
+            ShowLookupMessage(Strings.Dict_LookupEmptyTitle,
+                Strings.Dict_LookupEmptyHint);
             return;
         }
 
         if (_lexical is null)
         {
-            ShowLookupMessage("Словарь ещё загружается",
-                "Словарные данные готовятся в фоне. Проверка текста продолжает работать.");
+            ShowLookupMessage(Strings.Dict_LoadingTitle,
+                Strings.Dict_LoadingHint);
             return;
         }
 
@@ -168,9 +165,9 @@ public partial class DictionaryPage : UserControl
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("dictionary-lookup-failed", $"type={exception.GetType().Name}");
-            ShowLookupMessage("Не удалось выполнить поиск",
-                "Словарные данные недоступны. Проверка текста продолжает работать.");
+            CompatibilityLogger.Technical("dictionary-lookup-failed", exception);
+            ShowLookupMessage(Strings.Dict_SearchFailedTitle,
+                Strings.Dict_SearchFailedHint);
         }
     }
 
@@ -237,8 +234,8 @@ public partial class DictionaryPage : UserControl
         if (result.IsEmpty && result.Definitions.Count == 0 && result.Synonyms.Count == 0 && translations.Length == 0)
         {
             ShowLookupMessage(
-                "Ничего не найдено",
-                result.StatusMessage ?? $"Слова «{result.Word}» нет в установленных словарях.");
+                Strings.Dict_NotFoundTitle,
+                result.StatusMessage ?? string.Format(Strings.Dict_NotFoundHint, result.Word));
             return;
         }
 
@@ -267,7 +264,7 @@ public partial class DictionaryPage : UserControl
         // that Russian words are its "translation" without saying into what.
         Controls.Type.SetTracked(
             TranslationsLabel,
-            language == LexicalLanguage.English ? "ПЕРЕВОД НА РУССКИЙ" : "ПЕРЕВОД НА АНГЛИЙСКИЙ");
+            language == LexicalLanguage.English ? Strings.Dict_TranslationToRussian : Strings.Dict_TranslationToEnglish);
         FillChips(TranslationsPanel, TranslationsBlock, translations);
 
         FillChips(SynonymsPanel, SynonymsBlock, ResolveChips(result.Synonyms, language));
@@ -509,14 +506,14 @@ public partial class DictionaryPage : UserControl
     {
         // Repository, dataset IDs and licences remain in THIRD_PARTY_NOTICES.txt.
         // The article footer communicates the user-relevant privacy property only.
-        return "Локальные словари WriteLite · без интернета";
+        return Strings.Dict_Provenance;
     }
 
     private static string? BuildDefinitionMeta(LexicalDefinition definition)
     {
         var parts = new List<string>();
         if (!string.IsNullOrWhiteSpace(definition.UsageLabel)) parts.Add(definition.UsageLabel!);
-        if (definition.IsHistorical) parts.Add(definition.EraLabel ?? "историческое");
+        if (definition.IsHistorical) parts.Add(definition.EraLabel ?? Strings.Dict_Historical);
         return parts.Count == 0 ? null : string.Join(" · ", parts);
     }
 
@@ -528,16 +525,16 @@ public partial class DictionaryPage : UserControl
 
     private static string PartOfSpeechName(LexicalPartOfSpeech partOfSpeech) => partOfSpeech switch
     {
-        LexicalPartOfSpeech.Noun => "существительное",
-        LexicalPartOfSpeech.Verb => "глагол",
-        LexicalPartOfSpeech.Adjective => "прилагательное",
-        LexicalPartOfSpeech.Adverb => "наречие",
-        LexicalPartOfSpeech.Pronoun => "местоимение",
-        LexicalPartOfSpeech.Preposition => "предлог",
-        LexicalPartOfSpeech.Conjunction => "союз",
-        LexicalPartOfSpeech.Particle => "частица",
-        LexicalPartOfSpeech.Interjection => "междометие",
-        LexicalPartOfSpeech.Numeral => "числительное",
+        LexicalPartOfSpeech.Noun => Strings.Dict_PosNoun,
+        LexicalPartOfSpeech.Verb => Strings.Dict_PosVerb,
+        LexicalPartOfSpeech.Adjective => Strings.Dict_PosAdjective,
+        LexicalPartOfSpeech.Adverb => Strings.Dict_PosAdverb,
+        LexicalPartOfSpeech.Pronoun => Strings.Dict_PosPronoun,
+        LexicalPartOfSpeech.Preposition => Strings.Dict_PosPreposition,
+        LexicalPartOfSpeech.Conjunction => Strings.Dict_PosConjunction,
+        LexicalPartOfSpeech.Particle => Strings.Dict_PosParticle,
+        LexicalPartOfSpeech.Interjection => Strings.Dict_PosInterjection,
+        LexicalPartOfSpeech.Numeral => Strings.Dict_PosNumeral,
         _ => string.Empty
     };
 

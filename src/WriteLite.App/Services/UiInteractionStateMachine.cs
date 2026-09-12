@@ -30,16 +30,16 @@ public enum TextChangeSource
 public sealed class UiInteractionStateMachine
 {
     /// <summary>How long a confirmed edit is considered actively typing before becoming idle.</summary>
-    public static readonly TimeSpan DefaultIdleGrace = TimeSpan.FromSeconds(4);
+    public static readonly TimeSpan DefaultIdleGrace = WriteLiteDefaults.UiStateMachine.DefaultIdleGrace;
 
     /// <summary>Minimum idle grace to avoid flicker on brief pauses between keystrokes.</summary>
-    public static readonly TimeSpan MinIdleGrace = TimeSpan.FromSeconds(1.5);
+    public static readonly TimeSpan MinIdleGrace = WriteLiteDefaults.UiStateMachine.MinIdleGrace;
 
     /// <summary>Maximum idle grace (settings upper bound).</summary>
-    public static readonly TimeSpan MaxIdleGrace = TimeSpan.FromSeconds(30);
+    public static readonly TimeSpan MaxIdleGrace = WriteLiteDefaults.UiStateMachine.MaxIdleGrace;
 
     /// <summary>Debounce rapid focus flicker before treating the target as fully lost.</summary>
-    public static readonly TimeSpan DefaultFocusGrace = TimeSpan.FromMilliseconds(250);
+    public static readonly TimeSpan DefaultFocusGrace = WriteLiteDefaults.UiStateMachine.DefaultFocusGrace;
 
     private TimeSpan _idleGrace;
     private string? _targetId;

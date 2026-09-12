@@ -3,9 +3,10 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
-using System.Runtime.InteropServices;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Lexical;
+using static WriteLite.Services.PopupChrome;
 using Button = System.Windows.Controls.Button;
 using TabControl = System.Windows.Controls.TabControl;
 using TabItem = System.Windows.Controls.TabItem;
@@ -34,15 +35,8 @@ namespace WriteLite.Views;
 /// </summary>
 public sealed class LexicalPopupWindow : Window
 {
-    private static readonly MediaBrush CardBackground = ThemeResource.Brush("WlSurface", Brushes.Black);
     private static readonly MediaBrush RaisedBackground = ThemeResource.Brush("WlRaised", Brushes.DarkSlateGray);
-    private static readonly MediaBrush CardBorderBrush = ThemeResource.Brush("WlLineStrong", Brushes.DimGray);
     private static readonly MediaBrush TextBrush = ThemeResource.Brush("WlText", Brushes.White);
-    private static readonly MediaBrush MutedBrush = ThemeResource.Brush("WlTextSecondary", Brushes.LightGray);
-    private static readonly MediaBrush FaintBrush = ThemeResource.Brush("WlTextMuted", Brushes.Gray);
-    private static readonly MediaBrush AccentBrush = ThemeResource.Brush("WlBrand", Brushes.Orange);
-    private static readonly MediaBrush OnAccentBrush = ThemeResource.Brush("WlOnBrand", Brushes.Black);
-    private static readonly MediaBrush HoverBrush = ThemeResource.Brush("WlHover", Brushes.DimGray);
 
     // The headword is the largest thing in the card, the way a dictionary entry reads.
     private readonly TextBlock _titleWord = new() { FontSize = 21, FontWeight = FontWeights.Medium, Foreground = TextBrush };
@@ -112,16 +106,16 @@ public sealed class LexicalPopupWindow : Window
             Foreground = ThemeResource.Brush("WlTextSubtle", Brushes.Gray),
             VerticalAlignment = VerticalAlignment.Center
         };
-        Controls.Type.SetTracked(eyebrow, "СЛОВАРЬ");
+        Controls.Type.SetTracked(eyebrow, Strings.LexPop_Eyebrow);
         var titleRow = new StackPanel { Orientation = Orientation.Horizontal };
         titleRow.Children.Add(eyebrow);
         // The card is a summary. This is the way out of it and into the full article, and it
         // leads to the same dictionary page every other «Открыть в словаре» in the product
         // leads to, rather than to a second reading surface built for popups.
-        var openFull = CreateGhostButton("В словаре", double.NaN, 26);
+        var openFull = CreateGhostButton(Strings.LexPop_OpenInDictionary, double.NaN, 26);
         openFull.Padding = new Thickness(8, 0, 8, 0);
         openFull.FontSize = 11;
-        openFull.ToolTip = "Открыть полную статью в WriteLite";
+        openFull.ToolTip = Strings.LexPop_OpenFullArticleTooltip;
         openFull.Click += (_, _) =>
         {
             var word = _result?.Lemma ?? _range?.Word;
@@ -161,12 +155,12 @@ public sealed class LexicalPopupWindow : Window
             // Falls back to the default template when the theme is not loaded.
             Style = ThemeResource.Style("WlTabControl")
         };
-        _wordTab = CreateTab("Слово", _morphologyPanel);
-        _synonymsTab = CreateTab("Синонимы", _synonymsPanel);
-        _definitionsTab = CreateTab("Значения", _definitionsPanel);
-        _examplesTab = CreateTab("Примеры", _examplesPanel);
-        _roleTab = CreateTab("Роль", _rolePanel);
-        _translationsTab = CreateTab("Перевод", _translationsPanel);
+        _wordTab = CreateTab(Strings.Suggestions_WordTitle, _morphologyPanel);
+        _synonymsTab = CreateTab(Strings.LexPop_WordSynonyms, _synonymsPanel);
+        _definitionsTab = CreateTab(Strings.LexPop_WordDefinitions, _definitionsPanel);
+        _examplesTab = CreateTab(Strings.LexPop_WordExamples, _examplesPanel);
+        _roleTab = CreateTab(Strings.LexPop_WordRole, _rolePanel);
+        _translationsTab = CreateTab(Strings.LexPop_WordTranslations, _translationsPanel);
         _tabs.Items.Add(_wordTab);
         _tabs.Items.Add(_translationsTab);
         _tabs.Items.Add(_synonymsTab);
@@ -203,11 +197,11 @@ public sealed class LexicalPopupWindow : Window
         _generationId = generationId;
         _textVersion = textVersion;
         _titleWord.Text = range.Word;
-        _subtitle.Text = "Загрузка…";
+        _subtitle.Text = Strings.LexPop_Loading;
         _status.Text = "";
         _source.Text = "";
         ClearPanels();
-        _synonymsPanel.Children.Add(Muted("Ищем в локальном словаре…"));
+        _synonymsPanel.Children.Add(Muted(Strings.LexPop_SearchingLocal));
         SetTabVisibility(word: true, synonyms: true, definitions: false, examples: false, role: false);
         _pendingAnchor = physicalAnchor;
         EnsureVisible();
@@ -337,7 +331,7 @@ public sealed class LexicalPopupWindow : Window
 
         _status.Text = result.StatusMessage ?? "";
         var glosses = translations ?? [];
-        PopulateSource(result);
+        PopulateSource();
         PopulateMorphology(result);
         PopulateTranslations(glosses);
         PopulateSynonyms(result);
@@ -384,14 +378,14 @@ public sealed class LexicalPopupWindow : Window
         _morphologyPanel.Children.Clear();
         _morphologyPanel.Children.Add(new TextBlock
         {
-            Text = $"Слово: {result.Word}",
+            Text = string.Format(Strings.LexPop_WordLabel, result.Word),
             FontSize = 14,
             FontWeight = FontWeights.SemiBold,
             Foreground = TextBrush
         });
         _morphologyPanel.Children.Add(new TextBlock
         {
-            Text = $"Лемма: {result.Lemma}",
+            Text = string.Format(Strings.LexPop_LemmaLabel, result.Lemma),
             FontSize = 13,
             Foreground = TextBrush,
             Margin = new Thickness(0, 4, 0, 0)
@@ -401,7 +395,7 @@ public sealed class LexicalPopupWindow : Window
 
         var pos = PosLabel(result.PartOfSpeech);
         if (!string.IsNullOrEmpty(pos))
-            _morphologyPanel.Children.Add(new TextBlock { Text = $"Часть речи: {pos}", FontSize = 12, Foreground = MutedBrush, Margin = new Thickness(0, 6, 0, 0) });
+            _morphologyPanel.Children.Add(new TextBlock { Text = string.Format(Strings.LexPop_PartOfSpeechLabel, pos), FontSize = 12, Foreground = MutedBrush, Margin = new Thickness(0, 6, 0, 0) });
 
         if (result.Morphology is { } m)
         {
@@ -415,7 +409,7 @@ public sealed class LexicalPopupWindow : Window
         _rolePanel.Children.Clear();
         if (result.Syntax is null)
         {
-            _rolePanel.Children.Add(Muted("Роль в предложении не определена."));
+            _rolePanel.Children.Add(Muted(Strings.LexPop_RoleUndefined));
             return;
         }
 
@@ -436,13 +430,13 @@ public sealed class LexicalPopupWindow : Window
             Margin = new Thickness(0, 6, 0, 8)
         });
         if (!string.IsNullOrEmpty(s.HeadWord))
-            _rolePanel.Children.Add(Muted($"Связано с: {s.HeadWord}"));
+            _rolePanel.Children.Add(Muted(string.Format(Strings.LexPop_RelatedTo, s.HeadWord)));
 
         if (result.Relations is { Count: > 0 })
         {
             _rolePanel.Children.Add(new TextBlock
             {
-                Text = "Связи",
+                Text = Strings.LexPop_Relations,
                 FontSize = 12,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = TextBrush,
@@ -455,15 +449,15 @@ public sealed class LexicalPopupWindow : Window
 
     private static string RoleRu(SyntacticRole role) => role switch
     {
-        SyntacticRole.Subject => "Подлежащее",
-        SyntacticRole.Predicate => "Сказуемое",
-        SyntacticRole.Object => "Дополнение",
-        SyntacticRole.Attribute => "Определение",
-        SyntacticRole.Adverbial => "Обстоятельство",
-        SyntacticRole.PrepositionalObject => "Предложное дополнение",
-        SyntacticRole.ConjunctionRole => "Союз",
-        SyntacticRole.ParticleRole => "Служебное слово",
-        _ => "Роль не определена"
+        SyntacticRole.Subject => Strings.LexPop_RoleSubject,
+        SyntacticRole.Predicate => Strings.LexPop_RolePredicate,
+        SyntacticRole.Object => Strings.LexPop_RoleObject,
+        SyntacticRole.Attribute => Strings.LexPop_RoleAttribute,
+        SyntacticRole.Adverbial => Strings.LexPop_RoleAdverbial,
+        SyntacticRole.PrepositionalObject => Strings.LexPop_RolePrepositionalObject,
+        SyntacticRole.ConjunctionRole => Strings.LexPop_RoleConjunction,
+        SyntacticRole.ParticleRole => Strings.LexPop_RoleParticle,
+        _ => Strings.LexPop_RoleUnknown
     };
 
     private void PopulateSynonyms(LexicalLookupResult result)
@@ -471,7 +465,7 @@ public sealed class LexicalPopupWindow : Window
         _synonymsPanel.Children.Clear();
         if (result.Synonyms.Count == 0 && (result.Antonyms is null || result.Antonyms.Count == 0))
         {
-            _synonymsPanel.Children.Add(Muted("Синонимы не найдены в локальном словаре."));
+            _synonymsPanel.Children.Add(Muted(Strings.LexPop_SynonymsNotFound));
             return;
         }
 
@@ -495,7 +489,7 @@ public sealed class LexicalPopupWindow : Window
             grid.Children.Add(text);
             if (s.CanReplace && _supportsWrite)
             {
-                var btn = CreateAccentButton("Заменить");
+                var btn = CreateAccentButton(Strings.Editor_Replace);
                 var capture = s;
                 btn.Click += (_, _) => RequestReplace(capture.Value);
                 Grid.SetColumn(btn, 1);
@@ -503,7 +497,7 @@ public sealed class LexicalPopupWindow : Window
             }
             else
             {
-                var copy = CreateGhostButton("Копировать", double.NaN, 28);
+var copy = CreateGhostButton(Strings.EditorAi_Copy, double.NaN, 28);
                 var capture = s.Value;
                 copy.Click += (_, _) => CopyToClipboard(capture);
                 Grid.SetColumn(copy, 1);
@@ -518,7 +512,7 @@ public sealed class LexicalPopupWindow : Window
         {
             _synonymsPanel.Children.Add(new TextBlock
             {
-                Text = "Антонимы",
+                Text = Strings.LexPop_Antonyms,
                 FontSize = 12,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = TextBrush,
@@ -544,7 +538,7 @@ public sealed class LexicalPopupWindow : Window
         _definitionsPanel.Children.Clear();
         if (result.Definitions.Count == 0)
         {
-            _definitionsPanel.Children.Add(Muted("Толкование не найдено."));
+            _definitionsPanel.Children.Add(Muted(Strings.LexPop_DefinitionNotFound));
             return;
         }
 
@@ -555,7 +549,7 @@ public sealed class LexicalPopupWindow : Window
             var head = $"{i}. {d.Definition}";
             block.Children.Add(new TextBlock { Text = head, FontSize = 13, Foreground = TextBrush, TextWrapping = TextWrapping.Wrap });
             var tags = new List<string?>();
-            if (d.IsHistorical) tags.Add("историч.");
+            if (d.IsHistorical) tags.Add(Strings.LexPop_Historical);
             if (!string.IsNullOrEmpty(d.EraLabel)) tags.Add(d.EraLabel);
             tags.Add(PosLabel(d.PartOfSpeech));
             tags.Add(d.UsageLabel);
@@ -572,7 +566,7 @@ public sealed class LexicalPopupWindow : Window
         _examplesPanel.Children.Clear();
         if (result.Examples.Count == 0)
         {
-            _examplesPanel.Children.Add(Muted("Примеры отсутствуют в локальном пакете."));
+            _examplesPanel.Children.Add(Muted(Strings.LexPop_ExamplesNotFound));
             return;
         }
 
@@ -630,26 +624,12 @@ public sealed class LexicalPopupWindow : Window
     {
         var dpi = VisualTreeHelper.GetDpi(this);
         var anchor = SmartPopupPlacementService.Scale(physicalScreenAnchor, dpi.DpiScaleX, dpi.DpiScaleY);
-        var workArea = GetCurrentWorkArea(physicalScreenAnchor, dpi.DpiScaleX, dpi.DpiScaleY);
+        var workArea = PopupWorkArea.GetCurrent(physicalScreenAnchor, dpi.DpiScaleX, dpi.DpiScaleY);
         var placement = SmartPopupPlacementService.PlaceAnchoredPopup(
             new SmartPlacementContext(workArea, AnchorBounds: anchor, FieldBounds: null),
             popupSize);
         Left = placement.Location.X;
         Top = placement.Location.Y;
-    }
-
-    private static Rect GetCurrentWorkArea(Rect physicalAnchor, double dpiX, double dpiY)
-    {
-        var point = new NativePoint { X = (int)Math.Round(physicalAnchor.Left), Y = (int)Math.Round(physicalAnchor.Top) };
-        var monitor = MonitorFromPoint(point, 2);
-        var info = new MonitorInfo { Size = Marshal.SizeOf<MonitorInfo>() };
-        if (monitor != IntPtr.Zero && GetMonitorInfo(monitor, ref info))
-        {
-            var work = new Rect(info.Work.Left, info.Work.Top, info.Work.Right - info.Work.Left, info.Work.Bottom - info.Work.Top);
-            return SmartPopupPlacementService.Scale(work, dpiX, dpiY);
-        }
-
-        return SystemParameters.WorkArea;
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -711,7 +691,7 @@ public sealed class LexicalPopupWindow : Window
 
         if (translations.Count == 0)
         {
-            _translationsPanel.Children.Add(Muted("Перевода нет в установленных словарях."));
+            _translationsPanel.Children.Add(Muted(Strings.LexPop_TranslationNotFound));
             return;
         }
 
@@ -737,7 +717,7 @@ public sealed class LexicalPopupWindow : Window
                 VerticalAlignment = VerticalAlignment.Center
             });
 
-            var copy = CreateGhostButton("Копировать", double.NaN, 28);
+            var copy = CreateGhostButton(Strings.EditorAi_Copy, double.NaN, 28);
             var captured = value;
             copy.Click += (_, _) => CopyToClipboard(captured);
             Grid.SetColumn(copy, 1);
@@ -748,7 +728,7 @@ public sealed class LexicalPopupWindow : Window
         }
     }
 
-    private void PopulateSource(LexicalLookupResult result)
+    private void PopulateSource()
     {
         // Pack identifiers, repository URLs and licence strings are legal/build
         // metadata, not dictionary content. Attribution remains in
@@ -791,6 +771,7 @@ public sealed class LexicalPopupWindow : Window
         }
         catch (System.Runtime.InteropServices.ExternalException)
         {
+            // Clipboard denied by another process (see remarks above); skip the copy silently.
         }
     }
 
@@ -852,16 +833,16 @@ public sealed class LexicalPopupWindow : Window
 
     private static string PosLabel(LexicalPartOfSpeech pos) => pos switch
     {
-        LexicalPartOfSpeech.Noun => "сущ.",
-        LexicalPartOfSpeech.Verb => "гл.",
-        LexicalPartOfSpeech.Adjective => "прил.",
-        LexicalPartOfSpeech.Adverb => "нар.",
-        LexicalPartOfSpeech.Pronoun => "мест.",
-        LexicalPartOfSpeech.Preposition => "предл.",
-        LexicalPartOfSpeech.Conjunction => "союз",
-        LexicalPartOfSpeech.Particle => "част.",
-        LexicalPartOfSpeech.Interjection => "межд.",
-        LexicalPartOfSpeech.Numeral => "числ.",
+        LexicalPartOfSpeech.Noun => Strings.LexPop_PosNoun,
+        LexicalPartOfSpeech.Verb => Strings.LexPop_PosVerb,
+        LexicalPartOfSpeech.Adjective => Strings.LexPop_PosAdjective,
+        LexicalPartOfSpeech.Adverb => Strings.LexPop_PosAdverb,
+        LexicalPartOfSpeech.Pronoun => Strings.LexPop_PosPronoun,
+        LexicalPartOfSpeech.Preposition => Strings.LexPop_PosPreposition,
+        LexicalPartOfSpeech.Conjunction => Strings.LexPop_PosConjunction,
+        LexicalPartOfSpeech.Particle => Strings.LexPop_PosParticle,
+        LexicalPartOfSpeech.Interjection => Strings.LexPop_PosInterjection,
+        LexicalPartOfSpeech.Numeral => Strings.LexPop_PosNumeral,
         _ => ""
     };
 
@@ -881,75 +862,6 @@ public sealed class LexicalPopupWindow : Window
         };
         button.Template = RoundedButtonTemplate(new CornerRadius(5), ThemeResource.Brush("WlBrandHover", AccentBrush));
         return button;
-    }
-
-    private static Button CreateGhostButton(string text, double width, double height)
-    {
-        var button = new Button
-        {
-            Content = text,
-            Width = width,
-            Height = height,
-            Background = Brushes.Transparent,
-            Foreground = MutedBrush,
-            BorderThickness = new Thickness(0),
-            Cursor = Cursors.Hand,
-            FontSize = 14
-        };
-        button.Template = RoundedButtonTemplate(new CornerRadius(5), HoverBrush);
-        return button;
-    }
-
-    /// <summary>
-    /// Minimal rounded button template. This window is built without XAML, so the shape
-    /// and hover surface are reproduced here from the same tokens Themes/Buttons.xaml uses.
-    /// </summary>
-    private static ControlTemplate RoundedButtonTemplate(CornerRadius radius, MediaBrush hoverBrush)
-    {
-        var border = new FrameworkElementFactory(typeof(Border));
-        border.Name = "border";
-        border.SetValue(Border.CornerRadiusProperty, radius);
-        border.SetValue(Border.SnapsToDevicePixelsProperty, true);
-        border.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding("Background")
-        {
-            RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
-        });
-        var content = new FrameworkElementFactory(typeof(ContentPresenter));
-        content.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-        content.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-        border.AppendChild(content);
-
-        var template = new ControlTemplate(typeof(Button)) { VisualTree = border };
-        var hover = new Trigger { Property = UIElement.IsMouseOverProperty, Value = true };
-        hover.Setters.Add(new Setter(Border.BackgroundProperty, hoverBrush, "border"));
-        template.Triggers.Add(hover);
-
-        var disabled = new Trigger { Property = UIElement.IsEnabledProperty, Value = false };
-        disabled.Setters.Add(new Setter(UIElement.OpacityProperty, 0.45, "border"));
-        template.Triggers.Add(disabled);
-
-        return template;
-    }
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr MonitorFromPoint(NativePoint point, uint flags);
-
-    [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    private static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo monitorInfo);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct NativePoint { public int X; public int Y; }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct NativeRect { public int Left; public int Top; public int Right; public int Bottom; }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    private struct MonitorInfo
-    {
-        public int Size;
-        public NativeRect Monitor;
-        public NativeRect Work;
-        public uint Flags;
     }
 }
 

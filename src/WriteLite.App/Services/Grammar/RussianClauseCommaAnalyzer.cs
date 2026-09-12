@@ -24,7 +24,7 @@ namespace WriteLite.Services.Grammar;
 /// A sentence with a comma in it is one where a decision was made, and these rules exist for
 /// the sentences where none was.</para>
 /// </remarks>
-public sealed class RussianClauseCommaAnalyzer
+public sealed class RussianClauseCommaAnalyzer : GrammarAnalyzerBase
 {
     private readonly RussianMorphology _morphology;
 
@@ -37,15 +37,12 @@ public sealed class RussianClauseCommaAnalyzer
         return morphology is null ? null : new RussianClauseCommaAnalyzer(morphology);
     }
 
-    public void Collect(
+    protected override void CollectCore(
         string text,
         IReadOnlyList<(int Start, int End)> protectedSpans,
         ICollection<TextIssue> issues)
     {
-        if (string.IsNullOrWhiteSpace(text)) return;
-
-        var tokens = RussianTokens.Split(text);
-        if (tokens.Count < 3) return;
+        var tokens = TokensAtLeast(text, 3);
 
         CollectGerundPhrases(text, tokens, protectedSpans, issues);
         CollectClauseCoordination(text, tokens, protectedSpans, issues);
@@ -229,7 +226,7 @@ public sealed class RussianClauseCommaAnalyzer
             var value = tokens[j].Value;
             var verb = _morphology.Verb(value);
             var finite = verb is { IsInfinitive: false } && _morphology.PartOfSpeech(value) != RussianPartOfSpeech.Gerund;
-            var subject = MainClauseSubjects.Contains(value.ToLowerInvariant());
+            var subject = RussianTokens.NominativePronouns.Contains(value.ToLowerInvariant());
 
             if (!finite && !subject) continue;
 
@@ -366,7 +363,7 @@ public sealed class RussianClauseCommaAnalyzer
             // <paramref name="index"/> and is therefore never itself a boundary here.
             if (j > index + 1 && RussianClauseBoundaryWords.Contains(lower)) break;
 
-            if (MainClauseSubjects.Contains(lower)) { subject = true; continue; }
+            if (RussianTokens.NominativePronouns.Contains(lower)) { subject = true; continue; }
 
             var form = _morphology.Verb(value);
             if (form is { IsInfinitive: false }
@@ -528,12 +525,6 @@ public sealed class RussianClauseCommaAnalyzer
     private static readonly HashSet<string> Conjunctions = new(StringComparer.OrdinalIgnoreCase)
     {
         "и", "а", "но", "или", "да", "либо", "то", "что", "чтобы",
-    };
-
-    /// <summary>Words that can only open a main clause as its subject.</summary>
-    private static readonly HashSet<string> MainClauseSubjects = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "я", "ты", "он", "она", "оно", "мы", "вы", "они",
     };
 
     private static readonly HashSet<string> Prepositions = new(StringComparer.OrdinalIgnoreCase)

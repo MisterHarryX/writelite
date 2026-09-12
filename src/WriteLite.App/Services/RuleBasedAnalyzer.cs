@@ -77,7 +77,7 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
                     continue;
                 }
 
-                var replacement = PreserveLeadingCase(
+                var replacement = RussianTokens.MatchLeadingCase(
                     match.Value, match.Result(rule.Implementation.Replacement!));
                 if (string.Equals(match.Value, replacement, StringComparison.Ordinal))
                 {
@@ -215,21 +215,6 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
         };
     }
 
-    /// <summary>
-    /// Case-insensitive rules carry a lowercase literal replacement, so a match at
-    /// the start of a sentence would otherwise be corrected to lowercase:
-    /// "Вообщем, всё готово." became "в общем, всё готово.". If the matched text
-    /// starts with a capital and the replacement does not, restore the capital.
-    /// </summary>
-    private static string PreserveLeadingCase(string original, string replacement)
-    {
-        if (original.Length == 0 || replacement.Length == 0) return replacement;
-        if (!char.IsUpper(original[0]) || !char.IsLower(replacement[0])) return replacement;
-
-        var culture = new System.Globalization.CultureInfo("ru-RU");
-        return char.ToUpper(replacement[0], culture) + replacement[1..];
-    }
-
     private static void SuppressControversialAndSoftDuplicates(List<TextIssue> issues)
     {
         // Drop soft subordinate hints that overlap reliable chtoby/comma rules.
@@ -294,7 +279,7 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
             var ch = word[0];
             if (!char.IsLetter(ch) || char.IsUpper(ch)) continue;
 
-            var fixedWord = char.ToUpper(ch, new System.Globalization.CultureInfo("ru-RU")) + word[1..];
+            var fixedWord = RussianTokens.Capitalize(word);
             issues.Add(new TextIssue(
                 match.Groups[1].Index,
                 word.Length,
@@ -515,7 +500,7 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
             }
 
             // Never suggest a comma *before* a sentence-initial conjunction (esp. «Когда»).
-            if (IsClauseOrSentenceStart(text, match.Index))
+            if (RussianTokens.IsClauseStart(text, match.Index))
             {
                 continue;
             }
@@ -525,7 +510,7 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
                 continue;
             }
 
-            var previous = PreviousNonWhitespace(text, match.Index - 1);
+            var previous = RussianTokens.PreviousNonWhitespace(text, match.Index - 1);
             if (previous is ',' or ';' or ':' or '—' or '-' or '.' or '!' or '?' or '…' or '\0')
             {
                 continue;
@@ -556,7 +541,7 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
 
             if (canAuto && char.IsLetter(previous))
             {
-                var prevIndex = IndexOfPreviousNonWhitespace(text, match.Index - 1);
+                var prevIndex = RussianTokens.PreviousNonWhitespaceIndex(text, match.Index - 1);
                 if (prevIndex >= 0 && match.Index - prevIndex <= 2)
                 {
                     start = prevIndex + 1;
@@ -619,47 +604,6 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
             && text[start..end].Equals("не", StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>
-    /// True when index is the start of the text or follows sentence/line boundary whitespace only.
-    /// Prevents false "comma before Когда" at the beginning of a sentence.
-    /// </summary>
-    private static bool IsClauseOrSentenceStart(string text, int index)
-    {
-        if (index <= 0)
-        {
-            return true;
-        }
-
-        var i = index - 1;
-        while (i >= 0 && char.IsWhiteSpace(text[i]))
-        {
-            if (text[i] is '\n' or '\r')
-            {
-                return true;
-            }
-
-            i--;
-        }
-
-        if (i < 0)
-        {
-            return true;
-        }
-
-        return text[i] is '.' or '!' or '?' or '…' or ':' or ';' or '—' or '(' or '«' or '"' or '“';
-    }
-
-    private static int IndexOfPreviousNonWhitespace(string text, int index)
-    {
-        while (index >= 0)
-        {
-            if (!char.IsWhiteSpace(text[index])) return index;
-            index--;
-        }
-
-        return -1;
-    }
-
     private static void AddLongSentenceHints(
         string text,
         IReadOnlyList<(int Start, int End)> protectedSpans,
@@ -690,22 +634,11 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
         }
     }
 
-    private static char PreviousNonWhitespace(string text, int index)
-    {
-        while (index >= 0)
-        {
-            if (!char.IsWhiteSpace(text[index])) return text[index];
-            index--;
-        }
-
-        return '\0';
-    }
-
     [GeneratedRegex(@"\b([\p{L}]{2,})\s+\1\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex RepeatedWordRegex();
 
     // Soft mid-clause subordinates only. «чтобы» handled by ChtobyAnalyzer (mandatory rules).
-    // Sentence-initial filtered in code via IsClauseOrSentenceStart.
+    // Sentence-initial filtered in code via RussianTokens.IsClauseStart.
     [GeneratedRegex(@"\b(когда|котор(?:ый|ая|ое|ые|ого|ой|ому|ым|ых)|потому\s+что|если|хотя|поскольку|что)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex SubordinateConjunctionRegex();
 
@@ -761,6 +694,8 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
     [GeneratedRegex(@"[^.!?\r\n]+(?:[.!?]+|$)", RegexOptions.CultureInvariant)]
     private static partial Regex SentenceRegex();
 
+    /// <summary>Counts digits as word characters on purpose: «длинные слова» scoring
+    /// measures tokens like «ЭТО95» too, unlike <see cref="RussianTokens.LettersTokenRegex"/>.</summary>
     [GeneratedRegex(@"[\p{L}\p{N}]+", RegexOptions.CultureInvariant)]
     private static partial Regex WordRegex();
 }

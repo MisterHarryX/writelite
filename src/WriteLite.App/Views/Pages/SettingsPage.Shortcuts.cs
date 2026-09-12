@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using WriteLite.Resources;
 using WriteLite.Services.Settings;
 using AutomationProperties = System.Windows.Automation.AutomationProperties;
 using Brush = System.Windows.Media.Brush;
@@ -87,12 +88,12 @@ public partial class SettingsPage
         // Global and local shortcuts behave differently enough that the difference has to be
         // on the row: one fires while another application is in front, the other does not.
         var scope = definition.Scope == ShortcutScope.Global
-            ? "Системное — работает в любом приложении"
-            : "Внутри WriteLite";
+            ? Strings.Shortcut_ScopeGlobal
+            : Strings.Shortcut_ScopeApp;
 
         if (!definition.IsRebindable)
         {
-            scope += " · изменить нельзя";
+            scope += Strings.Shortcut_NotRebindable;
         }
 
         label.Children.Add(new TextBlock
@@ -119,7 +120,7 @@ public partial class SettingsPage
 
         AutomationProperties.SetName(
             gesture,
-            $"{definition.Name}: {_shortcuts.GestureOf(definition.Id)}. Нажмите, чтобы изменить.");
+            string.Format(Strings.Shortcut_ClickToChange, definition.Name, _shortcuts.GestureOf(definition.Id)));
 
         gesture.Click += (_, _) => BeginCapture(gesture, definition);
         gesture.PreviewKeyDown += (_, args) => OnCaptureKey(gesture, definition, args);
@@ -135,7 +136,7 @@ public partial class SettingsPage
             Height = 28,
             Margin = new Thickness(6, 0, 0, 0),
             VerticalAlignment = VerticalAlignment.Center,
-            ToolTip = "Вернуть исходное сочетание",
+            ToolTip = Strings.Shortcut_ResetTooltip,
 
             // Shown only where it does something: a shortcut still on its shipped binding has
             // nothing to be reset to, and an always-visible control that is usually inert
@@ -143,13 +144,13 @@ public partial class SettingsPage
             Visibility = _shortcuts.IsCustomised(definition.Id) ? Visibility.Visible : Visibility.Hidden
         };
 
-        AutomationProperties.SetName(reset, $"Вернуть исходное сочетание: {definition.Name}");
+        AutomationProperties.SetName(reset, string.Format(Strings.Shortcut_ResetName, definition.Name));
         reset.Click += (_, _) =>
         {
             _shortcuts.ResetToDefault(definition.Id);
             PersistShortcuts();
             RenderShortcuts();
-            ShowShortcutHint($"Восстановлено: {definition.Name} — {_shortcuts.GestureOf(definition.Id)}", isError: false);
+            ShowShortcutHint(string.Format(Strings.Shortcut_Restored, definition.Name, _shortcuts.GestureOf(definition.Id)), isError: false);
         };
 
         Grid.SetColumn(reset, 2);
@@ -163,7 +164,7 @@ public partial class SettingsPage
         if (!definition.IsRebindable) return;
 
         _capturing = gesture;
-        gesture.Content = "Нажмите клавиши…";
+        gesture.Content = Strings.Shortcut_PressKeys;
         gesture.Focus();
         ShowShortcutHint(string.Empty, isError: false);
     }
@@ -221,7 +222,7 @@ public partial class SettingsPage
         PersistShortcuts();
         RenderShortcuts();
         ShowShortcutHint(
-            $"{definition.Name} — {_shortcuts.GestureOf(definition.Id)}",
+            string.Format(Strings.Shortcut_Bound, definition.Name, _shortcuts.GestureOf(definition.Id)),
             isError: false);
     }
 
@@ -230,7 +231,7 @@ public partial class SettingsPage
         _shortcuts.ResetAll();
         PersistShortcuts();
         RenderShortcuts();
-        ShowShortcutHint("Все сочетания возвращены к исходным.", isError: false);
+        ShowShortcutHint(Strings.Shortcut_AllReset, isError: false);
     }
 
     /// <summary>

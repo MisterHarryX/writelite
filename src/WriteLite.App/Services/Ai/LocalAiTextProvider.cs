@@ -26,6 +26,17 @@ public sealed class LocalAiTextProvider : IAiTextProvider, IAsyncDisposable, IDi
             qwen.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds.Value);
         }
 
+        // Ретраи/восстановление Qwen: значения из engine-config (model-секция) доходят до
+        // бэкенда только здесь — AI.Local не ссылается на WriteLiteDefaults. Дефолты бэкенда
+        // совпадают с конфигом, поэтому без этой завязки правки конфига молча терялись.
+        qwen.WedgeThreshold = WriteLiteDefaults.Model.QwenWedgeThreshold;
+        qwen.RecoveryCooldown = WriteLiteDefaults.Model.QwenRecoveryCooldown;
+        qwen.MaxRecoveryAttempts = WriteLiteDefaults.Model.QwenMaxRecoveryAttempts;
+        qwen.HealthProbeTimeout = WriteLiteDefaults.Model.QwenHealthProbeTimeout;
+        qwen.ServerStartupPollInterval = WriteLiteDefaults.Model.QwenServerStartupPollInterval;
+        qwen.ServerStartupPollAttempts = WriteLiteDefaults.Model.QwenServerStartupPollAttempts;
+        qwen.ProcessKillWaitTimeout = WriteLiteDefaults.Model.QwenProcessKillWait;
+
         _analyzer = new LocalAiTextAnalyzer(
             modelDirectory: modelDir,
             qwen: qwen);

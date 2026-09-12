@@ -3,12 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:WriteLite.Controls"
              xmlns:pages="clr-namespace:WriteLite.Views.Pages"
+             xmlns:res="clr-namespace:WriteLite.Resources"
              Background="{DynamicResource WlBgBase}"
              FontFamily="{DynamicResource WlFont}"
              AllowDrop="True"
              DragOver="Page_DragOver"
              Drop="Page_Drop"
-             AutomationProperties.Name="Чтение">
+             AutomationProperties.Name="{x:Static res:Strings.Nav_Reading}">
     <Grid>
         <!-- ═══ Library ═════════════════════════════════════════════════════ -->
         <Grid x:Name="LibraryView">
@@ -20,7 +21,7 @@
 
             <StackPanel Grid.Row="0" Margin="36,32,36,0">
                 <TextBlock Style="{DynamicResource WlMonoLabel}"
-                           controls:Type.Tracked="ЧТЕНИЕ"
+                           controls:Type.Tracked="{x:Static res:Strings.Reading_TrackedLabel}"
                            Foreground="{DynamicResource WlBrand}" />
 
                 <Grid Margin="0,14,0,0">
@@ -30,9 +31,9 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
-                        <TextBlock Style="{DynamicResource WlPageTitle}" Text="Проекты чтения" />
+                        <TextBlock Style="{DynamicResource WlPageTitle}" Text="{x:Static res:Strings.Reading_ProjectsTitle}" />
                         <TextBlock Style="{DynamicResource WlPageSubtitle}"
-                                   Text="Книга, ваше место в ней, пометки, закладки и карточки — всё возвращается там, где вы остановились."
+                                   Text="{x:Static res:Strings.Reading_ProjectsSubtitle}"
                                    MaxWidth="620"
                                    HorizontalAlignment="Left"
                                    Margin="0,6,0,0" />
@@ -44,13 +45,13 @@
                             VerticalAlignment="Top"
                             Margin="20,2,0,0"
                             Click="OpenBook_Click"
-                            AutomationProperties.Name="Открыть книгу">
+                            AutomationProperties.Name="{x:Static res:Strings.Reading_OpenBook}">
                         <StackPanel Orientation="Horizontal">
                             <Path Style="{DynamicResource WlIconSm}"
                                   Data="{DynamicResource WlIconOpenDocument}"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   VerticalAlignment="Center" />
-                            <TextBlock Text="Открыть книгу" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{x:Static res:Strings.Reading_OpenBook}" Margin="8,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -61,7 +62,7 @@
                 <StackPanel>
                     <!-- ── Continue ───────────────────────────────────────── -->
                     <StackPanel x:Name="ContinueSection" Visibility="Collapsed">
-                        <controls:SectionHeader Index="01" Title="Продолжить чтение" Margin="0,22,0,0" />
+                        <controls:SectionHeader Index="01" Title="{x:Static res:Strings.Reading_Continue}" Margin="0,22,0,0" />
 
                         <Border x:Name="ContinueCard"
                                 Style="{DynamicResource WlReadingCard}"
@@ -89,7 +90,7 @@
 
                                 <TextBlock Grid.Column="1"
                                            Style="{DynamicResource WlMonoLabel}"
-                                           controls:Type.Tracked="ПРОДОЛЖИТЬ →"
+                                           controls:Type.Tracked="{x:Static res:Strings.Reading_ContinueTracked}"
                                            Foreground="{DynamicResource WlBrand}"
                                            VerticalAlignment="Center"
                                            Margin="20,0,0,0" />
@@ -98,17 +99,17 @@
                     </StackPanel>
 
                     <!-- ── Library ────────────────────────────────────────── -->
-                    <controls:SectionHeader x:Name="LibraryHeader" Index="02" Title="Библиотека" Margin="0,40,0,0" />
+                    <controls:SectionHeader x:Name="LibraryHeader" Index="02" Title="{x:Static res:Strings.Reading_LibraryTitle}" Margin="0,40,0,0" />
 
                     <WrapPanel x:Name="ProjectsPanel" Margin="0,16,0,0" />
 
                     <StackPanel x:Name="EmptyState" MaxWidth="540" HorizontalAlignment="Left" Margin="0,18,0,0">
-                        <TextBlock Style="{DynamicResource WlSectionTitle}" Text="Здесь пока нет книг" />
+                        <TextBlock Style="{DynamicResource WlSectionTitle}" Text="{x:Static res:Strings.Reading_EmptyNoBooksTitle}" />
                         <TextBlock Style="{DynamicResource WlSecondary}"
-                                   Text="Откройте PDF, DOCX, ODT или TXT — WriteLite создаст проект чтения и запомнит вашу работу с книгой. Файл можно просто перетащить сюда."
+                                   Text="{x:Static res:Strings.Reading_EmptyNoBooksHint}"
                                    Margin="0,8,0,0" />
                         <TextBlock Style="{DynamicResource WlCaption}"
-                                   Text="Проекты хранятся на этом компьютере. Аккаунт не нужен, интернет не используется."
+                                   Text="{x:Static res:Strings.Reading_EmptyNoBooksPrivacy}"
                                    Margin="0,12,0,0" />
                     </StackPanel>
                 </StackPanel>

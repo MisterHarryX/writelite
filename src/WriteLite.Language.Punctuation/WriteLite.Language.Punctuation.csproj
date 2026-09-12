@@ -7,5 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\WriteLite.Language.Core\WriteLite.Language.Core.csproj" />
+    <ProjectReference Include="..\WriteLite.Language.Russian\WriteLite.Language.Russian.csproj" />
   </ItemGroup>
 </Project>

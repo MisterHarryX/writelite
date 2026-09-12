@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using WriteLite.Controls;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Ai;
 using WriteLite.Services.Audio;
@@ -89,24 +90,15 @@ public partial class MainWindow : Window
 
         _aboutPage.Configure(
             index: "09",
-            title: "О программе",
-            body: "WriteLite — локальный помощник проверки русского текста.\n\n" +
-                  "«Грамотный текст — там, где вы печатаете.»\n\n" +
-                  "Проверка выполняется локально на этом компьютере. " +
-                  "WriteLite использует сторонние компоненты с открытым исходным кодом — " +
-                  "сведения в файле THIRD_PARTY_NOTICES.",
-            actionLabel: "Открыть THIRD_PARTY_NOTICES",
+            title: Strings.Nav_About,
+            body: Strings.Main_AboutBody,
+            actionLabel: Strings.Main_AboutAction,
             action: OpenThirdPartyNotices);
 
         _appsPage.Configure(
             index: "06",
-            title: "Совместимость",
-            body: "WriteLite работает в активных редактируемых полях Windows, которые предоставляют " +
-                  "совместимые UI Automation patterns.\n\n" +
-                  "Статический текст, поля только для чтения и поля паролей игнорируются полностью — " +
-                  "они не читаются и не анализируются.\n\n" +
-                  "Некоторые многострочные, браузерные и нестандартные редакторы отдают текст для чтения, " +
-                  "но не позволяют прямую замену: в таких полях WriteLite показывает замечания без кнопки исправления.");
+            title: Strings.Nav_Compatibility,
+            body: Strings.Main_CompatBody);
 
         _homePage.NavigationRequested += OpenSection;
         _localEnginePage.NavigationRequested += OpenSection;
@@ -141,7 +133,7 @@ public partial class MainWindow : Window
     {
         _homePage.SetMonitorActive(active);
         EngineDot.Fill = (System.Windows.Media.Brush)FindResource(active ? "WlSuccess" : "WlTextMuted");
-        Controls.Type.SetTracked(EngineStateText, active ? "ЛОКАЛЬНАЯ ПРОВЕРКА" : "ПРОВЕРКА НА ПАУЗЕ");
+        Controls.Type.SetTracked(EngineStateText, active ? Strings.Main_EngineState : Strings.Main_EngineStatePaused);
     }
 
     public void SetEngineStatus(string status)
@@ -457,7 +449,7 @@ public partial class MainWindow : Window
         var path = Path.Combine(AppContext.BaseDirectory, "ThirdParty", "THIRD_PARTY_NOTICES.txt");
         if (!File.Exists(path))
         {
-            MessageBox.Show("Файл THIRD_PARTY_NOTICES.txt не найден.", "WriteLite");
+            MessageBox.Show(Strings.Main_ThirdPartyNoticesMissing, "WriteLite");
             return;
         }
 
@@ -725,7 +717,7 @@ public partial class MainWindow : Window
     {
         var maximized = WindowState == WindowState.Maximized;
         MaximizeIcon.Data = (System.Windows.Media.Geometry)FindResource(maximized ? "WlIconRestore" : "WlIconMaximize");
-        MaximizeButton.ToolTip = maximized ? "Восстановить" : "Развернуть";
+        MaximizeButton.ToolTip = maximized ? Strings.Main_Restore : Strings.Main_Maximize;
     }
 
     private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;

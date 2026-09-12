@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using WriteLite.Language.Russian;
 using WriteLite.Models;
+using WriteLite.Services.Grammar;
 using WriteLite.Services.Lexical;
 
 namespace WriteLite.Services.Stylistics;
@@ -313,7 +314,7 @@ public sealed partial class RussianStyleAnalyzer
                 match.Index,
                 match.Length,
                 match.Value,
-                RussianCase.MatchLeading(match.Value, form),
+                RussianTokens.MatchLeadingCase(match.Value, form),
                 "Двойная степень сравнения",
                 "Сравнительная форма уже передаёт значение «более»; оставьте только один способ сравнения.",
                 IssueCategory.Style,
@@ -345,7 +346,7 @@ public sealed partial class RussianStyleAnalyzer
             foreach (Match match in Regex.Matches(
                 text, phrase.Pattern,
                 RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
-                TimeSpan.FromMilliseconds(200)))
+                WriteLiteDefaults.Analysis.StyleRegexMatchTimeout))
             {
                 if (ProtectedTextSpans.Overlaps(match.Index, match.Length, protectedSpans)) continue;
                 candidates.Add((match, phrase));
@@ -398,7 +399,7 @@ public sealed partial class RussianStyleAnalyzer
         {
             var replaced = match.Result(phrase.Replacement);
             if (string.Equals(replaced, match.Value, StringComparison.Ordinal)) return null;
-            return (match.Index, match.Length, RussianCase.MatchLeading(match.Value, replaced));
+            return (match.Index, match.Length, RussianTokens.MatchLeadingCase(match.Value, replaced));
         }
 
         var end = match.Index + match.Length;
@@ -424,7 +425,7 @@ public sealed partial class RussianStyleAnalyzer
     {
         if (_profile.ProtectsAuthorVoice()) return;
 
-        var sentences = SplitSentences(text).ToList();
+        var sentences = RussianTokens.Sentences(text).ToList();
         if (sentences.Count < 2) return;
 
         var reported = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -437,7 +438,7 @@ public sealed partial class RussianStyleAnalyzer
             var counts = new Dictionary<string, List<(int Start, int Length)>>(StringComparer.OrdinalIgnoreCase);
             foreach (var (start, length) in window)
             {
-                foreach (Match word in WordRegex().Matches(text.Substring(start, length)))
+                foreach (Match word in RussianTokens.LettersTokenRegex().Matches(text.Substring(start, length)))
                 {
                     if (word.Length < MinRepeatedWordLength) continue;
                     var value = word.Value.ToLowerInvariant();
@@ -486,7 +487,7 @@ public sealed partial class RussianStyleAnalyzer
     {
         if (findings.Count == 0) return [];
 
-        var words = WordRegex().Matches(text).Count;
+        var words = RussianTokens.LettersTokenRegex().Matches(text).Count;
         var allowed = Math.Max(1, (int)Math.Floor(words * MaxFindingsPerHundredWords / 100.0));
         if (findings.Count <= allowed) return findings.OrderBy(f => f.Start).ToList();
 
@@ -496,32 +497,5 @@ public sealed partial class RussianStyleAnalyzer
             .Take(allowed)
             .OrderBy(f => f.Start)
             .ToList();
-    }
-
-    private static IEnumerable<(int Start, int Length)> SplitSentences(string text)
-    {
-        var start = 0;
-        for (var i = 0; i < text.Length; i++)
-        {
-            if (text[i] is not ('.' or '!' or '?' or '…' or '\n')) continue;
-            if (i + 1 > start) yield return (start, i + 1 - start);
-            start = i + 1;
-        }
-
-        if (start < text.Length) yield return (start, text.Length - start);
-    }
-
-    [GeneratedRegex(@"[\p{L}]+", RegexOptions.CultureInvariant)]
-    private static partial Regex WordRegex();
-}
-
-internal static class RussianCase
-{
-    public static string MatchLeading(string source, string replacement)
-    {
-        if (source.Length == 0 || replacement.Length == 0) return replacement;
-        if (!char.IsUpper(source[0]) || !char.IsLower(replacement[0])) return replacement;
-        var culture = new System.Globalization.CultureInfo("ru-RU");
-        return char.ToUpper(replacement[0], culture) + replacement[1..];
     }
 }

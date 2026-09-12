@@ -1,3 +1,4 @@
+using WriteLite.Language.Russian;
 using WriteLite.Models;
 
 namespace WriteLite.Services.Rules;
@@ -5,7 +6,7 @@ namespace WriteLite.Services.Rules;
 public static class RulePackSchema
 {
     public const int CurrentVersion = 1;
-    public const string RussianLanguage = "ru";
+    public const string RussianLanguage = RussianLanguageProfile.IsoCode;
 }
 
 public sealed record RulePackDocument(

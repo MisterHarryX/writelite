@@ -1,6 +1,7 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json;
+using WriteLite.Language.Russian;
 
 namespace WriteLite.Services.Lexical;
 
@@ -202,12 +203,21 @@ public static class LexicalPackLoader
     public static LexicalLanguage ParseLanguage(string? value)
     {
         if (string.IsNullOrWhiteSpace(value)) return LexicalLanguage.Unknown;
-        return value.Trim().ToLowerInvariant() switch
+
+        // ISO-639-1 prefix covers every variant a pack might carry: "ru", "RU",
+        // "ru-RU", "rus", "russian".
+        var normalized = value.Trim().ToLowerInvariant();
+        if (normalized.StartsWith(RussianLanguageProfile.IsoCode, StringComparison.Ordinal))
         {
-            "ru" or "rus" or "russian" => LexicalLanguage.Russian,
-            "en" or "eng" or "english" => LexicalLanguage.English,
-            _ => LexicalLanguage.Unknown
-        };
+            return LexicalLanguage.Russian;
+        }
+
+        if (normalized.StartsWith("en", StringComparison.Ordinal))
+        {
+            return LexicalLanguage.English;
+        }
+
+        return LexicalLanguage.Unknown;
     }
 
     public static LexicalPartOfSpeech ParsePos(string? value)

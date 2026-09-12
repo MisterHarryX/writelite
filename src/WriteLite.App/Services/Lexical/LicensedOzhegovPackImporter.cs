@@ -227,8 +227,10 @@ public sealed class HistoricalDictionaryProvider : IHistoricalDictionaryProvider
             IsAvailable = _entries.Count > 0;
             CompatibilityLogger.Technical("historical-dict-loaded", $"entries={_entries.Count}");
         }
-        catch
+        catch (Exception exception)
         {
+            // A corrupt historical pack is not fatal; the importer just stays unavailable.
+            CompatibilityLogger.Technical("historical-dict-load-failed", $"type={exception.GetType().Name}");
             IsAvailable = false;
         }
     }

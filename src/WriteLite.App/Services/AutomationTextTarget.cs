@@ -7,7 +7,7 @@ namespace WriteLite.Services;
 
 public sealed class AutomationTextTarget
 {
-    private static readonly TimeSpan DefaultUiaTimeout = TimeSpan.FromMilliseconds(750);
+    private static TimeSpan DefaultUiaTimeout => WriteLiteDefaults.Analysis.UiaOperationTimeout;
     private static UiaCircuitBreaker SharedBreaker = new();
 
     private readonly ExternalTextWriter _writer;

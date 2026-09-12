@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using WriteLite.Resources;
 using WriteLite.Services.Ai;
 using WriteLite.Services.Settings;
 using UserControl = System.Windows.Controls.UserControl;
@@ -126,7 +127,7 @@ public partial class SettingsPage : UserControl
         }
         catch
         {
-            RowAutostart.Description = "Не удалось изменить автозапуск.";
+            RowAutostart.Description = Strings.SETTINGS_AUTOSTART_ERROR;
         }
 
         SettingsChanged?.Invoke(_settings);
@@ -147,7 +148,7 @@ public partial class SettingsPage : UserControl
 
         LocalAiStatusHint.Text = _settings.WriteAiEnabled
             ? WriteAiStatus.DescribeWithHint(WriteAiState.Ready)
-              + " Нажмите «Проверить подключение», чтобы увидеть текущее состояние."
+              + Strings.SETTINGS_AI_PROBE_HINT
             : WriteAiStatus.DescribeWithHint(WriteAiState.Disabled);
     }
 
@@ -158,7 +159,7 @@ public partial class SettingsPage : UserControl
             return;
         }
 
-        LocalAiStatusHint.Text = "Проверка подключения…";
+        LocalAiStatusHint.Text = Strings.SETTINGS_AI_PROBE_CONNECTING;
         var endpoint = TxtQwenEndpoint.Text?.Trim() ?? "http://127.0.0.1:8742";
         var modelDir = Path.Combine(AppContext.BaseDirectory, "models", "writelight-qwen");
         var profileName = (CmbLocalAiProfile.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Standard";
@@ -196,7 +197,7 @@ public partial class SettingsPage : UserControl
             _ = await provider.AnalyzeAsync(probeText);
             LocalAiStatusHint.Text =
                 WriteAiStatus.DescribeWithHint(WriteAiState.Ready)
-                + $" Режим: {WriteAiStatus.BackendLabel(provider.LastBackend, available: true)}.";
+                + string.Format(Strings.SETTINGS_AI_PROBE_MODE, WriteAiStatus.BackendLabel(provider.LastBackend, available: true));
         }
         catch (Exception ex)
         {

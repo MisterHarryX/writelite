@@ -20,7 +20,7 @@ namespace WriteLite.Services.Notes;
 public sealed class NotesService : IDisposable
 {
     /// <summary>Quiet period before an edit reaches the disk.</summary>
-    private static readonly TimeSpan SaveDelay = TimeSpan.FromMilliseconds(600);
+    private static readonly TimeSpan SaveDelay = WriteLiteDefaults.Debounce.NotesSaveDelay;
 
     private readonly string _path;
     private readonly object _gate = new();
@@ -368,7 +368,7 @@ public sealed class NotesService : IDisposable
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            CompatibilityLogger.Technical("notes-save-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("notes-save-failed", exception);
 
             // Left dirty on purpose: the next edit retries, and the data is still in
             // memory. Swallowing the flag would turn a transient lock into a silent

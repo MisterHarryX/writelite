@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using WriteLite.AI.Contracts;
+using WriteLite.Language.Russian;
 
 namespace WriteLite.AI.Local;
 
@@ -28,7 +29,7 @@ public sealed partial class LocalCorrectionEngine
         }
 
         var language = LanguageDetector.Detect(text);
-        if (language != "ru")
+        if (language != RussianLanguageProfile.IsoCode)
         {
             return (text, "und", false);
         }

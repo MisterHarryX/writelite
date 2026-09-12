@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:WriteLite.Controls"
+             xmlns:res="clr-namespace:WriteLite.Resources"
              Background="{DynamicResource WlBgBase}"
              FontFamily="{DynamicResource WlFont}">
     <!--
@@ -12,8 +13,8 @@
     <ScrollViewer Style="{DynamicResource WlScrollViewer}">
         <StackPanel MaxWidth="700" HorizontalAlignment="Left" Margin="36,34,36,40">
 
-            <controls:SectionHeader Index="05" Title="Локальный движок"
-                                    Description="Проверка выполняется на этом компьютере. Недоступность модели не отключает базовую проверку." />
+            <controls:SectionHeader Index="05" Title="{x:Static res:Strings.LocalAi_EngineTitle}"
+                                    Description="{x:Static res:Strings.LocalAi_EngineDescription}" />
 
             <!-- Live status strip -->
             <Border Style="{DynamicResource WlCard}" Margin="0,20,0,0" Padding="18,16">
@@ -23,57 +24,57 @@
                                  Fill="{DynamicResource WlSuccess}"
                                  VerticalAlignment="Center" Margin="0,0,9,0" />
                         <TextBlock x:Name="StateText" Style="{DynamicResource WlSectionTitle}"
-                                   Text="Движок активен" />
+                                   Text="{x:Static res:Strings.LocalAi_EngineActive}" />
                     </StackPanel>
                     <TextBlock x:Name="StateDetail" Style="{DynamicResource WlSecondary}"
-                               Text="Базовая проверка WriteLite" Margin="0,7,0,0" />
+                               Text="{x:Static res:Strings.LocalAi_BaseCheck}" Margin="0,7,0,0" />
 
                     <Border Style="{DynamicResource WlHairline}" Margin="0,16,0,14" />
 
                     <UniformGrid Columns="3">
                         <StackPanel Margin="0,0,16,0">
-                            <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="МОДЕЛЬ" />
+                            <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="{x:Static res:Strings.LocalAi_ModelLabel}" />
                             <TextBlock x:Name="ModelText" Style="{DynamicResource WlMonoValue}"
                                        Foreground="{DynamicResource WlText}" Text="—" Margin="0,7,0,0" />
                         </StackPanel>
                         <StackPanel Margin="0,0,16,0">
-                            <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="СЛОВАРИ" />
+                            <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="{x:Static res:Strings.LocalAi_DictionariesLabel}" />
                             <TextBlock x:Name="DictionariesText" Style="{DynamicResource WlMonoValue}"
-                                       Foreground="{DynamicResource WlText}" Text="Загружены" Margin="0,7,0,0" />
+                                       Foreground="{DynamicResource WlText}" Text="{x:Static res:Strings.LocalAi_DictionariesLoaded}" Margin="0,7,0,0" />
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="ИНТЕРНЕТ" />
+                            <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="{x:Static res:Strings.LocalAi_InternetLabel}" />
                             <TextBlock Style="{DynamicResource WlMonoValue}"
-                                       Foreground="{DynamicResource WlText}" Text="Не требуется" Margin="0,7,0,0" />
+                                       Foreground="{DynamicResource WlText}" Text="{x:Static res:Strings.LocalAi_InternetNotRequired}" Margin="0,7,0,0" />
                         </StackPanel>
                     </UniformGrid>
                 </StackPanel>
             </Border>
 
             <!-- Configuration read-out -->
-            <controls:SectionHeader Title="Конфигурация" ShowRule="True" Margin="0,40,0,0" />
+            <controls:SectionHeader Title="{x:Static res:Strings.LocalAi_ConfigSection}" ShowRule="True" Margin="0,40,0,0" />
             <StackPanel Margin="0,4,0,0">
-                <controls:SettingRow x:Name="RowLocalAi" Label="WriteAI"
-                                     Description="Дополнительный слой после быстрых правил." />
-                <controls:SettingRow x:Name="RowProfile" Label="Профиль"
-                                     Description="Lite работает без Python и без сети; Quality нагружает CPU сильнее." />
-                <controls:SettingRow x:Name="RowEndpoint" Label="Адрес сервера WriteAI"
-                                     Description="Адрес локального сервера модели." />
+                <controls:SettingRow x:Name="RowLocalAi" Label="{x:Static res:Strings.Nav_LocalAi}"
+                                     Description="{x:Static res:Strings.LocalAi_AiLayerDescription}" />
+                <controls:SettingRow x:Name="RowProfile" Label="{x:Static res:Strings.SETTINGS_AI_PROFILE}"
+                                     Description="{x:Static res:Strings.LocalAi_ProfileDescription}" />
+                <controls:SettingRow x:Name="RowEndpoint" Label="{x:Static res:Strings.SETTINGS_AI_ENDPOINT}"
+                                     Description="{x:Static res:Strings.LocalAi_EndpointDescription}" />
             </StackPanel>
 
             <Button Style="{DynamicResource WlSecondaryButton}"
-                    Content="Изменить в настройках"
+                    Content="{x:Static res:Strings.LocalAi_OpenSettings}"
                     HorizontalAlignment="Left"
                     Margin="0,20,0,0"
                     Click="OpenSettings_Click" />
 
             <!-- Privacy statement, stated once and not repeated across the app. -->
-            <controls:SectionHeader Title="Обработка данных" Margin="0,40,0,0" />
+            <controls:SectionHeader Title="{x:Static res:Strings.LocalAi_PrivacySection}" Margin="0,40,0,0" />
             <TextBlock Style="{DynamicResource WlBody}"
                        Foreground="{DynamicResource WlTextSecondary}"
                        LineHeight="23"
                        Margin="0,18,0,0"
-                       Text="Языковая модель и словари входят в комплект приложения и работают на CPU. Текст, проверяемый в локальном режиме, не покидает это устройство и не передаётся владельцу проекта." />
+                       Text="{x:Static res:Strings.LocalAi_PrivacyBody}" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

@@ -220,10 +220,10 @@ public sealed class WriteLiteLanguageEngine : ITextAnalyzer, ITextAnalysisProgre
         {
             await SetExtendedEnabledAsync(true, cancellationToken).ConfigureAwait(false);
             // Wait briefly for readiness.
-            var deadline = DateTime.UtcNow.AddSeconds(45);
+            var deadline = DateTime.UtcNow.Add(WriteLiteDefaults.Networking.LanguageEngineStartupTimeout);
             while (DateTime.UtcNow < deadline && !_host.IsReady)
             {
-                await Task.Delay(200, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(WriteLiteDefaults.Networking.LanguageEngineRestartPollInterval, cancellationToken).ConfigureAwait(false);
             }
 
             return _host.IsReady;
@@ -356,13 +356,13 @@ public sealed class WriteLiteLanguageEngine : ITextAnalyzer, ITextAnalysisProgre
             or WriteLiteLanguageEngineState.Unavailable)
         {
             // Cap auto-starts to avoid restart loops.
-            if (Interlocked.Increment(ref _startAttempts) > 3)
+            if (Interlocked.Increment(ref _startAttempts) > Math.Max(0, WriteLiteDefaults.Networking.EngineAutoStartMaxAttempts))
             {
                 ScheduleBackoff();
                 return;
             }
 
-            if (Volatile.Read(ref _consecutiveFailures) >= 5)
+            if (Volatile.Read(ref _consecutiveFailures) >= WriteLiteDefaults.Networking.EngineAutoStartFailureLimit)
             {
                 // Require explicit restart after too many failures.
                 SetStatus(WriteLiteLanguageEngineState.Unavailable, "Расширенная проверка временно недоступна");
@@ -377,7 +377,10 @@ public sealed class WriteLiteLanguageEngine : ITextAnalyzer, ITextAnalysisProgre
     {
         // Mild then exponential: 3s, 9s, 27s, 60s max — avoids tight loops without multi-minute silence.
         var failures = Math.Max(1, Volatile.Read(ref _consecutiveFailures));
-        var seconds = Math.Min(60, 3 * Math.Pow(3, Math.Min(failures - 1, 3)));
+        var seconds = Math.Min(
+            WriteLiteDefaults.Networking.EngineRecoveryBackoffMax.TotalSeconds,
+            WriteLiteDefaults.Networking.EngineRecoveryBackoffBase.TotalSeconds
+                * Math.Pow(WriteLiteDefaults.Networking.EngineRecoveryBackoffFactor, failures - 1));
         _nextAllowedAutoStartUtc = DateTimeOffset.UtcNow.AddSeconds(seconds);
     }
 
@@ -412,7 +415,7 @@ public sealed class WriteLiteLanguageEngine : ITextAnalyzer, ITextAnalysisProgre
             return;
         }
 
-        if (Volatile.Read(ref _consecutiveFailures) >= 5)
+        if (Volatile.Read(ref _consecutiveFailures) >= WriteLiteDefaults.Networking.EngineAutoStartFailureLimit)
         {
             return;
         }
@@ -427,7 +430,7 @@ public sealed class WriteLiteLanguageEngine : ITextAnalyzer, ITextAnalysisProgre
             try
             {
                 // Honour backoff window, but recover promptly after first failure.
-                var delay = TimeSpan.FromSeconds(3);
+                var delay = WriteLiteDefaults.Networking.LanguageEngineRecoveryBaseDelay;
                 var until = _nextAllowedAutoStartUtc - DateTimeOffset.UtcNow;
                 if (until > delay)
                 {

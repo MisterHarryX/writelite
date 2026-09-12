@@ -19,11 +19,95 @@
          diff shared by both AI paths is the point: two implementations drift, and the
          drift is invisible until a benchmark blames the model for it. -->
     <ProjectReference Include="..\WriteLite.Language.Core\WriteLite.Language.Core.csproj" />
+    <ProjectReference Include="..\WriteLite.Language.Russian\WriteLite.Language.Russian.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Models\lite-rules.json" LogicalName="WriteLite.AI.Local.Models.lite-rules.json" />
+    <!-- ruSpelling is generated at build time from resources/rules/ru/stable-spelling.yaml
+         (lane `ai`/`both`) so that the embedded Lite table and the per-word spell checker
+         share one hand-authored source. The `ruIntroducers`/`ruParentheticals` lists are
+         hand-authored in lite-rules.template.json. See the GenerateLiteRules target below. -->
+    <EmbeddedResource Include="$(RuleLiteGeneratedPath)" LogicalName="WriteLite.AI.Local.Models.lite-rules.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.20.1" />
   </ItemGroup>
+
+  <UsingTask TaskName="GenerateLiteRules" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <YamlPath ParameterType="System.String" Required="true" />
+      <TemplateJson ParameterType="System.String" Required="true" />
+      <OutputJson ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Using Namespace="System.Collections.Generic" />
+      <Code Type="Fragment" Language="cs">
+        string Esc(string s)
+        {
+            return "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+        }
+
+        Log.LogMessage(MessageImportance.Normal, "GenerateLiteRules: {0} -> {1}", YamlPath, OutputJson);
+        try
+        {
+            var yaml = File.ReadAllText(YamlPath);
+            // Each block is `- id: ..` then `from:`/`to:` (optionally a `lane:` line).
+            // Only lanes `ai` and `both` are embedded into lite-rules.json.
+            var block = new Regex(
+                @"^  - id: [^\r\n]*\r?\n    from: ""(?&lt;from&gt;[^""]*)""\r?\n    to: ""(?&lt;to&gt;[^""]*)""(?:\r?\n    lane: (?&lt;lane&gt;[a-zA-Z]+))?",
+                RegexOptions.Multiline);
+            var sb = new StringBuilder();
+            sb.Append("{");
+            var first = true;
+            var entryCount = 0;
+            foreach (Match m in block.Matches(yaml))
+            {
+                var lane = m.Groups["lane"].Success ? m.Groups["lane"].Value.ToLowerInvariant() : "spell";
+                if (lane != "ai" &amp;&amp; lane != "both")
+                {
+                    continue;
+                }
+                if (!first)
+                {
+                    sb.Append(",");
+                }
+                first = false;
+                entryCount++;
+                sb.Append(Esc(m.Groups["from"].Value)).Append(":").Append(Esc(m.Groups["to"].Value));
+            }
+            sb.Append("}");
+
+            var template = File.ReadAllText(TemplateJson);
+            if (!template.Contains("__RU_SPELLING__"))
+            {
+                Log.LogError("lite-rules.template.json is missing the __RU_SPELLING__ marker.");
+                return false;
+            }
+            var json = template.Replace("{__RU_SPELLING__}", sb.ToString());
+            File.WriteAllText(OutputJson, json, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            Log.LogMessage(MessageImportance.Low, "GenerateLiteRules: wrote {0} ({1} entries)", OutputJson, entryCount);
+        }
+        catch (Exception ex)
+        {
+            Log.LogErrorFromException(ex, showStackTrace: true);
+            Success = false;
+        }
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <PropertyGroup>
+    <RuleLiteYamlPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\resources\rules\ru\stable-spelling.yaml'))</RuleLiteYamlPath>
+    <RuleLiteTemplatePath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\Models\lite-rules.template.json'))</RuleLiteTemplatePath>
+    <RuleLiteGeneratedPath>$(MSBuildProjectDirectory)\obj\$(Configuration)\$(TargetFramework)\lite-rules.generated.json</RuleLiteGeneratedPath>
+  </PropertyGroup>
+
+  <Target Name="GenerateLiteRules" BeforeTargets="CoreCompile"
+          Inputs="$(RuleLiteYamlPath);$(RuleLiteTemplatePath)"
+          Outputs="$(RuleLiteGeneratedPath)">
+    <GenerateLiteRules YamlPath="$(RuleLiteYamlPath)" TemplateJson="$(RuleLiteTemplatePath)" OutputJson="$(RuleLiteGeneratedPath)" />
+  </Target>
 </Project>

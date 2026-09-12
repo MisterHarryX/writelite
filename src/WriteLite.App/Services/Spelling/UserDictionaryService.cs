@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.IO;
+using WriteLite.Language.Russian;
 
 namespace WriteLite.Services.Spelling;
 
@@ -54,7 +55,7 @@ public sealed class UserDictionaryService
                     var store = JsonSerializer.Deserialize<UserDictionaryDocument>(json)
                         ?? throw new InvalidDataException("User dictionary document is empty.");
                     if (store.SchemaVersion is < 1 or > CurrentSchemaVersion
-                        || !string.Equals(store.Language, "ru", StringComparison.Ordinal))
+                        || !string.Equals(store.Language, RussianLanguageProfile.IsoCode, StringComparison.Ordinal))
                     {
                         throw new InvalidDataException("Unsupported user dictionary schema or language.");
                     }
@@ -152,7 +153,7 @@ public sealed class UserDictionaryService
             // Store words only — never log dictionary contents. Atomic replace.
             var document = new UserDictionaryDocument(
                 CurrentSchemaVersion,
-                "ru",
+                RussianLanguageProfile.IsoCode,
                 _words.Order(StringComparer.OrdinalIgnoreCase).ToArray());
             var json = JsonSerializer.Serialize(document);
             AtomicWrite(_path, json);

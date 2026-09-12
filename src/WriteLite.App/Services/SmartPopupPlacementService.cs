@@ -28,8 +28,15 @@ public sealed record SmartPlacementContext(
     Rect? AnchorBounds = null,
     Rect? CaretBounds = null,
     Rect? HostWindowBounds = null,
-    double Gap = 8,
-    double MinEdgeMargin = 4);
+    double? Gap = null,
+    double? MinEdgeMargin = null)
+{
+    /// <summary>Разрыв (в px) от привязки; по умолчанию из единого конфига.</summary>
+    public double GapOrDefault => Gap ?? WriteLiteDefaults.Ui.SmartPlacementGapPx;
+
+    /// <summary>Минимальный отступ от края рабочей области; по умолчанию из конфига.</summary>
+    public double MinEdgeMarginOrDefault => MinEdgeMargin ?? WriteLiteDefaults.Ui.SmartPlacementMinEdgeMarginPx;
+}
 
 public sealed record SmartPlacementResult(
     Point Location,
@@ -89,7 +96,7 @@ public static class SmartPopupPlacementService
         {
             var overlap = IntersectionArea(popup, field);
             var fieldArea = field.Width * field.Height;
-            if (fieldArea > 0 && overlap / fieldArea > 0.28)
+            if (fieldArea > 0 && overlap / fieldArea > WriteLiteDefaults.SmartPlacementScoring.MaxFieldOverlapRatio)
                 return false;
         }
 
@@ -111,7 +118,7 @@ public static class SmartPopupPlacementService
         size = ClampSize(size, work);
         var field = context.FieldBounds ?? context.AnchorBounds ?? Rect.Empty;
         var anchor = context.AnchorBounds ?? field;
-        var gap = context.Gap;
+        var gap = context.GapOrDefault;
 
         var candidates = BuildCandidates(field, anchor, size, gap, includeInside: false);
         SmartPlacementResult? bestExterior = null;
@@ -157,15 +164,15 @@ public static class SmartPopupPlacementService
         if (bestExterior is null || bestExterior.Score < 0)
         {
             var fallbackOrigin = anchor.IsEmpty
-                ? new Point(work.Left + context.MinEdgeMargin, work.Top + context.MinEdgeMargin)
+                ? new Point(work.Left + context.MinEdgeMarginOrDefault, work.Top + context.MinEdgeMarginOrDefault)
                 : new Point(anchor.Left, anchor.Bottom + gap);
-            var clamped = ClampToWorkArea(fallbackOrigin, size, InflateInner(work, context.MinEdgeMargin));
+            var clamped = ClampToWorkArea(fallbackOrigin, size, InflateInner(work, context.MinEdgeMarginOrDefault));
             return new SmartPlacementResult(clamped, SmartPlacementSlot.Clamped, size, 0, OverlayPlacement.Below);
         }
 
         if (!work.Contains(new Rect(bestExterior.Location, size)))
         {
-            var clamped = ClampToWorkArea(bestExterior.Location, size, InflateInner(work, context.MinEdgeMargin));
+            var clamped = ClampToWorkArea(bestExterior.Location, size, InflateInner(work, context.MinEdgeMarginOrDefault));
             return bestExterior with { Location = clamped, Slot = SmartPlacementSlot.Clamped, LegacyPlacement = OverlayPlacement.Below };
         }
 
@@ -224,42 +231,42 @@ public static class SmartPopupPlacementService
         var work = context.WorkArea;
         if (popup.Width <= 0 || popup.Height <= 0) return double.NegativeInfinity;
 
-        if (!work.Contains(popup)) return -1_000_000 + preferenceRank;
+        if (!work.Contains(popup)) return -WriteLiteDefaults.SmartPlacementScoring.OutsideFieldFallbackRankOffset + preferenceRank;
 
-        var score = 1000.0 + preferenceRank * 10.0;
+        var score = WriteLiteDefaults.Ui.SmartPlacementBaseScore + preferenceRank * WriteLiteDefaults.Ui.SmartPlacementPreferenceRankStep;
 
         var field = context.FieldBounds;
         if (field is Rect f && !f.IsEmpty)
         {
             var overlap = IntersectionArea(popup, f);
-            score -= overlap * 2.5;
-            score -= DistanceBetween(popup, f) * 0.15;
+            score -= overlap * WriteLiteDefaults.SmartPlacementScoring.FieldOverlapPenalty;
+            score -= DistanceBetween(popup, f) * WriteLiteDefaults.SmartPlacementScoring.FieldDistancePenalty;
         }
 
         var anchor = context.AnchorBounds;
         if (anchor is Rect a && !a.IsEmpty)
         {
             var anchorOverlap = IntersectionArea(popup, a);
-            score -= anchorOverlap * 8.0;
-            score -= DistanceBetween(popup, a) * 0.35;
+            score -= anchorOverlap * WriteLiteDefaults.SmartPlacementScoring.AnchorOverlapPenalty;
+            score -= DistanceBetween(popup, a) * WriteLiteDefaults.SmartPlacementScoring.AnchorDistancePenalty;
         }
 
         if (context.CaretBounds is Rect caret && !caret.IsEmpty && popup.IntersectsWith(caret))
         {
-            score -= 500;
+            score -= WriteLiteDefaults.SmartPlacementScoring.CaretIntersectionPenalty;
         }
 
         if (context.HostWindowBounds is Rect host && !host.IsEmpty)
         {
             var hostOverlap = IntersectionArea(popup, host);
-            score += Math.Min(hostOverlap, popup.Width * popup.Height) * 0.002;
+            score += Math.Min(hostOverlap, popup.Width * popup.Height) * WriteLiteDefaults.SmartPlacementScoring.HostOverlapBonus;
         }
 
         if (slot == SmartPlacementSlot.InsideBottomRight)
         {
-            score -= 400; // heavy penalty — last resort only
+            score -= WriteLiteDefaults.SmartPlacementScoring.InsideBottomRightPenalty; // heavy penalty — last resort only
             if (!IsInsidePlacementAllowed(popup, context))
-                return -1_000_000;
+                return -WriteLiteDefaults.SmartPlacementScoring.OutsideFieldFallbackRankOffset;
         }
 
         return score;

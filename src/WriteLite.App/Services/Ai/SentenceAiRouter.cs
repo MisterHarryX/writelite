@@ -160,7 +160,7 @@ public sealed class SentenceAiRouter
                 catch (Exception ex)
                 {
                     // §63: a model failure removes model findings and nothing else.
-                    CompatibilityLogger.Technical("sentence-ai-failed", $"type={ex.GetType().Name}");
+                    CompatibilityLogger.Technical("sentence-ai-failed", ex);
                     continue;
                 }
 

@@ -119,7 +119,7 @@ public sealed class ClipboardTransfer
 
         if (failure is not null)
         {
-            CompatibilityLogger.Technical("clipboard-failed", $"type={failure.GetType().Name}");
+            CompatibilityLogger.Technical("clipboard-failed", failure);
         }
     }
 }

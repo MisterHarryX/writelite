@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using WriteLite.Controls;
 using WriteLite.Models;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Ai;
 using WriteLite.Services.Diagnostics;
@@ -154,6 +155,10 @@ public partial class EditorPage : UserControl, IDisposable
     private IReadOnlyList<TextIssue> _allIssues = [];
     private IssueCategory? _filter;
 
+    /// <summary>Current text index, or null when a rebase or retype invalidated it.</summary>
+    private DocumentTextIndex? CurrentIndex =>
+        _index is { } index && !index.IsStale(_documentGeneration) ? index : null;
+
     public EditorPage()
     {
         InitializeComponent();
@@ -265,7 +270,7 @@ public partial class EditorPage : UserControl, IDisposable
         _documentGeneration++;
         MarkDirty();
         HideUndo();
-        QueueAnalysis(TimeSpan.FromMilliseconds(220), fullDocument: false);
+        QueueAnalysis(WriteLiteDefaults.Debounce.EditorKeystrokeAnalysisDelay, fullDocument: false);
 
         // Continued typing supersedes any prepared continuation, then schedules the next one
         // behind a much longer pause. Errors are never waiting on this.
@@ -360,7 +365,7 @@ public partial class EditorPage : UserControl, IDisposable
                     trace.CheckAbortReason = "above-live-analysis-ceiling";
                 }
 
-                Controls.Type.SetTracked(StatusText, "БОЛЬШОЙ ДОКУМЕНТ · CTRL+ENTER");
+                Controls.Type.SetTracked(StatusText, Strings.Editor_BigDocument);
                 return;
             }
 
@@ -447,7 +452,7 @@ public partial class EditorPage : UserControl, IDisposable
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("editor-analysis-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("editor-analysis-failed", exception);
             if (trace is not null)
             {
                 trace.CheckAbortReason = $"exception:{exception.GetType().Name}";
@@ -577,14 +582,10 @@ public partial class EditorPage : UserControl, IDisposable
         string text,
         System.Diagnostics.Stopwatch stopwatch)
     {
-        if (!Dispatcher.CheckAccess())
-        {
-            var elapsed = stopwatch.ElapsedMilliseconds;
-            Dispatcher.BeginInvoke(() => PublishLaneCore(lane, issues, version, generation, text, elapsed));
-            return;
-        }
+        var elapsed = stopwatch.ElapsedMilliseconds;
+        if (Dispatcher.InvokeIfNeeded(() => PublishLaneCore(lane, issues, version, generation, text, elapsed))) return;
 
-        PublishLaneCore(lane, issues, version, generation, text, stopwatch.ElapsedMilliseconds);
+        PublishLaneCore(lane, issues, version, generation, text, elapsed);
     }
 
     private void PublishLaneCore(
@@ -627,11 +628,7 @@ public partial class EditorPage : UserControl, IDisposable
     /// <summary>Maps an issue's flat offsets to a live document range.</summary>
     private TextRange? ResolveIssueRange(TextIssue issue)
     {
-        var index = _index;
-        if (index is null || index.IsStale(_documentGeneration))
-        {
-            return null;
-        }
+        if (CurrentIndex is not { } index) return null;
 
         return index.RangeFor(issue.Start, issue.Length);
     }
@@ -733,11 +730,7 @@ public partial class EditorPage : UserControl, IDisposable
             return;
         }
 
-        var index = _index;
-        if (index is null || index.IsStale(_documentGeneration))
-        {
-            return;
-        }
+        if (CurrentIndex is not { } index) return;
 
         var position = Editor.GetPositionFromPoint(e.GetPosition(Editor), snapToText: true);
         if (position is null)
@@ -858,7 +851,8 @@ public partial class EditorPage : UserControl, IDisposable
             or TextEditOrigin.SmartAction
             or TextEditOrigin.ProgrammaticRestore;
 
-        QueueAnalysis(TimeSpan.FromMilliseconds(fullDocument ? 80 : 250), fullDocument);
+        QueueAnalysis(fullDocument ? WriteLiteDefaults.Debounce.EditorFullRescanDelay
+            : WriteLiteDefaults.Debounce.EditorStructuralRescanDelay, fullDocument);
     }
 
     /// <summary>
@@ -873,11 +867,7 @@ public partial class EditorPage : UserControl, IDisposable
             return;
         }
 
-        var index = _index;
-        if (index is null || index.IsStale(_documentGeneration))
-        {
-            return;
-        }
+        if (CurrentIndex is not { } index) return;
 
         var caret = index.OffsetOf(Editor.CaretPosition);
 
@@ -891,8 +881,8 @@ public partial class EditorPage : UserControl, IDisposable
         }
 
         UndoAutoButton.Visibility = Visibility.Visible;
-        Controls.Type.SetTracked(StatusText, applied == 1 ? "ИСПРАВЛЕНО 1" : $"ИСПРАВЛЕНО {applied}");
-        QueueAnalysis(TimeSpan.FromMilliseconds(120), fullDocument: true);
+        Controls.Type.SetTracked(StatusText, string.Format(Strings.Editor_FixedCount, applied));
+        QueueAnalysis(WriteLiteDefaults.Debounce.EditorPostEditRescanDelay, fullDocument: true);
     }
 
     private int ApplySafeCorrections(double minimumConfidence, Func<TextIssue, bool>? extraFilter = null)
@@ -949,14 +939,14 @@ public partial class EditorPage : UserControl, IDisposable
         }
 
         HideUndo();
-        QueueAnalysis(TimeSpan.FromMilliseconds(80), fullDocument: true);
+        QueueAnalysis(WriteLiteDefaults.Debounce.EditorFullRescanDelay, fullDocument: true);
     }
 
     private void HideUndo()
     {
         if (UndoAutoButton.Visibility == Visibility.Collapsed) return;
         UndoAutoButton.Visibility = Visibility.Collapsed;
-        Controls.Type.SetTracked(StatusText, "ЛОКАЛЬНАЯ ПРОВЕРКА");
+        Controls.Type.SetTracked(StatusText, Strings.Main_EngineState);
     }
 
     private void AutoCorrect_Changed(object sender, RoutedEventArgs e)
@@ -985,11 +975,7 @@ public partial class EditorPage : UserControl, IDisposable
             return false;
         }
 
-        var index = _index;
-        if (index is null || index.IsStale(_documentGeneration))
-        {
-            return false;
-        }
+        if (CurrentIndex is not { } index) return false;
 
         if (index.RangeFor(issue.Start, issue.Length) is not { } range)
         {
@@ -1214,12 +1200,12 @@ public partial class EditorPage : UserControl, IDisposable
     {
         var words = CountWords(text);
         Controls.Type.SetTracked(WordCountText, RussianPlural.Words(words).ToUpperInvariant());
-        Controls.Type.SetTracked(CharCountText, $"{text.Length} ЗНАКОВ");
+        Controls.Type.SetTracked(CharCountText, string.Format(Strings.Status_CharsFormat, text.Length));
 
         // Page count is the document's own page breaks plus one, not an estimate:
         // claiming "12 стр." for a continuous document would be an invented number.
         var breaks = CountPageBreaks();
-        Controls.Type.SetTracked(PageCountText, breaks == 0 ? "1 СТР." : $"{breaks + 1} СТР.");
+        Controls.Type.SetTracked(PageCountText, breaks == 0 ? Strings.Status_PagesOne : string.Format(Strings.Status_PagesFormat, breaks + 1));
     }
 
     private int CountPageBreaks() =>
@@ -1247,11 +1233,7 @@ public partial class EditorPage : UserControl, IDisposable
     /// </remarks>
     private void SetAnalyzing(bool analyzing)
     {
-        if (!Dispatcher.CheckAccess())
-        {
-            Dispatcher.BeginInvoke(() => SetAnalyzing(analyzing));
-            return;
-        }
+        if (Dispatcher.InvokeIfNeeded(() => SetAnalyzing(analyzing))) return;
 
         var show = analyzing && !_answerSettled && Issues.Count == 0;
         AnalyzingState.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
@@ -1284,9 +1266,9 @@ public partial class EditorPage : UserControl, IDisposable
         IssueBadge.Text = count.ToString();
         IssueCountText.Text = total switch
         {
-            0 => "Замечаний нет",
-            _ when _filter is null => $"Найдено: {total}",
-            _ => $"Показано: {count} из {total}"
+            0 => Strings.Editor_NoIssues,
+            _ when _filter is null => string.Format(Strings.Editor_FoundCount, total),
+            _ => string.Format(Strings.Editor_ShownFiltered, count, total)
         };
 
         var showEmpty = count == 0 && AnalyzingState.Visibility != Visibility.Visible;
@@ -1297,10 +1279,10 @@ public partial class EditorPage : UserControl, IDisposable
         if (showEmpty)
         {
             var filteredOut = total > 0;
-            EmptyTitle.Text = filteredOut ? "В этой категории пусто" : "Замечаний не найдено";
+            EmptyTitle.Text = filteredOut ? Strings.Editor_FilterCategoryEmpty : Strings.Suggestions_NoIssues;
             EmptyHint.Text = filteredOut
-                ? "Снимите фильтр, чтобы увидеть остальные замечания."
-                : "Текст выглядит хорошо.";
+                ? Strings.Editor_RemoveFilterHint
+                : Strings.Suggestions_TextLooksGood;
         }
 
         ApplySafeButton.IsEnabled = _allIssues.Any(issue =>

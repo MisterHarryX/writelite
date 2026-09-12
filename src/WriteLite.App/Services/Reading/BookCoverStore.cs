@@ -140,7 +140,7 @@ public sealed class BookCoverStore
         {
             // Every one of these is "this file is not a picture WriteLite can read", which is
             // the reader's answer regardless of which of them the decoder chose to throw.
-            CompatibilityLogger.Technical("book-cover-decode-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("book-cover-decode-failed", exception);
             return CoverResult.Failed(CoverFailure.NotAnImage);
         }
 
@@ -151,7 +151,7 @@ public sealed class BookCoverStore
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            CompatibilityLogger.Technical("book-cover-save-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("book-cover-save-failed", exception);
             return CoverResult.Failed(CoverFailure.CouldNotWrite);
         }
 
@@ -178,7 +178,7 @@ public sealed class BookCoverStore
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            CompatibilityLogger.Technical("book-cover-delete-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("book-cover-delete-failed", exception);
             return false;
         }
     }
@@ -217,7 +217,7 @@ public sealed class BookCoverStore
         {
             // A cover file that has become unreadable costs this book its picture, not the
             // shelf: every other card still draws.
-            CompatibilityLogger.Technical("book-cover-load-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("book-cover-load-failed", exception);
             return null;
         }
     }

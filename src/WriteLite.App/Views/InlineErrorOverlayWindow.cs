@@ -1,7 +1,7 @@
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
+using WriteLite.Interop;
 using WriteLite.Models;
 using WriteLite.Services;
 using Brush = System.Windows.Media.Brush;
@@ -23,14 +23,6 @@ public sealed class InlineErrorOverlayWindow : Window
     private const int WmLButtonUp = 0x0202;
     private const int HtClient = 1;
     private const int HtTransparent = -1;
-    private const int GwlExStyle = -20;
-    private const long WsExTransparent = 0x00000020L;
-    private const long WsExNoActivate = 0x08000000L;
-    private const uint SwpNoSize = 0x0001;
-    private const uint SwpNoMove = 0x0002;
-    private const uint SwpNoActivate = 0x0010;
-    private const uint SwpShowWindow = 0x0040;
-    private static readonly IntPtr HwndTopmost = new(-1);
     private readonly InlineIssueSurface _surface = new();
     private HwndSource? _source;
     private IReadOnlyList<InlineIssueGeometry> _issues = [];
@@ -110,24 +102,24 @@ public sealed class InlineErrorOverlayWindow : Window
         // Window is shown again. Reassert the selective policy after every Show:
         // the HWND itself must be eligible for WM_NCHITTEST, while NOACTIVATE
         // preserves the caret and focus in the host editor.
-        var before = GetWindowLongPtr(_source.Handle, GwlExStyle).ToInt64();
-        var after = (before & ~WsExTransparent) | WsExNoActivate;
+        var before = User32.GetWindowLongPtr(_source.Handle, User32.GwlExStyle);
+        var after = (before & ~User32.WsExTransparent) | User32.WsExNoActivate;
         if (after != before)
         {
-            SetWindowLongPtr(_source.Handle, GwlExStyle, new IntPtr(after));
+            User32.SetWindowLongPtr(_source.Handle, User32.GwlExStyle, after);
         }
 
-        SetWindowPos(
+        User32.SetWindowPos(
             _source.Handle,
-            HwndTopmost,
+            User32.HwndTopmost,
             0,
             0,
             0,
             0,
-            SwpNoMove | SwpNoSize | SwpNoActivate | SwpShowWindow);
+            User32.SwpNoMove | User32.SwpNoSize | User32.SwpNoActivate | User32.SwpShowWindow);
         CompatibilityLogger.Technical(
             "inline-overlay-style",
-            $"transparent={((after & WsExTransparent) != 0 ? 1 : 0)} noActivate={((after & WsExNoActivate) != 0 ? 1 : 0)}");
+            $"transparent={((after & User32.WsExTransparent) != 0 ? 1 : 0)} noActivate={((after & User32.WsExNoActivate) != 0 ? 1 : 0)}");
     }
 
     private IntPtr WndProc(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -187,36 +179,8 @@ public sealed class InlineErrorOverlayWindow : Window
             X = unchecked((short)(long)lParam),
             Y = unchecked((short)((long)lParam >> 16))
         };
-        ClientToScreen(hwnd, ref point);
+        User32.ClientToScreen(hwnd, ref point);
         return new Point(point.X, point.Y);
-    }
-
-    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
-    private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
-
-    [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
-    private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetWindowPos(
-        IntPtr hWnd,
-        IntPtr hWndInsertAfter,
-        int x,
-        int y,
-        int width,
-        int height,
-        uint flags);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool ClientToScreen(IntPtr hWnd, ref NativePoint lpPoint);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct NativePoint
-    {
-        public int X;
-        public int Y;
     }
 
     private sealed class InlineIssueSurface : FrameworkElement

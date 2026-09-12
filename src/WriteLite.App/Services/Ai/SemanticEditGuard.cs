@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using WriteLite.Services.Grammar;
 
 namespace WriteLite.Services.Ai;
 
@@ -97,7 +98,7 @@ public static partial class SemanticEditGuard
         var count = NegationPrefix().Matches(text).Count;
 
         // Standalone negations that are not «не»/«ни» prefixes still count as words.
-        count += WordToken().Matches(text)
+        count += RussianTokens.LettersTokenRegex().Matches(text)
             .Count(m => NegationWords.Contains(m.Value)
                         && !m.Value.StartsWith("не", StringComparison.OrdinalIgnoreCase)
                         && !m.Value.StartsWith("ни", StringComparison.OrdinalIgnoreCase));
@@ -126,9 +127,6 @@ public static partial class SemanticEditGuard
 
     private static bool SameMultiset(List<string> a, List<string> b)
         => a.Count == b.Count && a.SequenceEqual(b, StringComparer.Ordinal);
-
-    [GeneratedRegex(@"\p{L}+", RegexOptions.CultureInvariant)]
-    private static partial Regex WordToken();
 
     /// <summary>Word-initial «не»/«ни», joined or separated alike.</summary>
     [GeneratedRegex(@"(?<!\p{L})(не|ни)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

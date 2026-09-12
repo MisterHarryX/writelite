@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using WriteLite.AI.Local;
 using WriteLite.Language.Russian;
+using WriteLite.Services.Grammar;
 
 namespace WriteLite.Services.Spelling;
 
@@ -146,7 +147,7 @@ public sealed partial class ContextualCorrectionRefiner : IDisposable
                 match.Index,
                 match.Length,
                 match.Value,
-                PreserveCase(match.Value, best.Word),
+                RussianTokens.MatchLeadingCase(match.Value, best.Word),
                 best.Acceptability,
                 IsRealWordError: true));
         }
@@ -154,17 +155,8 @@ public sealed partial class ContextualCorrectionRefiner : IDisposable
         return findings;
     }
 
-    private static string PreserveCase(string original, string replacement)
-    {
-        if (string.IsNullOrEmpty(replacement) || string.IsNullOrEmpty(original)) return replacement;
-        if (char.IsUpper(original[0]) && !char.IsUpper(replacement[0]))
-        {
-            return char.ToUpperInvariant(replacement[0]) + replacement[1..];
-        }
-
-        return replacement;
-    }
-
+    /// <summary>A real-word candidate must start with a letter; digits may continue
+    /// it, but a leading digit or underscore is never a dictionary word.</summary>
     [GeneratedRegex(@"[\p{L}][\p{L}\p{N}]*", RegexOptions.CultureInvariant)]
     private static partial Regex WordRegex();
 

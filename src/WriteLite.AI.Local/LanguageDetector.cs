@@ -1,3 +1,5 @@
+using WriteLite.Language.Russian;
+
 namespace WriteLite.AI.Local;
 
 public static class LanguageDetector
@@ -20,6 +22,6 @@ public static class LanguageDetector
 
         // Latin fragments are allowed as product names, code, paths and URLs,
         // but WriteLite does not treat Latin-only prose as a supported language.
-        return cyr > 0 ? "ru" : "und";
+        return cyr > 0 ? RussianLanguageProfile.IsoCode : "und";
     }
 }

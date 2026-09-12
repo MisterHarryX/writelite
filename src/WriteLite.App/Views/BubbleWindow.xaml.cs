@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using WriteLite.Models;
+using WriteLite.Resources;
 using WriteLite.Services;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
@@ -159,7 +160,7 @@ public partial class BubbleWindow : Window
                 AnalyzingIcon.Visibility = Visibility.Visible;
                 CountButton.Background = Brushes.Transparent;
                 CountButton.BorderBrush = (Brush)FindResource("WlBrand");
-                CountButton.ToolTip = "Проверка текста…";
+                CountButton.ToolTip = Strings.Bubble_Checking;
                 StartSpin();
                 break;
 
@@ -170,14 +171,14 @@ public partial class BubbleWindow : Window
                 // Dashed look approximated with thicker transparent fill + brand border
                 CountButton.BorderThickness = new Thickness(2);
                 CountButton.ToolTip = AnalysisIndicatorResolver.ResolveTooltip(state)
-                    ?? "Словарь загружается";
+                    ?? Strings.Dict_LoadingTitle;
                 break;
 
             case AnalysisIndicatorState.NoIssuesFullCheck:
             case AnalysisIndicatorState.NoErrors:
                 OkIcon.Visibility = Visibility.Visible;
                 CountButton.Background = (Brush)FindResource("WlSuccess");
-                CountButton.ToolTip = "Ошибок не найдено";
+                CountButton.ToolTip = Strings.Bubble_NoErrors;
                 break;
 
             case AnalysisIndicatorState.ReadOnlyAnalysis:
@@ -193,13 +194,13 @@ public partial class BubbleWindow : Window
                         DictDot.Visibility = Visibility.Visible;
                         CountButton.Background = Brushes.Transparent;
                         CountButton.BorderBrush = (Brush)FindResource("WlBrand");
-                        CountButton.ToolTip = "Словарь загружается";
+                        CountButton.ToolTip = Strings.Dict_LoadingTitle;
                     }
                     else
                     {
                         OkIcon.Visibility = Visibility.Visible;
                         CountButton.Background = (Brush)FindResource("WlSuccess");
-                        CountButton.ToolTip = "Ошибок не найдено";
+                        CountButton.ToolTip = Strings.Bubble_NoErrors;
                     }
                 }
                 else
@@ -207,7 +208,7 @@ public partial class BubbleWindow : Window
                     CountText.Visibility = Visibility.Visible;
                     CountText.Text = IndicatorPresentation.BadgeText(count);
                     CountButton.Background = (Brush)FindResource("WlBrand");
-                    CountButton.ToolTip = $"Найдено замечаний: {count}";
+                    CountButton.ToolTip = string.Format(Strings.Bubble_FoundCount, count);
                 }
 
                 if (state == AnalysisIndicatorState.ReadOnlyAnalysis)
@@ -222,7 +223,7 @@ public partial class BubbleWindow : Window
 
     private void SetupSpinAnimation()
     {
-        var animation = new DoubleAnimation(0, 360, TimeSpan.FromSeconds(0.9))
+        var animation = new DoubleAnimation(0, 360, WriteLiteDefaults.Motion.SpinnerRotationDuration)
         {
             RepeatBehavior = RepeatBehavior.Forever
         };

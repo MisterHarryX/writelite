@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Windows.Forms;
+using WriteLite.Resources;
 
 namespace WriteLite.Services;
 
@@ -14,18 +15,18 @@ public sealed class TrayIconService : IDisposable
         Action<bool> pauseChanged,
         Action exitRequested)
     {
-        _pauseItem = new ToolStripMenuItem("Приостановить проверку");
+        _pauseItem = new ToolStripMenuItem(Strings.App_PauseCheck);
         _pauseItem.Click += (_, _) =>
         {
             _paused = !_paused;
-            _pauseItem.Text = _paused ? "Продолжить проверку" : "Приостановить проверку";
+            _pauseItem.Text = _paused ? Strings.App_ResumeCheck : Strings.App_PauseCheck;
             pauseChanged(_paused);
         };
 
-        var openItem = new ToolStripMenuItem("Открыть WriteLite");
+        var openItem = new ToolStripMenuItem(Strings.App_OpenFromTray);
         openItem.Click += (_, _) => openMainWindow();
 
-        var exitItem = new ToolStripMenuItem("Выйти");
+        var exitItem = new ToolStripMenuItem(Strings.App_Exit);
         exitItem.Click += (_, _) => exitRequested();
 
         var menu = new ContextMenuStrip();

@@ -3,6 +3,7 @@ using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using WriteLite.Resources;
 using WriteLite.Services.Reading;
 using Brush = System.Windows.Media.Brush;
 using MouseButtonEventArgs = System.Windows.Input.MouseButtonEventArgs;
@@ -22,10 +23,10 @@ public partial class AnnotationEditorWindow : Window
 {
     private static readonly (HighlightTint Tint, string Key, string Name)[] Tints =
     [
-        (HighlightTint.Amber, "WlMarkAmberSolid", "Оранжевый"),
-        (HighlightTint.Sage, "WlMarkSageSolid", "Зелёный"),
-        (HighlightTint.Coral, "WlMarkCoralSolid", "Красный"),
-        (HighlightTint.Neutral, "WlMarkNeutralSolid", "Нейтральный")
+        (HighlightTint.Amber, "WlMarkAmberSolid", Strings.EditorFmt_ColourOrange),
+        (HighlightTint.Sage, "WlMarkSageSolid", Strings.EditorFmt_ColourGreen),
+        (HighlightTint.Coral, "WlMarkCoralSolid", Strings.EditorFmt_ColourRed),
+        (HighlightTint.Neutral, "WlMarkNeutralSolid", Strings.Annot_ColourNeutral)
     ];
 
     public AnnotationEditorWindow(string quote)

@@ -39,7 +39,7 @@ public static class ReadingAnchorResolver
     /// How far either side of the old offset the quote is looked for before giving up
     /// on locality and scanning the whole document.
     /// </summary>
-    private const int NearWindow = 20_000;
+    private static readonly int NearWindow = WriteLiteDefaults.TextLimits.ReadingAnchorNearWindow;
 
     public static AnchorResolution Resolve(string text, ReadingAnchor anchor)
     {

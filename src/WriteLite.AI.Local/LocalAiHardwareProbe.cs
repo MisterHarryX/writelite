@@ -15,8 +15,10 @@ public sealed class LocalAiHardwareProbe : ILocalAiHardwareProbe
                 ram = 8L * 1024 * 1024 * 1024;
             }
         }
-        catch
+        catch (Exception exception)
         {
+            // GC metrics must not kill the probe; a broken runtime falls back to the safe default.
+            LocalAiDiagnostics.Technical("local-ai-ram-probe-failed", $"type={exception.GetType().Name}");
             ram = 8L * 1024 * 1024 * 1024;
         }
 
@@ -28,8 +30,10 @@ public sealed class LocalAiHardwareProbe : ILocalAiHardwareProbe
             var cudaPath = Environment.GetEnvironmentVariable("CUDA_PATH");
             hasCuda = !string.IsNullOrWhiteSpace(cudaPath);
         }
-        catch
+        catch (Exception exception)
         {
+            // Env probe is best-effort; on failure the pack simply falls back to CPU.
+            LocalAiDiagnostics.Technical("local-ai-cuda-probe-failed", $"type={exception.GetType().Name}");
             hasCuda = false;
         }
 

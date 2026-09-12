@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Reading;
 using Brush = System.Windows.Media.Brush;
@@ -163,14 +164,14 @@ public partial class ReadingPage : UserControl
         ContinueProgress.Width = 420 * Math.Clamp(candidate.Progress, 0, 1);
         ContinueCard.Tag = candidate.Id;
 
-        AutomationProperties.SetName(ContinueCard, $"Продолжить чтение: {candidate.Title}");
+        AutomationProperties.SetName(ContinueCard, string.Format(Strings.Reading_ContinueAutomation, candidate.Title));
     }
 
     private void RenderStatus(IReadOnlyList<ReadingProjectSummary> projects)
     {
         if (projects.Count == 0)
         {
-            Controls.Type.SetTracked(StatusText, "НЕТ ПРОЕКТОВ ЧТЕНИЯ");
+            Controls.Type.SetTracked(StatusText, Strings.Reading_NoProjectsTracked);
             return;
         }
 
@@ -196,7 +197,7 @@ public partial class ReadingPage : UserControl
             Tag = project.Id
         };
 
-        AutomationProperties.SetName(card, $"Проект чтения: {project.Title}");
+        AutomationProperties.SetName(card, string.Format(Strings.Reading_ProjectAutomation, project.Title));
 
         var body = new StackPanel();
 
@@ -225,7 +226,7 @@ public partial class ReadingPage : UserControl
         {
             var warning = new TextBlock
             {
-                Text = "Файл не найден — пометки сохранены",
+                Text = Strings.Reading_FileMissing,
                 Style = (Style)FindResource("WlCaption"),
                 Margin = new Thickness(0, 8, 0, 0),
                 TextWrapping = TextWrapping.Wrap
@@ -274,21 +275,21 @@ public partial class ReadingPage : UserControl
     {
         var menu = new ContextMenu { Style = TryFindResource("WlContextMenu") as Style };
 
-        menu.Items.Add(Item("Открыть", () => OpenProject(project.Id)));
-        menu.Items.Add(Item("Переименовать…", () => Rename(project)));
-        menu.Items.Add(Item("Указать файл заново…", () => Relocate(project)));
+        menu.Items.Add(Item(Strings.Reading_MenuOpen, () => OpenProject(project.Id)));
+        menu.Items.Add(Item(Strings.Reading_MenuRename, () => Rename(project)));
+        menu.Items.Add(Item(Strings.Reading_MenuRelocate, () => Relocate(project)));
         menu.Items.Add(new Separator { Style = TryFindResource("WlMenuSeparator") as Style });
         menu.Items.Add(Item(
-            _covers.Has(project.Id) ? "Заменить обложку…" : "Выбрать обложку…",
+            _covers.Has(project.Id) ? Strings.Reading_MenuReplaceCover : Strings.Reading_MenuChooseCover,
             () => ChooseCover(project)));
 
         if (_covers.Has(project.Id))
         {
-            menu.Items.Add(Item("Убрать обложку", () => RemoveCover(project)));
+            menu.Items.Add(Item(Strings.Reading_MenuRemoveCover, () => RemoveCover(project)));
         }
 
         menu.Items.Add(new Separator { Style = TryFindResource("WlMenuSeparator") as Style });
-        menu.Items.Add(Item("Удалить проект", () => DeleteProject(project)));
+        menu.Items.Add(Item(Strings.Reading_MenuDeleteProject, () => DeleteProject(project)));
 
         return menu;
     }
@@ -359,8 +360,8 @@ public partial class ReadingPage : UserControl
 
         var dialog = new OpenFileDialog
         {
-            Title = "Обложка книги",
-            Filter = "Изображения (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg|PNG (*.png)|*.png|JPEG (*.jpg;*.jpeg)|*.jpg;*.jpeg",
+            Title = Strings.Reading_CoverDialogTitle,
+            Filter = Strings.Reading_CoverFilter,
             CheckFileExists = true
         };
 
@@ -379,7 +380,7 @@ public partial class ReadingPage : UserControl
         {
             MessageBox.Show(
                 result.Message,
-                "Обложка",
+                Strings.Reading_Cover,
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
             return;
@@ -413,9 +414,8 @@ public partial class ReadingPage : UserControl
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Открыть книгу",
-            Filter = "Документы (*.pdf;*.docx;*.odt;*.txt)|*.pdf;*.docx;*.odt;*.txt|" +
-                     "PDF (*.pdf)|*.pdf|Word (*.docx)|*.docx|OpenDocument (*.odt)|*.odt|Текст (*.txt)|*.txt",
+            Title = Strings.Reading_OpenBook,
+            Filter = Strings.Reading_OpenFilter,
             CheckFileExists = true
         };
 
@@ -452,8 +452,8 @@ public partial class ReadingPage : UserControl
         if (!SupportedExtensions.Contains(extension))
         {
             MessageBox.Show(
-                "WriteLite пока открывает PDF, DOCX, ODT и TXT.",
-                "Чтение",
+                Strings.Reading_UnsupportedMessage,
+                Strings.Nav_Reading,
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
             return;
@@ -467,10 +467,10 @@ public partial class ReadingPage : UserControl
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or FileNotFoundException)
         {
-            CompatibilityLogger.Technical("reading-openfile-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("reading-openfile-failed", exception);
             MessageBox.Show(
-                "Не удалось открыть файл. Возможно, он занят другой программой или недоступен.",
-                "Чтение",
+                Strings.Reading_OpenFailedMessage,
+                Strings.Nav_Reading,
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
         }
@@ -522,7 +522,7 @@ public partial class ReadingPage : UserControl
 
     private void Rename(ReadingProjectSummary project)
     {
-        var prompt = new TextPromptWindow("Название проекта", project.Title)
+        var prompt = new TextPromptWindow(Strings.Reading_RenamePrompt, project.Title)
         {
             Owner = Window.GetWindow(this)
         };
@@ -543,8 +543,8 @@ public partial class ReadingPage : UserControl
 
         var dialog = new OpenFileDialog
         {
-            Title = "Указать файл книги",
-            Filter = "Документы (*.pdf;*.docx;*.odt;*.txt)|*.pdf;*.docx;*.odt;*.txt|Все файлы (*.*)|*.*",
+            Title = Strings.Reading_RelocateTitle,
+            Filter = Strings.Reading_RelocateFilter,
             CheckFileExists = true
         };
 
@@ -562,9 +562,8 @@ public partial class ReadingPage : UserControl
     private void DeleteProject(ReadingProjectSummary project)
     {
         var confirm = MessageBox.Show(
-            $"Удалить проект «{project.Title}»?\n\n" +
-            "Пометки, закладки и карточки будут удалены. Сам файл книги останется на месте.",
-            "Чтение",
+            string.Format(Strings.Reading_DeleteConfirm, project.Title),
+            Strings.Nav_Reading,
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 

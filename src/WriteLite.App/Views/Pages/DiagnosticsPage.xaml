@@ -1,6 +1,7 @@
 <UserControl x:Class="WriteLite.Views.Pages.DiagnosticsPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:res="clr-namespace:WriteLite.Resources"
              xmlns:controls="clr-namespace:WriteLite.Controls"
              Background="{DynamicResource WlBgBase}"
              FontFamily="{DynamicResource WlFont}">
@@ -13,29 +14,29 @@
         <StackPanel MaxWidth="780" HorizontalAlignment="Left" Margin="36,30,36,40">
 
             <controls:SectionHeader Index="08"
-                                    Title="Диагностика"
-                                    Description="Безопасные технические сведения. Проверяемый текст в отчёт не попадает." />
+                                    Title="{x:Static res:Strings.Nav_Diagnostics}"
+                                    Description="{x:Static res:Strings.Diag_Description}" />
 
             <WrapPanel Margin="0,18,0,0">
-                <Button Style="{DynamicResource WlSecondaryButton}" Content="Обновить" Click="Refresh_Click" Margin="0,0,8,8" />
-                <Button Style="{DynamicResource WlTextButton}" Content="Копировать отчёт" Click="Copy_Click" Margin="0,0,8,8" />
-                <Button Style="{DynamicResource WlTextButton}" Content="Открыть папку логов" Click="OpenLogs_Click" Margin="0,0,8,8" />
-                <Button Style="{DynamicResource WlTextButton}" Content="Перезапустить проверку" Click="RestartEngine_Click" Margin="0,0,8,8" />
+                <Button Style="{DynamicResource WlSecondaryButton}" Content="{x:Static res:Strings.Diag_Refresh}" Click="Refresh_Click" Margin="0,0,8,8" />
+                <Button Style="{DynamicResource WlTextButton}" Content="{x:Static res:Strings.Diag_CopyReport}" Click="Copy_Click" Margin="0,0,8,8" />
+                <Button Style="{DynamicResource WlTextButton}" Content="{x:Static res:Strings.Diag_OpenLogs}" Click="OpenLogs_Click" Margin="0,0,8,8" />
+                <Button Style="{DynamicResource WlTextButton}" Content="{x:Static res:Strings.Diag_RestartEngine}" Click="RestartEngine_Click" Margin="0,0,8,8" />
             </WrapPanel>
 
-            <controls:SectionHeader Title="Приложение" ShowRule="True" Margin="0,26,0,0" />
+            <controls:SectionHeader Title="{x:Static res:Strings.Diag_SectionApp}" ShowRule="True" Margin="0,26,0,0" />
             <TextBlock x:Name="AppBlock" Style="{DynamicResource WlMonoValue}" LineHeight="22" Margin="0,14,0,0" />
 
-            <controls:SectionHeader Title="Активное поле" Margin="0,30,0,0" />
+            <controls:SectionHeader Title="{x:Static res:Strings.Diag_SectionField}" Margin="0,30,0,0" />
             <TextBlock x:Name="FieldBlock" Style="{DynamicResource WlMonoValue}" LineHeight="22" Margin="0,14,0,0" />
 
-            <controls:SectionHeader Title="Языковой движок" Margin="0,30,0,0" />
+            <controls:SectionHeader Title="{x:Static res:Strings.Diag_SectionEngine}" Margin="0,30,0,0" />
             <TextBlock x:Name="EngineBlock" Style="{DynamicResource WlMonoValue}" LineHeight="22" Margin="0,14,0,0" />
 
-            <controls:SectionHeader Title="Система" Margin="0,30,0,0" />
+            <controls:SectionHeader Title="{x:Static res:Strings.Diag_SectionSystem}" Margin="0,30,0,0" />
             <TextBlock x:Name="SystemBlock" Style="{DynamicResource WlMonoValue}" LineHeight="22" Margin="0,14,0,0" />
 
-            <controls:SectionHeader Title="Последние события" Margin="0,30,0,0" />
+            <controls:SectionHeader Title="{x:Static res:Strings.Diag_SectionEvents}" Margin="0,30,0,0" />
             <Border Style="{DynamicResource WlInsetPanel}" Margin="0,14,0,0" MaxHeight="260">
                 <ListBox x:Name="EventsList"
                          Style="{DynamicResource WlListBox}"
@@ -44,7 +45,7 @@
                          FontSize="11"
                          Foreground="{DynamicResource WlTextSecondary}"
                          Margin="0,4"
-                         AutomationProperties.Name="Последние технические события" />
+                         AutomationProperties.Name="{x:Static res:Strings.Diag_SectionEventsAutomation}" />
             </Border>
         </StackPanel>
     </ScrollViewer>

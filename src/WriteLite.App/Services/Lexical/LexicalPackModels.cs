@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using WriteLite.Language.Russian;
 
 namespace WriteLite.Services.Lexical;
 
@@ -60,7 +61,7 @@ public sealed class LexicalEntryDto
     public string Lemma { get; set; } = "";
 
     [JsonPropertyName("language")]
-    public string Language { get; set; } = "ru";
+    public string Language { get; set; } = RussianLanguageProfile.IsoCode;
 
     [JsonPropertyName("pos")]
     public string Pos { get; set; } = "unknown";

@@ -213,7 +213,7 @@ public sealed class ExternalTextWriter
     /// </remarks>
     private async Task<bool> VerifyAsync(string expected, CancellationToken cancellationToken)
     {
-        foreach (var delayMs in (int[])[0, 25, 70, 150])
+        foreach (var delayMs in WriteLiteDefaults.Analysis.ExternalWriteVerifyBackoffMs)
         {
             if (delayMs > 0)
             {

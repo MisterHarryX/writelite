@@ -91,7 +91,10 @@ public static partial class ProtectedSpanDetector
         // Tokens were inserted left-to-right after reverse replace; restore by token content.
         var result = text;
         // Rebuild using sequential placeholders P0..Pn that may appear in corrected text.
-        for (var i = 0; i < 64; i++)
+        // The bound is map.Count, not a fixed cap: a technical text can easily produce more
+        // protected spans than any fixed placeholder budget, and a fixed 64 silently left the
+        // unstrict 65th span's ⟦P{n}⟧ token in place — corrupting the corrected text.
+        for (var i = 0; i < map.Count; i++)
         {
             var ph = $"⟦P{i}⟧";
             if (!result.Contains(ph, StringComparison.Ordinal))
@@ -99,20 +102,7 @@ public static partial class ProtectedSpanDetector
                 continue;
             }
 
-            // Find original by reverse map order independence: map entries store original strings.
-            // Prefer exact index i if map was built that way.
-            string? original = null;
-            if (i < map.Count)
-            {
-                original = map[i].Token;
-            }
-
-            if (original is null)
-            {
-                continue;
-            }
-
-            result = result.Replace(ph, original, StringComparison.Ordinal);
+            result = result.Replace(ph, map[i].Token, StringComparison.Ordinal);
         }
 
         return result;

@@ -2,7 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:WriteLite.Controls"
-        Title="Заметка"
+        xmlns:res="clr-namespace:WriteLite.Resources"
+        Title="{x:Static res:Strings.Notes_KindNote}"
         Width="640"
         Height="640"
         MinWidth="460"
@@ -16,7 +17,7 @@
         FontFamily="{DynamicResource WlFont}"
         TextOptions.TextFormattingMode="Ideal"
         UseLayoutRounding="True"
-        AutomationProperties.Name="Редактор заметки">
+        AutomationProperties.Name="{x:Static res:Strings.NoteEdit_WindowAutomation}">
     <Border Background="{DynamicResource WlBgBase}"
             BorderBrush="{DynamicResource WlLineStrong}"
             BorderThickness="1"
@@ -44,7 +45,7 @@
                               VerticalAlignment="Center" />
                         <TextBlock x:Name="KindLabel"
                                    Style="{DynamicResource WlMonoLabel}"
-                                   controls:Type.Tracked="ЗАМЕТКА"
+                                   controls:Type.Tracked="{x:Static res:Strings.NoteEdit_KindLabel}"
                                    Margin="10,0,0,0"
                                    VerticalAlignment="Center" />
                     </StackPanel>
@@ -54,16 +55,16 @@
                                 Style="{DynamicResource WlIconButton}"
                                 Width="30" Height="30"
                                 Click="Pin_Click"
-                                ToolTip="Закрепить"
-                                AutomationProperties.Name="Закрепить заметку">
+                                ToolTip="{x:Static res:Strings.NoteEdit_Pin}"
+                                AutomationProperties.Name="{x:Static res:Strings.NoteEdit_PinAutomation}">
                             <Path x:Name="PinIcon" Style="{DynamicResource WlIconSm}"
                                   Data="{DynamicResource WlIconPin}"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                         </Button>
                         <Button Style="{DynamicResource WlWindowCloseButton}"
                                 Click="Cancel_Click"
-                                ToolTip="Закрыть без сохранения"
-                                AutomationProperties.Name="Закрыть">
+                                ToolTip="{x:Static res:Strings.NoteEdit_CloseNoSave}"
+                                AutomationProperties.Name="{x:Static res:Strings.Common_Close}">
                             <Path Style="{DynamicResource WlIconSm}"
                                   Data="{DynamicResource WlIconClose}"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
@@ -77,22 +78,22 @@
                 <TextBox x:Name="TitleBox"
                          Style="{DynamicResource WlTextInput}"
                          FontSize="17"
-                         Tag="Название"
+                         Tag="{x:Static res:Strings.NoteEdit_TitlePlaceholder}"
                          MaxLength="200"
-                         AutomationProperties.Name="Название заметки" />
+                         AutomationProperties.Name="{x:Static res:Strings.NoteEdit_TitleAutomation}" />
 
                 <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
                     <RadioButton x:Name="KindNote" Style="{DynamicResource WlTabButton}"
-                                 Content="Заметка" GroupName="NoteKind" IsChecked="True"
+                                 Content="{x:Static res:Strings.Notes_KindNote}" GroupName="NoteKind" IsChecked="True"
                                  Checked="Kind_Changed" />
                     <RadioButton x:Name="KindTask" Style="{DynamicResource WlTabButton}"
-                                 Content="Задача" GroupName="NoteKind"
+                                 Content="{x:Static res:Strings.Notes_KindTask}" GroupName="NoteKind"
                                  Checked="Kind_Changed" />
                     <RadioButton x:Name="KindChecklist" Style="{DynamicResource WlTabButton}"
-                                 Content="Список" GroupName="NoteKind"
+                                 Content="{x:Static res:Strings.Notes_KindChecklist}" GroupName="NoteKind"
                                  Checked="Kind_Changed" />
                     <RadioButton x:Name="KindGoal" Style="{DynamicResource WlTabButton}"
-                                 Content="Цель" GroupName="NoteKind"
+                                 Content="{x:Static res:Strings.Notes_KindGoal}" GroupName="NoteKind"
                                  Checked="Kind_Changed" />
                 </StackPanel>
 
@@ -103,7 +104,7 @@
             <ScrollViewer Grid.Row="2" Style="{DynamicResource WlScrollViewer}" Margin="0,16,0,0" Padding="24,0,16,0">
                 <StackPanel>
                     <TextBlock Style="{DynamicResource WlMonoLabel}"
-                               controls:Type.Tracked="ТЕКСТ"
+                               controls:Type.Tracked="{x:Static res:Strings.NoteEdit_TrackedText}"
                                Foreground="{DynamicResource WlTextMuted}" />
 
                     <TextBox x:Name="TextBoxBody"
@@ -114,16 +115,16 @@
                              TextWrapping="Wrap"
                              VerticalContentAlignment="Top"
                              SpellCheck.IsEnabled="False"
-                             Tag="О чём эта заметка"
+                             Tag="{x:Static res:Strings.NoteEdit_BodyPlaceholder}"
                              ContextMenuOpening="Body_ContextMenuOpening"
-                             AutomationProperties.Name="Текст заметки" />
+                             AutomationProperties.Name="{x:Static res:Strings.NoteEdit_BodyAutomation}" />
 
                     <!-- ── Checklist ──────────────────────────────────────── -->
                     <StackPanel x:Name="ChecklistSection" Margin="0,22,0,0" Visibility="Collapsed">
                         <Grid>
                             <TextBlock x:Name="ChecklistLabel"
                                        Style="{DynamicResource WlMonoLabel}"
-                                       controls:Type.Tracked="ПУНКТЫ"
+                                       controls:Type.Tracked="{x:Static res:Strings.NoteEdit_TrackedItems}"
                                        Foreground="{DynamicResource WlTextMuted}"
                                        VerticalAlignment="Center" />
                             <TextBlock x:Name="ChecklistProgress"
@@ -143,12 +144,12 @@
                             <TextBox x:Name="NewItemBox"
                                      Grid.Column="0"
                                      Style="{DynamicResource WlSmallInput}"
-                                     Tag="Новый пункт"
+                                     Tag="{x:Static res:Strings.NoteEdit_NewItemPlaceholder}"
                                      KeyDown="NewItem_KeyDown"
-                                     AutomationProperties.Name="Новый пункт списка" />
+                                     AutomationProperties.Name="{x:Static res:Strings.NoteEdit_NewItemAutomation}" />
                             <Button Grid.Column="1"
                                     Style="{DynamicResource WlSecondaryButton}"
-                                    Content="Добавить"
+                                    Content="{x:Static res:Strings.Words_AddButton}"
                                     Margin="8,0,0,0"
                                     Click="AddItem_Click" />
                         </Grid>
@@ -156,7 +157,7 @@
 
                     <!-- ── Details ────────────────────────────────────────── -->
                     <TextBlock Style="{DynamicResource WlMonoLabel}"
-                               controls:Type.Tracked="ДЕТАЛИ"
+                               controls:Type.Tracked="{x:Static res:Strings.NoteEdit_TrackedDetails}"
                                Foreground="{DynamicResource WlTextMuted}"
                                Margin="0,24,0,0" />
 
@@ -167,31 +168,31 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                            <TextBlock Style="{DynamicResource WlCaption}" Text="Категория" />
+                            <TextBlock Style="{DynamicResource WlCaption}" Text="{x:Static res:Strings.NoteEdit_Category}" />
                             <TextBox x:Name="CategoryBox"
                                      Style="{DynamicResource WlSmallInput}"
                                      Margin="0,6,0,0"
                                      MaxLength="40"
-                                     Tag="Например: работа"
-                                     AutomationProperties.Name="Категория" />
+                                     Tag="{x:Static res:Strings.NoteEdit_CategoryPlaceholder}"
+                                     AutomationProperties.Name="{x:Static res:Strings.NoteEdit_Category}" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                            <TextBlock Style="{DynamicResource WlCaption}" Text="Срок" />
+                            <TextBlock Style="{DynamicResource WlCaption}" Text="{x:Static res:Strings.NoteEdit_Due}" />
                             <TextBox x:Name="DueBox"
                                      Style="{DynamicResource WlSmallInput}"
                                      Margin="0,6,0,0"
                                      Tag="дд.мм.гггг"
                                      LostFocus="Due_LostFocus"
-                                     AutomationProperties.Name="Срок выполнения" />
+                                     AutomationProperties.Name="{x:Static res:Strings.NoteEdit_DueAutomation}" />
                         </StackPanel>
                     </Grid>
 
                     <WrapPanel Margin="0,10,0,0">
-                        <Button Style="{DynamicResource WlTextButton}" Content="Сегодня" Tag="0" Click="DueShortcut_Click" />
-                        <Button Style="{DynamicResource WlTextButton}" Content="Завтра" Tag="1" Click="DueShortcut_Click" Margin="4,0,0,0" />
-                        <Button Style="{DynamicResource WlTextButton}" Content="Через неделю" Tag="7" Click="DueShortcut_Click" Margin="4,0,0,0" />
-                        <Button Style="{DynamicResource WlTextButton}" Content="Убрать срок" Tag="clear" Click="DueShortcut_Click" Margin="4,0,0,0" />
+                        <Button Style="{DynamicResource WlTextButton}" Content="{x:Static res:Strings.NoteEdit_DueToday}" Tag="0" Click="DueShortcut_Click" />
+                        <Button Style="{DynamicResource WlTextButton}" Content="{x:Static res:Strings.NoteEdit_DueTomorrow}" Tag="1" Click="DueShortcut_Click" Margin="4,0,0,0" />
+                        <Button Style="{DynamicResource WlTextButton}" Content="{x:Static res:Strings.NoteEdit_DueInWeek}" Tag="7" Click="DueShortcut_Click" Margin="4,0,0,0" />
+                        <Button Style="{DynamicResource WlTextButton}" Content="{x:Static res:Strings.NoteEdit_DueClear}" Tag="clear" Click="DueShortcut_Click" Margin="4,0,0,0" />
                     </WrapPanel>
 
                     <TextBlock x:Name="CreatedText"
@@ -212,20 +213,20 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                         <Button x:Name="DeleteButton"
                                 Style="{DynamicResource WlDangerButton}"
-                                Content="Удалить"
+                                Content="{x:Static res:Strings.Words_RemoveTooltip}"
                                 Click="Delete_Click" />
                         <CheckBox x:Name="CompletedBox"
                                   Style="{DynamicResource WlCheckBox}"
-                                  Content="Выполнено"
+                                  Content="{x:Static res:Strings.NoteEdit_Completed}"
                                   Margin="16,0,0,0"
                                   VerticalAlignment="Center"
                                   Visibility="Collapsed"
-                                  AutomationProperties.Name="Отметить выполненной" />
+                                  AutomationProperties.Name="{x:Static res:Strings.NoteEdit_CompletedAutomation}" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Style="{DynamicResource WlSecondaryButton}" Content="Отмена" Click="Cancel_Click" />
-                        <Button Style="{DynamicResource WlPrimaryButton}" Content="Сохранить"
+                        <Button Style="{DynamicResource WlSecondaryButton}" Content="{x:Static res:Strings.Editor_CancelOperation}" Click="Cancel_Click" />
+                        <Button Style="{DynamicResource WlPrimaryButton}" Content="{x:Static res:Strings.Menu_Save}"
                                 Margin="10,0,0,0" IsDefault="True" Click="Save_Click" />
                     </StackPanel>
                 </Grid>

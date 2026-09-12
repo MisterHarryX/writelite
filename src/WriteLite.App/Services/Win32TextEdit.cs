@@ -122,6 +122,7 @@ internal static class Win32TextEdit
         }
         catch
         {
+            // The window may have been destroyed between calls; there is nothing to write to.
             return false;
         }
     }
@@ -200,6 +201,7 @@ internal static class Win32TextEdit
         }
         catch
         {
+            // A vanished or broken window means the replace could not be verified; report rejection.
             return Win32RangeWriteOutcome.MessageRejected;
         }
     }
@@ -329,6 +331,7 @@ internal static class Win32TextEdit
         }
         catch
         {
+            // Window may have gone away between the checks and the send; the write did not happen.
             return false;
         }
     }
@@ -343,6 +346,7 @@ internal static class Win32TextEdit
         }
         catch
         {
+            // Best effort for an already-gone window; the default line is fine.
             return 0;
         }
     }

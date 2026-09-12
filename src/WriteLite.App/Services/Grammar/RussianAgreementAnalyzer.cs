@@ -30,7 +30,7 @@ namespace WriteLite.Services.Grammar;
 /// everything produces no finding. Indeclinables, borrowings, surnames and irregular paradigms
 /// therefore cost recall and never precision.</para>
 /// </remarks>
-public sealed class RussianAgreementAnalyzer
+public sealed class RussianAgreementAnalyzer : GrammarAnalyzerBase
 {
     private readonly RussianMorphology _morphology;
 
@@ -52,15 +52,12 @@ public sealed class RussianAgreementAnalyzer
     /// <summary>How many tokens may separate a subject from its predicate.</summary>
     private const int SubjectWindow = 3;
 
-    public void Collect(
+    protected override void CollectCore(
         string text,
         IReadOnlyList<(int Start, int End)> protectedSpans,
         ICollection<TextIssue> issues)
     {
-        if (string.IsNullOrWhiteSpace(text)) return;
-
-        var tokens = RussianTokens.Split(text);
-        if (tokens.Count < 2) return;
+        var tokens = TokensAtLeast(text, 2);
 
         CollectAttributive(text, tokens, protectedSpans, issues);
         CollectPrepositionGovernment(text, tokens, protectedSpans, issues);

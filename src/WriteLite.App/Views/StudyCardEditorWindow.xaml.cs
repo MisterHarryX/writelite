@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
+using WriteLite.Resources;
 using WriteLite.Services.Reading;
 using MouseButtonEventArgs = System.Windows.Input.MouseButtonEventArgs;
 
@@ -144,7 +145,7 @@ public partial class StudyCardEditorWindow : Window
         }
 
         UsedAi = true;
-        Controls.Type.SetTracked(StatusText, "ЧЕРНОВИК ОТ WRITELITE AI");
+        Controls.Type.SetTracked(StatusText, Strings.Study_DraftStatus);
     }
 
     private void SetDrafting(bool drafting)
@@ -154,18 +155,18 @@ public partial class StudyCardEditorWindow : Window
 
         if (drafting)
         {
-            Controls.Type.SetTracked(StatusText, "СОСТАВЛЯЕМ…");
+            Controls.Type.SetTracked(StatusText, Strings.Study_DraftingStatus);
         }
     }
 
     /// <summary>What to tell the reader when there is no draft. Never silence.</summary>
     private static string StatusFor(StudyCardDraftResult result) => result.Status switch
     {
-        StudyCardDraftStatus.Cancelled => "ОТМЕНЕНО",
-        StudyCardDraftStatus.NotConfigured => "ЛОКАЛЬНАЯ МОДЕЛЬ НЕ ПОДКЛЮЧЕНА",
-        StudyCardDraftStatus.ModelUnavailable => "МОДЕЛЬ НЕ ОТВЕЧАЕТ · НАПИШИТЕ ВРУЧНУЮ",
-        StudyCardDraftStatus.Unusable => "ОТВЕТ НЕ РАЗОБРАН · ПОПРОБУЙТЕ СНОВА",
-        _ => "НЕ УДАЛОСЬ СОСТАВИТЬ КАРТОЧКУ"
+        StudyCardDraftStatus.Cancelled => Strings.Study_StatusCancelled,
+        StudyCardDraftStatus.NotConfigured => Strings.Study_StatusNotConfigured,
+        StudyCardDraftStatus.ModelUnavailable => Strings.Study_StatusUnavailable,
+        StudyCardDraftStatus.Unusable => Strings.Study_StatusUnusable,
+        _ => Strings.Study_StatusFailed
     };
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -175,7 +176,7 @@ public partial class StudyCardEditorWindow : Window
 
         if (Front.Length == 0 && Back.Length == 0)
         {
-            Controls.Type.SetTracked(StatusText, "ЗАПОЛНИТЕ ХОТЯ БЫ ОДНУ СТОРОНУ");
+            Controls.Type.SetTracked(StatusText, Strings.Study_StatusFillRequired);
             FrontBox.Focus();
             return;
         }

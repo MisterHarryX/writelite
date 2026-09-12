@@ -34,7 +34,7 @@ namespace WriteLite.Services.Grammar;
 /// Russian meaning "thanking the friend". Thanking is done to animates, so the rule requires
 /// an inanimate head for that preposition only.</para>
 /// </remarks>
-public sealed class RussianCaseGovernmentAnalyzer
+public sealed class RussianCaseGovernmentAnalyzer : GrammarAnalyzerBase
 {
     private readonly RussianFormIndex _index;
 
@@ -72,14 +72,12 @@ public sealed class RussianCaseGovernmentAnalyzer
     /// </remarks>
     private const int MaxPhraseTokens = 3;
 
-    public void Collect(
+    protected override void CollectCore(
         string text,
         IReadOnlyList<(int Start, int End)> protectedSpans,
         ICollection<TextIssue> issues)
     {
-        if (string.IsNullOrWhiteSpace(text)) return;
-
-        var tokens = RussianTokens.Split(text);
+        var tokens = TokensAtLeast(text, 2);
         for (var i = 0; i < tokens.Count - 1; i++)
         {
             if (!DativePrepositions.TryGetValue(tokens[i].Value, out var question)) continue;

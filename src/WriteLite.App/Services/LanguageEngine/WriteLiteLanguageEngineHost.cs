@@ -8,8 +8,6 @@ namespace WriteLite.Services.LanguageEngine;
 /// </summary>
 public sealed class WriteLiteLanguageEngineHost : IWriteLiteLanguageEngineHost
 {
-    private const int MaxStartAttempts = 8;
-
     private readonly WriteLiteLanguageOptions _options;
     private readonly IWriteLiteJavaResolver _javaResolver;
     private readonly IWriteLiteProcessLauncher _launcher;
@@ -51,8 +49,10 @@ public sealed class WriteLiteLanguageEngineHost : IWriteLiteLanguageEngineHost
             var job = new WindowsJobObject();
             return job.IsAvailable ? job : null;
         }
-        catch
+        catch (Exception exception)
         {
+            // Job containment is a hardening layer, not a requirement; start without it.
+            CompatibilityLogger.Technical("engine-job-create-failed", $"type={exception.GetType().Name}");
             return null;
         }
     }
@@ -132,7 +132,7 @@ public sealed class WriteLiteLanguageEngineHost : IWriteLiteLanguageEngineHost
             foreach (var port in _ports.AllocateCandidates(_options.PreferredPort, _options.PortSearchRange))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (attempts++ >= MaxStartAttempts)
+                if (attempts++ >= WriteLiteDefaults.Networking.EngineMaxStartAttempts)
                 {
                     break;
                 }
@@ -319,7 +319,7 @@ public sealed class WriteLiteLanguageEngineHost : IWriteLiteLanguageEngineHost
             $"pid={handle.Id} port={port}");
 
         // Brief settle — if bind failed the process often exits immediately.
-        await Task.Delay(150, cancellationToken).ConfigureAwait(false);
+        await Task.Delay(WriteLiteDefaults.Networking.LanguageEnginePortBindSettle, cancellationToken).ConfigureAwait(false);
         if (handle.HasExited)
         {
             var exitCode = handle.ExitCode;

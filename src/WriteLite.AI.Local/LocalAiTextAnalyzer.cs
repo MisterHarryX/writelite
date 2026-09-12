@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using WriteLite.AI.Contracts;
+using WriteLite.Language.Russian;
 
 namespace WriteLite.AI.Local;
 
@@ -163,7 +164,7 @@ public sealed class LocalAiTextAnalyzer : ILocalAiTextAnalyzer
             return Empty(request, sw, AiErrorCodes.TextTooLong, "Текст слишком длинный для локальной модели.");
         }
 
-        if (LanguageDetector.Detect(text) != "ru")
+        if (LanguageDetector.Detect(text) != RussianLanguageProfile.IsoCode)
         {
             // English prose is outside the product scope. Preserve Latin-only
             // technical fragments byte-for-byte and never route them to Qwen.
@@ -215,7 +216,7 @@ public sealed class LocalAiTextAnalyzer : ILocalAiTextAnalyzer
 
             // 1) Deterministic Lite assist (never blocks; always offline).
             var (liteCorrected, _, liteUncertain) = _engine.Correct(text);
-            const string language = "ru";
+            const string language = RussianLanguageProfile.IsoCode;
 
             string corrected = AlwaysRunLiteAssist ? liteCorrected : text;
             bool uncertain = liteUncertain;

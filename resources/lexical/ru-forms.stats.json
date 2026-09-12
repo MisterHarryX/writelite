@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15",
+  "generatedAt": "2026-09-01",
   "surfaceForms": 3091391,
   "lemmas": 183351,
   "distinctTags": 2722,
@@ -45,5 +45,5 @@
     "meta": 37096692,
     "strings": 3979861
   },
-  "buildSeconds": 31.4
+  "buildSeconds": 33.5
 }

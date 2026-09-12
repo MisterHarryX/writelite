@@ -26,8 +26,8 @@ public sealed class WriteLiteAppSettings
     public string Language { get; set; } = "ru-RU";
 
     // Behaviour
-    public int AnalysisDelayMs { get; set; } = 400;
-    public int MaxTextLength { get; set; } = 20_000;
+    public int AnalysisDelayMs { get; set; } = WriteLiteDefaults.Debounce.AnalysisDelayMsDefault;
+    public int MaxTextLength { get; set; } = WriteLiteDefaults.Analysis.MaxTextLengthDefault;
     public bool ShowGreenIndicatorWhenClean { get; set; } = true;
     public bool HidePanelAfterSuccessfulApply { get; set; } = true;
 
@@ -47,7 +47,7 @@ public sealed class WriteLiteAppSettings
     /// Seconds used to distinguish active typing from a completed idle check.
     /// The result itself remains visible until the edited field loses focus.
     /// </summary>
-    public int EditingIdleGraceSeconds { get; set; } = 4;
+    public int EditingIdleGraceSeconds { get; set; } = WriteLiteDefaults.Analysis.EditingIdleGraceSecondsDefault;
 
     /// <summary>Enable double-click dictionary card on editable fields.</summary>
     public bool LexicalCardEnabled { get; set; } = true;
@@ -87,15 +87,15 @@ public sealed class WriteLiteAppSettings
     public string LocalAiProfile { get; set; } = "Standard";
 
     /// <summary>OpenAI-compatible loopback base for the WriteAI server (no trailing slash).</summary>
-    public string WriteAiEndpoint { get; set; } = "http://127.0.0.1:8742";
+    public string WriteAiEndpoint { get; set; } = WriteLiteDefaults.Model.QwenDefaultEndpoint;
 
     /// <summary>Prefer the WriteAI neural path when enabled and the endpoint is healthy.</summary>
     public bool PreferWriteAi { get; set; } = true;
 
     // Local analysis scheduling limits.
-    public int AiDebounceMs { get; set; } = 1500;
-    public int AiMinTextLength { get; set; } = 12;
-    public int AiMaxTextLength { get; set; } = 12_000;
+    public int AiDebounceMs { get; set; } = WriteLiteDefaults.Debounce.AiDebounceMsDefault;
+    public int AiMinTextLength { get; set; } = WriteLiteDefaults.Debounce.AiMinTextLengthDefault;
+    public int AiMaxTextLength { get; set; } = WriteLiteDefaults.Debounce.AiMaxTextLengthDefault;
 
     /// <summary>
     /// Compatibility aliases for the pre-Phase-7 names.

@@ -43,7 +43,7 @@ public sealed class SingleInstanceService : IDisposable
         try
         {
             // Another process holds the mutex — do not wait forever (stale owners are rare with abandon).
-            if (mutex.WaitOne(TimeSpan.FromMilliseconds(200)))
+            if (mutex.WaitOne(WriteLiteDefaults.Application.SingleInstanceMutexWait))
             {
                 // We acquired after abandonment.
                 return new SingleInstanceService(mutex, isPrimary: true);
@@ -58,7 +58,7 @@ public sealed class SingleInstanceService : IDisposable
         // Signal existing instance, then return secondary marker (no mutex ownership).
         try
         {
-            SignalShowMainWindow(TimeSpan.FromMilliseconds(800));
+            SignalShowMainWindow(WriteLiteDefaults.Application.SingleInstanceSignalTimeout);
         }
         catch
         {
@@ -92,8 +92,10 @@ public sealed class SingleInstanceService : IDisposable
             writer.WriteLine(ShowMainWindowCommand);
             return true;
         }
-        catch
+        catch (Exception exception)
         {
+            // Pipe may be gone or redirecting (a second instance raced the first); treat as not activated.
+            CompatibilityLogger.Technical("single-instance-activation-failed", exception);
             return false;
         }
     }
@@ -132,7 +134,7 @@ public sealed class SingleInstanceService : IDisposable
             }
             catch
             {
-                try { await Task.Delay(150, token).ConfigureAwait(false); }
+                try { await Task.Delay(WriteLiteDefaults.Application.SingleInstanceServerRetryDelay, token).ConfigureAwait(false); }
                 catch (OperationCanceledException) { break; }
             }
         }
@@ -143,7 +145,7 @@ public sealed class SingleInstanceService : IDisposable
         try
         {
             _serverCts?.Cancel();
-            _serverTask?.Wait(TimeSpan.FromMilliseconds(500));
+            _serverTask?.Wait(WriteLiteDefaults.Application.SingleInstanceDisposeWait);
         }
         catch
         {

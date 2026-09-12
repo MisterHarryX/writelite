@@ -1,5 +1,6 @@
 using System.Net.Http;
 using System.Text.Json;
+using WriteLite.Language.Russian;
 
 namespace WriteLite.Services.LanguageEngine;
 
@@ -12,7 +13,7 @@ public sealed class WriteLiteReadinessProbe : IWriteLiteReadinessProbe, IDisposa
     {
         if (httpClient is null)
         {
-            _http = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+            _http = new HttpClient { Timeout = WriteLiteDefaults.Networking.LanguageEngineReadinessProbeTimeout };
             _ownsHttp = true;
         }
         else
@@ -66,7 +67,7 @@ public sealed class WriteLiteReadinessProbe : IWriteLiteReadinessProbe, IDisposa
                 {
                     var code = codeEl.GetString();
                     if (!string.IsNullOrEmpty(code)
-                        && code.StartsWith("ru", StringComparison.OrdinalIgnoreCase))
+                        && code.StartsWith(RussianLanguageProfile.IsoCode, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -76,7 +77,7 @@ public sealed class WriteLiteReadinessProbe : IWriteLiteReadinessProbe, IDisposa
                 {
                     var longCode = longCodeEl.GetString();
                     if (!string.IsNullOrEmpty(longCode)
-                        && longCode.StartsWith("ru", StringComparison.OrdinalIgnoreCase))
+                        && longCode.StartsWith(RussianLanguageProfile.IsoCode, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }

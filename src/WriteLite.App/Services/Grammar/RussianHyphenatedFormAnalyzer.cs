@@ -23,7 +23,7 @@ namespace WriteLite.Services.Grammar;
 /// <para>The same shape applies to «по твоему», «по нашему» and «по вашему». «во первых» and
 /// «всё таки» have no competing reading and are settled by the list alone.</para>
 /// </remarks>
-public sealed partial class RussianHyphenatedFormAnalyzer
+public sealed partial class RussianHyphenatedFormAnalyzer : GrammarAnalyzerBase
 {
     private readonly RussianFormIndex? _index;
 
@@ -58,13 +58,11 @@ public sealed partial class RussianHyphenatedFormAnalyzer
         (@"\bпо\s+своему\b", "по-своему"),
     ];
 
-    public void Collect(
+    protected override void CollectCore(
         string text,
         IReadOnlyList<(int Start, int End)> protectedSpans,
         ICollection<TextIssue> issues)
     {
-        if (string.IsNullOrWhiteSpace(text)) return;
-
         foreach (var (pattern, replacement) in Unambiguous)
         {
             Emit(text, pattern, replacement, protectedSpans, issues, requiresAdverbReading: false);
@@ -155,7 +153,7 @@ public sealed partial class RussianHyphenatedFormAnalyzer
         foreach (Match match in Regex.Matches(
             text, pattern,
             RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
-            TimeSpan.FromMilliseconds(200)))
+            WriteLiteDefaults.Analysis.StyleRegexMatchTimeout))
         {
             if (ProtectedTextSpans.Overlaps(match.Index, match.Length, protectedSpans)) continue;
             if (requiresAdverbReading && !IsAdverbReading(text, match.Index + match.Length)) continue;

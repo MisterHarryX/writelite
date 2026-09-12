@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using WriteLite.Documents;
+using WriteLite.Resources;
 using WriteLite.Services;
 using DragEventArgs = System.Windows.DragEventArgs;
 using DragDropEffects = System.Windows.DragDropEffects;
@@ -65,7 +66,7 @@ public partial class ConverterPage : UserControl
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Выберите файл для преобразования",
+            Title = Strings.Converter_ChooseInputTitle,
             Filter = DocumentFormats.OpenFilter,
             CheckFileExists = true
         };
@@ -82,7 +83,7 @@ public partial class ConverterPage : UserControl
 
         if (format == DocumentFormat.Unknown)
         {
-            ShowError("WriteLite открывает документы DOCX, ODT, PDF и TXT.");
+            ShowError(Strings.Converter_UnsupportedFormat);
             return;
         }
 
@@ -146,10 +147,9 @@ public partial class ConverterPage : UserControl
 
         TargetNoteText.Text = target switch
         {
-            DocumentFormat.Txt => "Останется только текст: оформление, таблицы и изображения не переносятся.",
-            DocumentFormat.Pdf => "PDF собирается заново из содержимого документа — вёрстка может отличаться от исходной.",
-            DocumentFormat.Docx or DocumentFormat.Odt =>
-                "Переносятся текст, заголовки, списки, начертание, выравнивание, отступы и таблицы.",
+            DocumentFormat.Txt => Strings.Converter_TargetHintTxt,
+            DocumentFormat.Pdf => Strings.Converter_TargetHintPdf,
+            DocumentFormat.Docx or DocumentFormat.Odt => Strings.Converter_TargetHintRich,
             _ => string.Empty
         };
 
@@ -197,7 +197,7 @@ public partial class ConverterPage : UserControl
         var extension = DocumentFormats.Extension(target);
         var dialog = new SaveFileDialog
         {
-            Title = "Сохранить результат как",
+            Title = Strings.Converter_SaveResultTitle,
             Filter = $"{DocumentFormats.DisplayName(target)} (*{extension})|*{extension}",
             FileName = Path.GetFileName(_outputPath ?? "converted" + extension),
             InitialDirectory = Path.GetDirectoryName(_outputPath ?? _inputPath ?? string.Empty),
@@ -255,7 +255,7 @@ public partial class ConverterPage : UserControl
         }
         catch (OperationCanceledException)
         {
-            ShowError("Преобразование отменено. Файл не создан.");
+            ShowError(Strings.Converter_Cancelled);
         }
         catch (DocumentFormatException exception)
         {
@@ -264,16 +264,16 @@ public partial class ConverterPage : UserControl
         }
         catch (UnauthorizedAccessException)
         {
-            ShowError("Нет прав на запись в выбранную папку. Выберите другое расположение.");
+            ShowError(Strings.Converter_NoWriteAccess);
         }
         catch (IOException)
         {
-            ShowError("Файл занят другой программой. Закройте его и попробуйте снова.");
+            ShowError(Strings.Converter_FileBusy);
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("conversion-failed", $"type={exception.GetType().Name}");
-            ShowError("Не удалось выполнить преобразование. Проверьте исходный файл.");
+            CompatibilityLogger.Technical("conversion-failed", exception);
+            ShowError(Strings.Converter_GenericError);
         }
         finally
         {
@@ -308,8 +308,13 @@ public partial class ConverterPage : UserControl
 
         var size = new FileInfo(result.OutputPath).Length;
         ResultDetailText.Text =
-            $"{DocumentFormats.DisplayName(result.From)} → {DocumentFormats.DisplayName(result.To)} · " +
-            $"{Path.GetFileName(result.OutputPath)} · {FormatSize(size)} · {result.Duration.TotalSeconds:0.0} с";
+            string.Format(
+                Strings.Converter_ResultDetail,
+                DocumentFormats.DisplayName(result.From),
+                DocumentFormats.DisplayName(result.To),
+                Path.GetFileName(result.OutputPath),
+                FormatSize(size),
+                result.Duration.TotalSeconds);
 
         // Warnings are shown, not swallowed: a conversion that dropped tables is
         // still a success, and the user is entitled to know before they rely on it.
@@ -363,7 +368,7 @@ public partial class ConverterPage : UserControl
         }
         catch (Exception exception) when (exception is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
-            ShowError("Не удалось открыть папку.");
+            ShowError(Strings.Converter_OpenFolderFailed);
         }
     }
 
@@ -391,7 +396,7 @@ public partial class ConverterPage : UserControl
         catch (Exception exception) when (exception is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
             // No handler registered for the type; nothing here is worth a dialog.
-            CompatibilityLogger.Technical("conversion-open-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("conversion-open-failed", exception);
         }
     }
 

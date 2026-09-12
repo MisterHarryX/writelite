@@ -29,7 +29,7 @@ namespace WriteLite.Services.Grammar;
 /// short closed list of forms that are addresses whenever they follow a greeting restores
 /// them without loosening the gate for anything else.</para>
 /// </remarks>
-public sealed class RussianVocativeAnalyzer
+public sealed class RussianVocativeAnalyzer : GrammarAnalyzerBase
 {
     private readonly RussianFormIndex _index;
 
@@ -65,24 +65,21 @@ public sealed class RussianVocativeAnalyzer
         "коллеги", "друзья", "ребята", "господа", "товарищи", "дамы", "парни", "девушки",
     };
 
-    /// <summary>Adjective and participle endings that can modify an address.</summary>
+    /// <summary>Adjective and participle endings that can modify an address (nominative forms only).</summary>
     private static readonly string[] ModifierEndings =
     [
-        "ый", "ий", "ой", "ая", "яя", "ое", "ее", "ые", "ие", "ый", "ыe",
+        "ый", "ий", "ой", "ая", "яя", "ое", "ее", "ые", "ие",
     ];
 
     /// <summary>The most modifiers accepted before the head of the address.</summary>
     private const int MaxModifiers = 2;
 
-    public void Collect(
+    protected override void CollectCore(
         string text,
         IReadOnlyList<(int Start, int End)> protectedSpans,
         ICollection<TextIssue> issues)
     {
-        if (string.IsNullOrWhiteSpace(text)) return;
-
-        var tokens = RussianTokens.Split(text);
-        if (tokens.Count < 2) return;
+        var tokens = TokensAtLeast(text, 2);
 
         for (var i = 0; i < tokens.Count; i++)
         {

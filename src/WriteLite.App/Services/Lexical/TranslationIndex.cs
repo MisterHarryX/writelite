@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.IO;
 using Microsoft.Data.Sqlite;
+using WriteLite.Language.Russian;
 
 namespace WriteLite.Services.Lexical;
 
@@ -113,7 +114,7 @@ public sealed class TranslationIndex : IDisposable
             return [];
         }
 
-        var source = from == LexicalLanguage.English ? "en" : "ru";
+        var source = from == LexicalLanguage.English ? "en" : RussianLanguageProfile.IsoCode;
         var normalized = Normalize(word, from);
         var key = source + "|" + normalized;
 

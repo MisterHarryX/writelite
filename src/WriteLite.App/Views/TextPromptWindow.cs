@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
+using WriteLite.Resources;
 using Button = System.Windows.Controls.Button;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
@@ -70,7 +71,7 @@ public sealed class TextPromptWindow : Window
 
         var ok = new Button
         {
-            Content = "Готово",
+            Content = Strings.Converter_ResultTitle,
             IsDefault = true,
             MinHeight = 30,
             Style = TryFindResource("WlPrimaryButton") as Style
@@ -80,7 +81,7 @@ public sealed class TextPromptWindow : Window
 
         var cancel = new Button
         {
-            Content = "Отмена",
+            Content = Strings.Editor_CancelOperation,
             IsCancel = true,
             Margin = new Thickness(0, 0, 8, 0),
             Style = TryFindResource("WlTextButton") as Style

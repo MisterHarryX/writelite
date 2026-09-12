@@ -22,7 +22,7 @@ namespace WriteLite.Services.Reading;
 public sealed class ReadingLibraryService : IDisposable
 {
     /// <summary>Quiet period before a deferred change reaches the disk.</summary>
-    private static readonly TimeSpan WriteDelay = TimeSpan.FromMilliseconds(400);
+    private static readonly TimeSpan WriteDelay = WriteLiteDefaults.Debounce.ReadingLibraryWriteDelay;
 
     private readonly string _libraryPath;
     private readonly string _projectsRoot;
@@ -245,7 +245,7 @@ public sealed class ReadingLibraryService : IDisposable
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
-                CompatibilityLogger.Technical("reading-project-save-failed", $"type={exception.GetType().Name}");
+                CompatibilityLogger.Technical("reading-project-save-failed", exception);
 
                 // Left pending on purpose: the data is still in memory and the next
                 // flush retries. Dropping it would turn a transient lock into a
@@ -328,7 +328,7 @@ public sealed class ReadingLibraryService : IDisposable
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
-                CompatibilityLogger.Technical("reading-library-save-failed", $"type={exception.GetType().Name}");
+                CompatibilityLogger.Technical("reading-library-save-failed", exception);
                 _indexDirty = true;
             }
         }

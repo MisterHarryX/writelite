@@ -36,6 +36,12 @@ public static class CompatibilityLogger
         Write(eventName, Sanitize(detail));
     }
 
+    /// <summary>Logs a handled failure; the exception type the callers used to spell out themselves.</summary>
+    public static void Technical(string eventName, Exception? exception)
+    {
+        Write(eventName, $"type={Sanitize(exception?.GetType().Name ?? "unknown")}");
+    }
+
     public static void Element(
         int processId,
         string controlType,
@@ -225,6 +231,7 @@ public static class CompatibilityLogger
         }
         catch
         {
+            // The process may have exited between logging and this read; keep the log going.
             return "unavailable";
         }
     }

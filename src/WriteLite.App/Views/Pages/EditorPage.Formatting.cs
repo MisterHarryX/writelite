@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Documents;
 using Brush = System.Windows.Media.Brush;
@@ -46,14 +47,14 @@ public partial class EditorPage
     /// </remarks>
     private static readonly (string Label, string Hex)[] TextColours =
     [
-        ("По умолчанию", ""),
-        ("Оранжевый", "#EC6C08"),
-        ("Красный", "#E3695A"),
-        ("Жёлтый", "#E0A64B"),
-        ("Зелёный", "#6FB593"),
-        ("Серый", "#8A847B"),
-        ("Чёрный", "#000000"),
-        ("Белый", "#FFFFFF")
+        (Strings.EditorFmt_ColourDefault, ""),
+        (Strings.EditorFmt_ColourOrange, "#EC6C08"),
+        (Strings.EditorFmt_ColourRed, "#E3695A"),
+        (Strings.EditorFmt_ColourYellow, "#E0A64B"),
+        (Strings.EditorFmt_ColourGreen, "#6FB593"),
+        (Strings.EditorFmt_ColourGrey, "#8A847B"),
+        (Strings.EditorFmt_ColourBlack, "#000000"),
+        (Strings.EditorFmt_ColourWhite, "#FFFFFF")
     ];
 
     private int _zoomIndex = 3;
@@ -76,11 +77,11 @@ public partial class EditorPage
 
         StyleBox.ItemsSource = new[]
         {
-            "Обычный текст",
-            "Заголовок 1",
-            "Заголовок 2",
-            "Заголовок 3",
-            "Заголовок 4"
+            Strings.EditorFmt_StyleNormal,
+            Strings.EditorFmt_Heading1,
+            Strings.EditorFmt_Heading2,
+            Strings.EditorFmt_Heading3,
+            Strings.EditorFmt_Heading4
         };
 
         foreach (var (label, hex) in TextColours)
@@ -471,7 +472,7 @@ public partial class EditorPage
         _documentGeneration++;
         MarkDirty();
         UpdateFormattingState();
-        QueueAnalysis(TimeSpan.FromMilliseconds(120), fullDocument: true);
+        QueueAnalysis(WriteLiteDefaults.Debounce.EditorPostEditRescanDelay, fullDocument: true);
     }
 
     /// <summary>
@@ -540,7 +541,7 @@ public partial class EditorPage
         {
             Editor.Undo();
             _documentGeneration++;
-            QueueAnalysis(TimeSpan.FromMilliseconds(120), fullDocument: true);
+            QueueAnalysis(WriteLiteDefaults.Debounce.EditorPostEditRescanDelay, fullDocument: true);
         }
     }
 
@@ -550,7 +551,7 @@ public partial class EditorPage
         {
             Editor.Redo();
             _documentGeneration++;
-            QueueAnalysis(TimeSpan.FromMilliseconds(120), fullDocument: true);
+            QueueAnalysis(WriteLiteDefaults.Debounce.EditorPostEditRescanDelay, fullDocument: true);
         }
     }
 
@@ -615,12 +616,8 @@ public partial class EditorPage
 
     private void FindBox_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Enter)
-        {
-            return;
-        }
+        if (!e.SubmitPressed()) return;
 
-        e.Handled = true;
         FindNext();
     }
 
@@ -653,16 +650,16 @@ public partial class EditorPage
             found = index.Text.IndexOf(needle, StringComparison.CurrentCultureIgnoreCase);
             if (found < 0)
             {
-                FindStatusText.Text = "Не найдено";
+                FindStatusText.Text = Strings.Editor_NotMatched;
                 return;
             }
 
-            FindStatusText.Text = "Поиск с начала";
+            FindStatusText.Text = Strings.Editor_SearchFromStart;
         }
         else
         {
             var total = CountOccurrences(index.Text, needle);
-            FindStatusText.Text = total == 1 ? "1 совпадение" : $"{total} совпадений";
+            FindStatusText.Text = total == 1 ? Strings.Editor_MatchOne : string.Format(Strings.Editor_MatchMany, total);
         }
 
         if (index.RangeFor(found, needle.Length) is not { } range)
@@ -717,7 +714,7 @@ public partial class EditorPage
         }
 
         FindNext();
-        QueueAnalysis(TimeSpan.FromMilliseconds(150), fullDocument: true);
+        QueueAnalysis(WriteLiteDefaults.Debounce.EditorPostRewriteRescanDelay, fullDocument: true);
     }
 
     private void ReplaceAll_Click(object sender, RoutedEventArgs e)
@@ -768,8 +765,8 @@ public partial class EditorPage
         _index = null;
         MarkDirty();
 
-        FindStatusText.Text = replaced == 0 ? "Не найдено" : $"Заменено: {replaced}";
-        QueueAnalysis(TimeSpan.FromMilliseconds(150), fullDocument: true);
+        FindStatusText.Text = replaced == 0 ? Strings.Editor_NotMatched : string.Format(Strings.Editor_ReplaceCount, replaced);
+        QueueAnalysis(WriteLiteDefaults.Debounce.EditorPostRewriteRescanDelay, fullDocument: true);
     }
 
     // ── Selection state ──────────────────────────────────────────────────────

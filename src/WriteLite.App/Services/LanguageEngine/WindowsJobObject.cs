@@ -54,8 +54,10 @@ public sealed class WindowsJobObject : IWriteLiteProcessJob
 
             return true;
         }
-        catch
+        catch (Exception exception)
         {
+            // Job assignment is best-effort; the process still runs without containment.
+            CompatibilityLogger.Technical("job-assign-failed", $"type={exception.GetType().Name}");
             return false;
         }
     }

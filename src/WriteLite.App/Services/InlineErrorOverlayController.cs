@@ -79,7 +79,7 @@ public sealed class InlineErrorOverlayController : IDisposable
         {
             // The element vanished mid-probe (window closed, page navigated).
             // Same policy as elsewhere: keep the last good overlay, log metadata.
-            CompatibilityLogger.Technical("inline-probe-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("inline-probe-failed", exception);
             if (!canRetainExisting) _window.Hide();
             return;
         }

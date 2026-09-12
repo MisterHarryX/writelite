@@ -4,6 +4,7 @@ using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Lexical;
 using WriteLite.Services.Notes;
@@ -94,12 +95,12 @@ public partial class NoteEditorWindow : Window
 
         Controls.Type.SetTracked(
             CreatedText,
-            $"СОЗДАНО {_working.CreatedAt:d MMMM yyyy} · ИЗМЕНЕНО {_working.ModifiedAt:d MMMM yyyy, HH:mm}".ToUpperInvariant());
+            string.Format(Strings.NoteEdit_CreatedModified, _working.CreatedAt, _working.ModifiedAt).ToUpperInvariant());
     }
 
     private void RenderPin()
     {
-        PinButton.ToolTip = _working.IsPinned ? "Открепить" : "Закрепить";
+        PinButton.ToolTip = _working.IsPinned ? Strings.NoteEdit_Unpin : Strings.NoteEdit_Pin;
         PinIcon.Stroke = (Brush)FindResource(_working.IsPinned ? "WlBrand" : "WlTextMuted");
     }
 
@@ -110,7 +111,7 @@ public partial class NoteEditorWindow : Window
         // A plain note has no items and no completion; a goal calls its items steps.
         var wantsItems = _working.Kind is NoteKind.Checklist or NoteKind.Goal;
         ChecklistSection.Visibility = wantsItems ? Visibility.Visible : Visibility.Collapsed;
-        Controls.Type.SetTracked(ChecklistLabel, _working.Kind == NoteKind.Goal ? "ШАГИ" : "ПУНКТЫ");
+        Controls.Type.SetTracked(ChecklistLabel, _working.Kind == NoteKind.Goal ? Strings.NoteEdit_TrackedSteps : Strings.NoteEdit_TrackedItems);
 
         CompletedBox.Visibility = _working.IsCompletable ? Visibility.Visible : Visibility.Collapsed;
         Title = Controls.NoteCard.KindName(_working.Kind);
@@ -155,7 +156,7 @@ public partial class NoteEditorWindow : Window
             AcceptsReturn = false
         };
 
-        AutomationProperties.SetName(text, "Текст пункта");
+        AutomationProperties.SetName(text, Strings.NoteEdit_ItemTextAutomation);
         text.TextChanged += (_, _) => item.Text = text.Text;
         ApplyDoneStyling(text, item.IsDone);
 
@@ -179,7 +180,7 @@ public partial class NoteEditorWindow : Window
             Width = 30,
             Height = 30,
             Margin = new Thickness(6, 0, 0, 0),
-            ToolTip = "Удалить пункт",
+            ToolTip = Strings.NoteEdit_RemoveItem,
             VerticalAlignment = VerticalAlignment.Top,
             Content = new System.Windows.Shapes.Path
             {
@@ -189,7 +190,7 @@ public partial class NoteEditorWindow : Window
             }
         };
 
-        AutomationProperties.SetName(remove, $"Удалить пункт: {item.Text}");
+        AutomationProperties.SetName(remove, string.Format(Strings.NoteEdit_RemoveItemAutomation, item.Text));
         remove.Click += (_, _) =>
         {
             _working.Items.Remove(item);
@@ -245,12 +246,8 @@ public partial class NoteEditorWindow : Window
 
     private void NewItem_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Enter)
-        {
-            return;
-        }
+        if (!e.SubmitPressed()) return;
 
-        e.Handled = true;
         AddItem();
     }
 
@@ -358,8 +355,8 @@ public partial class NoteEditorWindow : Window
     private void Delete_Click(object sender, RoutedEventArgs e)
     {
         var confirm = MessageBox.Show(
-            "Удалить эту заметку?",
-            "Заметки",
+            Strings.NoteEdit_DeleteConfirm,
+            Strings.Nav_Notes,
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
@@ -409,7 +406,7 @@ public partial class NoteEditorWindow : Window
         {
             var lookup = new MenuItem
             {
-                Header = $"Открыть «{word}» в словаре",
+                Header = string.Format(Strings.EditorAi_OpenInDictionary, word),
                 Style = TryFindResource("WlMenuItem") as Style
             };
 
@@ -425,9 +422,9 @@ public partial class NoteEditorWindow : Window
             menu.Items.Add(new Separator { Style = TryFindResource("WlMenuSeparator") as Style });
         }
 
-        menu.Items.Add(Command("Вырезать", ApplicationCommands.Cut));
-        menu.Items.Add(Command("Копировать", ApplicationCommands.Copy));
-        menu.Items.Add(Command("Вставить", ApplicationCommands.Paste));
+        menu.Items.Add(Command(Strings.EditorAi_Cut, ApplicationCommands.Cut));
+        menu.Items.Add(Command(Strings.EditorAi_Copy, ApplicationCommands.Copy));
+        menu.Items.Add(Command(Strings.EditorAi_Paste, ApplicationCommands.Paste));
 
         TextBoxBody.ContextMenu = menu;
     }

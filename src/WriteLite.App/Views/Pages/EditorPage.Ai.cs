@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using WriteLite.Controls;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Ai;
 using WriteLite.Services.Documents;
@@ -86,7 +87,7 @@ public partial class EditorPage
         {
             _lastAnalyzedText = string.Empty;
             _lastAnalyzedIssues = [];
-            _ = ScheduleAnalysisAsync(TimeSpan.FromMilliseconds(150));
+            _ = ScheduleAnalysisAsync(WriteLiteDefaults.Debounce.EditorPostRewriteRescanDelay);
         }
     }
 
@@ -146,23 +147,23 @@ public partial class EditorPage
 
         if (word is not null)
         {
-            ai.Items.Add(MenuAction($"Значение «{word}»", () => ShowWordPanelAsync(word)));
+            ai.Items.Add(MenuAction(string.Format(Strings.EditorAi_WordMeaning, word), () => ShowWordPanelAsync(word)));
             ai.Items.Add(Separator());
         }
 
-        ai.Items.Add(MenuAction("Объяснить", () => RunRewriteAsync(RewriteOperation.Explain)));
-        ai.Items.Add(MenuAction("Перевести на английский", () => RunRewriteAsync(RewriteOperation.Translate)));
+        ai.Items.Add(MenuAction(Strings.EditorAi_Explain, () => RunRewriteAsync(RewriteOperation.Explain)));
+        ai.Items.Add(MenuAction(Strings.EditorAi_TranslateToEnglish, () => RunRewriteAsync(RewriteOperation.Translate)));
         ai.Items.Add(Separator());
-        ai.Items.Add(MenuAction("Переписать", () => RunRewriteAsync(RewriteOperation.Rewrite)));
-        ai.Items.Add(MenuAction("Улучшить стиль", () => RunRewriteAsync(RewriteOperation.ImproveStyle)));
-        ai.Items.Add(MenuAction("Сделать формальнее", () => RunRewriteAsync(RewriteOperation.Formal)));
-        ai.Items.Add(MenuAction("Сделать проще", () => RunRewriteAsync(RewriteOperation.Casual)));
-        ai.Items.Add(MenuAction("Упростить", () => RunRewriteAsync(RewriteOperation.Simplify)));
-        ai.Items.Add(MenuAction("Сократить", () => RunRewriteAsync(RewriteOperation.Shorten)));
-        ai.Items.Add(MenuAction("Расширить", () => RunRewriteAsync(RewriteOperation.Expand)));
-        ai.Items.Add(MenuAction("Исправить грамматику", () => RunRewriteAsync(RewriteOperation.Grammar)));
+        ai.Items.Add(MenuAction(Strings.EditorAi_Rewrite, () => RunRewriteAsync(RewriteOperation.Rewrite)));
+        ai.Items.Add(MenuAction(Strings.EditorAi_ImproveStyle, () => RunRewriteAsync(RewriteOperation.ImproveStyle)));
+        ai.Items.Add(MenuAction(Strings.EditorAi_MakeFormal, () => RunRewriteAsync(RewriteOperation.Formal)));
+        ai.Items.Add(MenuAction(Strings.EditorAi_MakeCasual, () => RunRewriteAsync(RewriteOperation.Casual)));
+        ai.Items.Add(MenuAction(Strings.EditorAi_Simplify, () => RunRewriteAsync(RewriteOperation.Simplify)));
+        ai.Items.Add(MenuAction(Strings.EditorAi_Shorten, () => RunRewriteAsync(RewriteOperation.Shorten)));
+        ai.Items.Add(MenuAction(Strings.EditorAi_Expand, () => RunRewriteAsync(RewriteOperation.Expand)));
+        ai.Items.Add(MenuAction(Strings.EditorAi_FixGrammar, () => RunRewriteAsync(RewriteOperation.Grammar)));
         ai.Items.Add(Separator());
-        ai.Items.Add(MenuAction("Своя инструкция…", () => RunRewriteAsync(RewriteOperation.Custom)));
+        ai.Items.Add(MenuAction(Strings.EditorAi_CustomInstructionEllipsis, () => RunRewriteAsync(RewriteOperation.Custom)));
 
         menu.Items.Add(ai);
         menu.Items.Add(Separator());
@@ -172,7 +173,7 @@ public partial class EditorPage
         // found. The word is already normalised, so nothing has to be retyped.
         if (word is not null)
         {
-            menu.Items.Add(MenuAction($"Открыть «{word}» в словаре", () =>
+            menu.Items.Add(MenuAction(string.Format(Strings.EditorAi_OpenInDictionary, word), () =>
             {
                 WordNavigationRequested?.Invoke(word);
                 return Task.CompletedTask;
@@ -181,11 +182,11 @@ public partial class EditorPage
             menu.Items.Add(Separator());
         }
 
-        menu.Items.Add(CommandItem("Вырезать", ApplicationCommands.Cut));
-        menu.Items.Add(CommandItem("Копировать", ApplicationCommands.Copy));
-        menu.Items.Add(CommandItem("Вставить", ApplicationCommands.Paste));
+        menu.Items.Add(CommandItem(Strings.EditorAi_Cut, ApplicationCommands.Cut));
+        menu.Items.Add(CommandItem(Strings.EditorAi_Copy, ApplicationCommands.Copy));
+        menu.Items.Add(CommandItem(Strings.EditorAi_Paste, ApplicationCommands.Paste));
         menu.Items.Add(Separator());
-        menu.Items.Add(CommandItem("Выделить всё", ApplicationCommands.SelectAll));
+        menu.Items.Add(CommandItem(Strings.EditorAi_SelectAll, ApplicationCommands.SelectAll));
 
         return menu;
     }
@@ -257,7 +258,7 @@ public partial class EditorPage
     {
         if (_editorAi is null)
         {
-            ShowError("AI недоступен", "Локальный движок ещё запускается. Попробуйте через несколько секунд.");
+            ShowError(Strings.EditorAi_Unavailable, Strings.EditorAi_UnavailableHint);
             return;
         }
 
@@ -266,7 +267,7 @@ public partial class EditorPage
 
         if (string.IsNullOrWhiteSpace(text))
         {
-            ShowError("Нечего обрабатывать", "Выделите слово, предложение или абзац.");
+            ShowError(Strings.EditorAi_NothingToProcess, Strings.EditorAi_SelectSomething);
             return;
         }
 
@@ -354,7 +355,7 @@ public partial class EditorPage
         {
             // The document changed under the preview; better to do nothing than to
             // write the suggestion into whatever now occupies those positions.
-            ShowError("Текст изменился", "Документ был изменён во время обработки. Изменения не применены.");
+            ShowError(Strings.EditorAi_TextChanged, Strings.EditorAi_TextChangedHint);
         }
         finally
         {
@@ -364,7 +365,7 @@ public partial class EditorPage
 
         _documentGeneration++;
         MarkDirty();
-        _ = ScheduleAnalysisAsync(TimeSpan.FromMilliseconds(150));
+        _ = ScheduleAnalysisAsync(WriteLiteDefaults.Debounce.EditorPostRewriteRescanDelay);
     }
 
     /// <summary>Reads a bounded amount of text on one side of the selection.</summary>
@@ -393,18 +394,18 @@ public partial class EditorPage
 
     private static string OperationLabel(RewriteOperation operation, string? instruction) => operation switch
     {
-        RewriteOperation.Rewrite => "Переписать",
-        RewriteOperation.ImproveStyle => "Улучшить стиль",
-        RewriteOperation.Formal => "Формальнее",
-        RewriteOperation.Casual => "Проще",
-        RewriteOperation.Simplify => "Упростить",
-        RewriteOperation.Shorten => "Сократить",
-        RewriteOperation.Expand => "Расширить",
-        RewriteOperation.Grammar => "Грамматика",
-        RewriteOperation.Explain => "Объяснить",
-        RewriteOperation.Translate => "Перевод",
-        RewriteOperation.Custom => instruction is { Length: > 0 } ? Shorten(instruction) : "Своя инструкция",
-        _ => "Обработка"
+        RewriteOperation.Rewrite => Strings.EditorAi_Rewrite,
+        RewriteOperation.ImproveStyle => Strings.EditorAi_ImproveStyle,
+        RewriteOperation.Formal => Strings.EditorAi_Formal,
+        RewriteOperation.Casual => Strings.EditorAi_Casual,
+        RewriteOperation.Simplify => Strings.EditorAi_Simplify,
+        RewriteOperation.Shorten => Strings.EditorAi_Shorten,
+        RewriteOperation.Expand => Strings.EditorAi_Expand,
+        RewriteOperation.Grammar => Strings.EditorAi_Grammar,
+        RewriteOperation.Explain => Strings.EditorAi_Explain,
+        RewriteOperation.Translate => Strings.EditorAi_Translate,
+        RewriteOperation.Custom => instruction is { Length: > 0 } ? Shorten(instruction) : Strings.Suggestions_CustomInstruction,
+        _ => Strings.EditorAi_Processing
     };
 
     private static string Shorten(string text) =>
@@ -522,7 +523,7 @@ public partial class EditorPage
     {
         if (_lexical is null)
         {
-            ShowWordMessage("Словарь ещё загружается. Проверка текста продолжает работать.");
+            ShowWordMessage(Strings.EditorAi_DictionaryLoading);
             return;
         }
 
@@ -554,8 +555,8 @@ public partial class EditorPage
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("editor-lexical-failed", $"type={exception.GetType().Name}");
-            ShowWordMessage("Не удалось найти слово. Словарные данные недоступны.");
+            CompatibilityLogger.Technical("editor-lexical-failed", exception);
+            ShowWordMessage(Strings.EditorAi_LookupFailed);
         }
     }
 
@@ -579,7 +580,7 @@ public partial class EditorPage
         if (card.IsEmpty)
         {
             WordArticle.Visibility = Visibility.Collapsed;
-            ShowWordMessage(card.StatusMessage ?? "Слова нет в установленных словарях.");
+            ShowWordMessage(card.StatusMessage ?? Strings.Word_NotInDictionaries);
 
             // The AI actions stay reachable even without a dictionary entry: they
             // do not depend on the packs.
@@ -598,7 +599,7 @@ public partial class EditorPage
 
         if (!string.Equals(card.Lemma, card.Word, StringComparison.CurrentCultureIgnoreCase))
         {
-            grammar.Add($"нач. форма: {card.Lemma}");
+            grammar.Add(string.Format(Strings.Word_InitialForm, card.Lemma));
         }
 
         WordGrammarText.Text = string.Join(" · ", grammar);
@@ -617,7 +618,7 @@ public partial class EditorPage
 
         Controls.Type.SetTracked(
             TranslationsLabel,
-            card.Language == LexicalLanguage.English ? "ПЕРЕВОД НА РУССКИЙ" : "ПЕРЕВОД НА АНГЛИЙСКИЙ");
+            card.Language == LexicalLanguage.English ? Strings.Word_TranslationsRussian : Strings.Word_TranslationsEnglish);
         FillWordChips(TranslationsPanel, TranslationsBlock, card.Translations, canReplace: false);
 
         FormsText.Text = card.Forms.Count > 0 ? string.Join(" · ", card.Forms) : string.Empty;
@@ -669,8 +670,8 @@ public partial class EditorPage
                 Language = word.Language,
                 HasArticle = word.HasArticle,
                 ToolTip = canReplace
-                    ? "Клик — заменить в тексте, двойной клик — открыть статью"
-                    : "Двойной клик — открыть статью"
+                    ? Strings.Word_ChipReplaceHint
+                    : Strings.Word_ChipViewHint
             };
 
             chip.MouseDoubleClick += async (_, args) =>
@@ -719,7 +720,7 @@ public partial class EditorPage
 
         _documentGeneration++;
         MarkDirty();
-        _ = ScheduleAnalysisAsync(TimeSpan.FromMilliseconds(150));
+        _ = ScheduleAnalysisAsync(WriteLiteDefaults.Debounce.EditorPostRewriteRescanDelay);
     }
 
     private void ShowWordMessage(string message)
@@ -794,7 +795,7 @@ public sealed class InstructionPrompt : Window
 
     public InstructionPrompt()
     {
-        Title = "Своя инструкция";
+        Title = Strings.Suggestions_CustomInstruction;
         Width = 520;
         SizeToContent = SizeToContent.Height;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -813,8 +814,7 @@ public sealed class InstructionPrompt : Window
 
         var hint = new TextBlock
         {
-            Text = "Например: «перепиши этот абзац как университетское эссе» " +
-                   "или «сделай описание увереннее».",
+            Text = Strings.EditorAi_InstructionHint,
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 0, 0, 12),
             Style = TryFindResource("WlCaption") as Style
@@ -822,14 +822,14 @@ public sealed class InstructionPrompt : Window
 
         var title = new TextBlock
         {
-            Text = "Что сделать с выделенным текстом?",
+            Text = Strings.EditorAi_InstructionTitle,
             Margin = new Thickness(0, 0, 0, 8),
             Style = TryFindResource("WlCardTitle") as Style
         };
 
         var ok = new System.Windows.Controls.Button
         {
-            Content = "Выполнить",
+            Content = Strings.EditorAi_Execute,
             IsDefault = true,
             MinHeight = 30,
             Style = TryFindResource("WlPrimaryButton") as Style
@@ -838,7 +838,7 @@ public sealed class InstructionPrompt : Window
 
         var cancel = new System.Windows.Controls.Button
         {
-            Content = "Отмена",
+            Content = Strings.EditorAi_Cancel,
             IsCancel = true,
             Margin = new Thickness(0, 0, 6, 0),
             Style = TryFindResource("WlTextButton") as Style

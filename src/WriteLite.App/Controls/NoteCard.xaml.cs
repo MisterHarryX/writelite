@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Notes;
 using Brush = System.Windows.Media.Brush;
@@ -88,7 +89,7 @@ public partial class NoteCard : UserControl
         Spine.Background = (Brush)FindResource(note.IsPinned ? "WlBrand" : "WlLineStrong");
         Spine.Visibility = note.IsPinned || note.Kind != NoteKind.Note ? Visibility.Visible : Visibility.Hidden;
 
-        PinButton.ToolTip = note.IsPinned ? "Открепить" : "Закрепить";
+        PinButton.ToolTip = note.IsPinned ? Strings.NoteCard_Unpin : Strings.NoteCard_Pin;
         PinIcon.Stroke = (Brush)FindResource(note.IsPinned ? "WlBrand" : "WlTextMuted");
 
         RenderBody(note);
@@ -134,7 +135,10 @@ public partial class NoteCard : UserControl
 
         var hidden = note.Items.Count - VisibleChecklistItems;
         MoreItemsText.Text = hidden > 0
-            ? $"ещё {hidden} {RussianPlural.Form(hidden, "пункт", "пункта", "пунктов")}"
+            ? string.Format(
+                Strings.NoteCard_MoreItems,
+                hidden,
+                RussianPlural.Form(hidden, Strings.NoteCard_ItemOne, Strings.NoteCard_ItemFew, Strings.NoteCard_ItemMany))
             : string.Empty;
         MoreItemsText.Visibility = hidden > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -231,16 +235,16 @@ public partial class NoteCard : UserControl
         Controls.Type.SetTracked(
             ModifiedText,
             note.IsCompleted && note.CompletedAt is { } completed
-                ? $"ВЫПОЛНЕНО {FormatWhen(completed)}"
-                : $"ИЗМЕНЕНО {FormatWhen(note.ModifiedAt)}");
+                ? string.Format(Strings.NoteCard_CompletedAt, FormatWhen(completed))
+                : string.Format(Strings.NoteCard_ModifiedAt, FormatWhen(note.ModifiedAt)));
     }
 
     internal static string KindName(NoteKind kind) => kind switch
     {
-        NoteKind.Task => "Задача",
-        NoteKind.Checklist => "Список",
-        NoteKind.Goal => "Цель",
-        _ => "Заметка"
+        NoteKind.Task => Strings.Notes_KindTask,
+        NoteKind.Checklist => Strings.Notes_KindChecklist,
+        NoteKind.Goal => Strings.Notes_KindGoal,
+        _ => Strings.Notes_KindNote
     };
 
     private static string FormatDue(DateTimeOffset due)
@@ -248,10 +252,13 @@ public partial class NoteCard : UserControl
         var days = (due.Date - DateTimeOffset.Now.Date).Days;
         return days switch
         {
-            0 => "СЕГОДНЯ",
-            1 => "ЗАВТРА",
-            -1 => "ВЧЕРА",
-            < 0 => $"ПРОСРОЧЕНО НА {-days} {RussianPlural.Form(-days, "ДЕНЬ", "ДНЯ", "ДНЕЙ")}",
+            0 => Strings.NoteCard_DueToday,
+            1 => Strings.NoteCard_DueTomorrow,
+            -1 => Strings.NoteCard_DueYesterday,
+            < 0 => string.Format(
+                Strings.NoteCard_DueOverdue,
+                -days,
+                RussianPlural.Form(-days, Strings.NoteCard_DayOne, Strings.NoteCard_DayFew, Strings.NoteCard_DayMany)),
             _ => due.ToString("d MMM").ToUpperInvariant()
         };
     }
@@ -261,10 +268,13 @@ public partial class NoteCard : UserControl
         var elapsed = DateTimeOffset.Now - when;
         return elapsed switch
         {
-            { TotalMinutes: < 1 } => "ТОЛЬКО ЧТО",
-            { TotalHours: < 1 } => $"{(int)elapsed.TotalMinutes} МИН НАЗАД",
-            { TotalDays: < 1 } => $"{(int)elapsed.TotalHours} Ч НАЗАД",
-            { TotalDays: < 7 } => $"{(int)elapsed.TotalDays} {RussianPlural.Form((int)elapsed.TotalDays, "ДЕНЬ", "ДНЯ", "ДНЕЙ")} НАЗАД",
+            { TotalMinutes: < 1 } => Strings.NoteCard_JustNow,
+            { TotalHours: < 1 } => string.Format(Strings.NoteCard_MinutesAgo, (int)elapsed.TotalMinutes),
+            { TotalDays: < 1 } => string.Format(Strings.NoteCard_HoursAgo, (int)elapsed.TotalHours),
+            { TotalDays: < 7 } => string.Format(
+                Strings.NoteCard_DaysAgo,
+                (int)elapsed.TotalDays,
+                RussianPlural.Form((int)elapsed.TotalDays, Strings.NoteCard_DayOne, Strings.NoteCard_DayFew, Strings.NoteCard_DayMany)),
             _ => when.ToString("d MMM yyyy").ToUpperInvariant()
         };
     }
@@ -356,11 +366,11 @@ public partial class NoteCard : UserControl
         }
 
         var dip = new DoubleAnimationUsingKeyFrames { FillBehavior = FillBehavior.Stop };
-        dip.KeyFrames.Add(new EasingDoubleKeyFrame(0.975, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(80)))
+        dip.KeyFrames.Add(new EasingDoubleKeyFrame(0.975, KeyTime.FromTimeSpan(WriteLiteDefaults.Motion.PressDipKeyFrame))
         {
             EasingFunction = Motion.Editorial
         });
-        dip.KeyFrames.Add(new EasingDoubleKeyFrame(1.0, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(230)))
+        dip.KeyFrames.Add(new EasingDoubleKeyFrame(1.0, KeyTime.FromTimeSpan(WriteLiteDefaults.Motion.PressReleaseKeyFrame))
         {
             EasingFunction = Motion.Editorial
         });
@@ -393,19 +403,19 @@ public partial class NoteCard : UserControl
             Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom
         };
 
-        menu.Items.Add(Item("Открыть", () => Opened?.Invoke(Note)));
-        menu.Items.Add(Item(Note.IsPinned ? "Открепить" : "Закрепить", () => PinChanged?.Invoke(Note, !Note.IsPinned)));
+        menu.Items.Add(Item(Strings.NoteCard_Open, () => Opened?.Invoke(Note)));
+        menu.Items.Add(Item(Note.IsPinned ? Strings.NoteCard_Unpin : Strings.NoteCard_Pin, () => PinChanged?.Invoke(Note, !Note.IsPinned)));
 
         if (Note.IsCompletable)
         {
             menu.Items.Add(Item(
-                Note.IsCompleted ? "Вернуть в работу" : "Отметить выполненной",
+                Note.IsCompleted ? Strings.NoteCard_ReturnToWork : Strings.NoteCard_MarkCompleted,
                 () => CompletionChanged?.Invoke(Note, !Note.IsCompleted)));
         }
 
-        menu.Items.Add(Item("Дублировать", () => DuplicateRequested?.Invoke(Note)));
+        menu.Items.Add(Item(Strings.NoteCard_Duplicate, () => DuplicateRequested?.Invoke(Note)));
         menu.Items.Add(new Separator { Style = TryFindResource("WlMenuSeparator") as Style });
-        menu.Items.Add(Item("Удалить", () => DeleteRequested?.Invoke(Note)));
+        menu.Items.Add(Item(Strings.NoteCard_Delete, () => DeleteRequested?.Invoke(Note)));
 
         menu.IsOpen = true;
     }

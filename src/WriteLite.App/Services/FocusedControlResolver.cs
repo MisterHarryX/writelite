@@ -93,7 +93,7 @@ public static class FocusedControlResolver
     private static int ProcessIdOf(AutomationElement element)
     {
         try { return element.Current.ProcessId; }
-        catch { return 0; }
+        catch { return 0; } // element may be gone between the caller's check and this property read
     }
 
     /// <summary>

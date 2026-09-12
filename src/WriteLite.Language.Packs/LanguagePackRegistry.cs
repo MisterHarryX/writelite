@@ -40,7 +40,7 @@ public sealed class LanguagePackRegistry
                     using var fs = File.OpenRead(full);
                     sha = Convert.ToHexString(SHA256.HashData(fs)).ToLowerInvariant();
                 }
-                catch { /* ignore */ }
+                catch { /* ignore */ } // hash is best-effort metadata; a locked/deleted pack keeps Exists/Length answers
             }
 
             list.Add(new LanguagePackDescriptor

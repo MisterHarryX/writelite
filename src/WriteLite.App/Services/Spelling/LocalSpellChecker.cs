@@ -3,103 +3,24 @@ using System.Diagnostics;
 using System.Globalization;
 using WriteLite.Language.Core;
 using WriteLite.Language.Russian;
+using WriteLite.Services.Grammar;
 
 namespace WriteLite.Services.Spelling;
 
 public sealed class LocalSpellChecker : ISpellChecker, IDisposable
 {
-    private static readonly IReadOnlyDictionary<string, string> StableCorrections =
-        new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            // Keys are folded: lower case with ё collapsed to е (FoldSpelling).
-            //
-            // This table exists because Hunspell ranks by edit distance and its own
-            // frequency data, which is not tuned for Russian typing errors. "дила"
-            // is one edit from both "дела" and "дали", and Hunspell returned "дали"
-            // — turning "Как твои дила" into "Как твои дали". A wrong correction is
-            // worse than none, so every word here is one where the intended form is
-            // unambiguous and the generic ranker is known to pick badly.
-            ["тваи"] = "твои",
-            ["хочю"] = "хочу",
-            ["нужю"] = "нужно",
-            ["вообщем"] = "в общем",
-            ["вобщем"] = "в общем",
-            ["пливет"] = "привет",
-            ["славерное"] = "словарное",
-            ["испарвление"] = "исправление",
-            ["проверямое"] = "проверяемое",
-            ["словареное"] = "словарное",
-
-            // Vowel confusions where a competing real word outranks the intended one.
-            ["дила"] = "дела",
-            // Observed live: Hunspell offered "Роди" (imperative of "родить").
-            ["вроди"] = "вроде",
-            ["дилам"] = "делам",
-            ["симпотичный"] = "симпатичный",
-            ["экстримальный"] = "экстремальный",
-            ["поситить"] = "посетить",
-            ["интиресно"] = "интересно",
-
-            // Doubled or dropped consonants.
-            ["граматика"] = "грамматика",
-            ["грамматный"] = "грамотный",
-            ["професия"] = "профессия",
-            ["колличество"] = "количество",
-            ["руский"] = "русский",
-            ["програма"] = "программа",
-            ["расчитать"] = "рассчитать",
-            ["агенство"] = "агентство",
-            // NOTE: "длинна" deliberately absent — it is a real short-form
-            // adjective ("дорога длинна"), so it is in the lexicon and correcting
-            // it to "длина" would be wrong roughly as often as it is right.
-
-            // Voiced/voiceless and silent consonants.
-            ["сдесь"] = "здесь",
-            ["зделать"] = "сделать",
-            ["зделал"] = "сделал",
-            ["зделали"] = "сделали",
-            ["зделаю"] = "сделаю",
-            ["извените"] = "извините",
-            ["чуствовать"] = "чувствовать",
-            ["учавствовать"] = "участвовать",
-
-            // Word forms that are simply not standard Russian.
-            //
-            // NOTE: "ихний" and its forms are deliberately absent for the same
-            // reason as "придти" below — Hunspell lists them as colloquial, so the
-            // lexicon check short-circuits before this table is consulted. Marking
-            // them is a register judgement, not a spelling one.
-            // NOTE: "придти" deliberately absent. CheckCore consults the lexicon
-            // before this table, and Hunspell knows "придти" as a dated variant, so
-            // an entry here would never be reached. It is also not a misspelling —
-            // flagging it is a style judgement and belongs to a style rule.
-            ["будующий"] = "будущий",
-            ["следущий"] = "следующий",
-            ["следущей"] = "следующей",
-            ["координально"] = "кардинально",
-            ["пришол"] = "пришёл",
-            ["ушол"] = "ушёл",
-            ["нашол"] = "нашёл",
-
-            // жи/ши, ча/ща, чу/щу.
-            ["жызнь"] = "жизнь",
-            ["машына"] = "машина",
-            ["малышы"] = "малыши",
-
-            // Hard sign before я/е/ю after a prefix.
-            ["обьяснить"] = "объяснить",
-            ["обьявление"] = "объявление",
-            ["обьем"] = "объём",
-            ["подьезд"] = "подъезд",
-
-            // Written together but must be separate, and the reverse.
-            ["врятли"] = "вряд ли",
-            ["наврятли"] = "навряд ли",
-            ["потомучто"] = "потому что",
-            ["какбудто"] = "как будто",
-            ["вкурсе"] = "в курсе",
-            ["втечении"] = "в течение"
-        };
+    // Stable high-confidence typos live in resources/rules/ru/stable-spelling.yaml rather
+    // than in code. Loaded once, lazily. Keys are folded: lower case with ё collapsed to
+    // е (FoldSpelling), exactly as the table was written before this was extracted.
+    //
+    // This table exists because Hunspell ranks by edit distance and its own frequency
+    // data, which is not tuned for Russian typing errors. "дила" is one edit from both
+    // "дела" and "дали", and Hunspell returned "дали" — turning "Как твои дила" into
+    // "Как твои дали". A wrong correction is worse than none, so every word here is one
+    // where the intended form is unambiguous and the generic ranker is known to pick
+    // badly. See StableSpellingDictionary and StableCorrectionsTests.
+    private static readonly Lazy<IReadOnlyDictionary<string, string>> StableCorrections =
+        new(() => StableSpellingDictionary.Load(), LazyThreadSafetyMode.ExecutionAndPublication);
 
     private static readonly IReadOnlyDictionary<char, char> EnglishToRussianLayout = new Dictionary<char, char>
     {
@@ -216,7 +137,7 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
             {
                 var layoutSuggestions = CorrectionCandidateValidityPolicy.FilterSuggestions(
                     word,
-                    [PreserveCase(word, layoutCandidate)],
+                    [RussianTokens.MatchCase(word, layoutCandidate)],
                     1);
                 if (layoutSuggestions.Count > 0)
                 {
@@ -230,10 +151,10 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
         var folded = CorrectionCandidateValidityPolicy.FoldSpelling(word);
         // Stable high-confidence typos must win over the broad Hunspell lexicon:
         // some common typos are present there as rare names or variants.
-        if (StableCorrections.TryGetValue(folded, out var stable))
+        if (StableCorrections.Value.TryGetValue(folded, out var stable))
         {
             var filteredStable = CorrectionCandidateValidityPolicy.FilterCuratedSuggestions(
-                word, [PreserveCase(word, stable)], 1);
+                word, [RussianTokens.MatchCase(word, stable)], 1);
             if (filteredStable.Count > 0)
             {
                 return new SpellCheckResult(word, language, false, filteredStable);
@@ -264,7 +185,7 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
             {
                 suggestions = CorrectionCandidateValidityPolicy.FilterSuggestions(
                     word,
-                    ranked.Select(c => PreserveCase(word, c.Word)),
+                    ranked.Select(c => RussianTokens.MatchCase(word, c.Word)),
                     5,
                     isKnownWord: _russian.ContainsExact);
                 if (suggestions.Count > 0)
@@ -281,12 +202,12 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
             if (raw.Count == 0 && !string.Equals(word, folded, StringComparison.Ordinal))
             {
                 raw = lexicon.Suggest(folded, 8)
-                    .Select(s => PreserveCase(word, s))
+                    .Select(s => RussianTokens.MatchCase(word, s))
                     .ToArray();
             }
             else
             {
-                raw = raw.Select(s => PreserveCase(word, s)).ToArray();
+                raw = raw.Select(s => RussianTokens.MatchCase(word, s)).ToArray();
             }
 
             suggestions = CorrectionCandidateValidityPolicy.FilterSuggestions(
@@ -298,7 +219,7 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
             if (transposition is not null)
             {
                 suggestions = CorrectionCandidateValidityPolicy.FilterSuggestions(
-                    word, [PreserveCase(word, transposition)], 1, isKnownWord: _russian.ContainsExact);
+                    word, [RussianTokens.MatchCase(word, transposition)], 1, isKnownWord: _russian.ContainsExact);
             }
         }
 
@@ -343,16 +264,6 @@ public sealed class LocalSpellChecker : ISpellChecker, IDisposable
     private static bool IsLatinLayoutCharacter(char value)
         => value is >= 'a' and <= 'z' or >= 'A' and <= 'Z'
             || EnglishToRussianLayout.ContainsKey(char.ToLowerInvariant(value));
-
-    private static string PreserveCase(string original, string suggestion)
-    {
-        if (string.IsNullOrEmpty(suggestion)) return suggestion;
-        if (original.All(c => !char.IsLetter(c) || char.IsUpper(c)))
-            return suggestion.ToUpperInvariant();
-        if (char.IsUpper(original[0]) && original.Skip(1).All(c => !char.IsLetter(c) || char.IsLower(c)))
-            return char.ToUpperInvariant(suggestion[0]) + suggestion[1..];
-        return suggestion;
-    }
 
     public void Dispose()
     {

@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Audio;
 using UserControl = System.Windows.Controls.UserControl;
@@ -80,7 +81,7 @@ public partial class AmbienceBar : UserControl
         PlayIcon.SetResourceReference(
             System.Windows.Shapes.Path.DataProperty,
             _player.IsPlaying ? "WlIconPause" : "WlIconPlay");
-        PlayButton.ToolTip = _player.IsPlaying ? "Пауза" : "Включить атмосферу";
+        PlayButton.ToolTip = _player.IsPlaying ? Strings.Ambience_Pause : Strings.Ambience_PlayTooltip;
 
         // With one track, skipping has nowhere to go. Disabled rather than hidden, so
         // the transport does not change shape when a second file appears.
@@ -96,7 +97,7 @@ public partial class AmbienceBar : UserControl
             _suppressCallbacks = false;
         }
 
-        LoopButton.ToolTip = _player.IsLooping ? "Не повторять трек" : "Повторять трек";
+        LoopButton.ToolTip = _player.IsLooping ? Strings.Ambience_NoRepeat : Strings.Ambience_Repeat;
 
         if (_player.IsPlaying)
         {

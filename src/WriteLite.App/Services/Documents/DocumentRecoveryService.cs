@@ -47,7 +47,7 @@ public sealed class DocumentRecoveryService : IAsyncDisposable
     }
 
     /// <summary>How long after the last keystroke a snapshot is taken.</summary>
-    public static TimeSpan Interval => TimeSpan.FromSeconds(20);
+    public static TimeSpan Interval => WriteLiteDefaults.Debounce.DocumentRecoveryInterval;
 
     /// <summary>
     /// Writes a snapshot of the current document.
@@ -100,7 +100,7 @@ public sealed class DocumentRecoveryService : IAsyncDisposable
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("document-autosave-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("document-autosave-failed", exception);
         }
         finally
         {

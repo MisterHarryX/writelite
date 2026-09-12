@@ -1,0 +1,119 @@
+# Declarative regex wordlists for Russian.
+#
+# These are NOT regex patterns. They are the compact declarations that RuleRegexFactory
+# turns into ordinary compiled regex rules (the same RuleDefinition / Replace pipeline as
+# the JSON rule-pack). Adding a line here is enough — no pattern, no test scaffolding, no
+# title/explanation to hand-write.
+#
+# Sections:
+#   wordSwap          - one rule per pair: `\b<from>\b` -> `<to>` (ignoreCase).
+#                       Covers the "слитно/раздельно/дефис" spelling families and simple
+#                       word swap typos.
+#   suffixParticles   - ONE base list reused across -то/-нибудь/-либо:
+#                       `\b(<base>|<base>|...)<suffix>\b` -> `$1-<suffix>`.
+#   abbreviations     - compact "з.п." style units get a space inserted between parts:
+#                       `\bз\.п\.` -> `з. п.` (dots auto-escaped).
+
+wordSwap:
+  # id matches the previous hand-typed JSON RuleId so the rule is replaced, not duplicated.
+  # Наречия с приставкой по- / во- / в-: слитные формы ошибочны.
+  - id: po-moemu
+    from: "помоему"
+    to: "по-моему"
+  - id: po-tvoemu
+    from: "потвоему"
+    to: "по-твоему"
+  - id: po-svoemu
+    from: "посвоему"
+    to: "по-своему"
+  - id: po-prezhnemu
+    from: "попрежнему"
+    to: "по-прежнему"
+  - id: v-obschem
+    from: "вобщем"
+    to: "в общем"
+  - id: v-opschem
+    from: "вопщем"
+    to: "в общем"
+  - id: voobschem
+    from: "вообщем"
+    to: "в общем"
+  - id: v-obschem-to
+    from: "вобщето"
+    to: "в общем-то"
+  - id: v-tselom
+    from: "вцелом"
+    to: "в целом"
+  - id: vo-pervyh
+    from: "вопервых"
+    to: "во-первых"
+  - id: vo-vtoryh
+    from: "вовторых"
+    to: "во-вторых"
+  - id: v-tretyih
+    from: "втретьих"
+    to: "в-третьих"
+  # Предложно-падежные сочетания: слитное написание ошибочно.
+  - id: v-techenie
+    from: "втечении"
+    to: "в течение"
+  - id: v-techenie-solid
+    from: "втечение"
+    to: "в течение"
+  - id: v-svyazi
+    from: "всвязи"
+    to: "в связи"
+  - id: v-vide
+    from: "ввиде"
+    to: "в виде"
+  # Дефисные наречия и частицы, написанные слитно.
+  - id: iz-za
+    from: "изза"
+    to: "из-за"
+  - id: iz-pod
+    from: "изпод"
+    to: "из-под"
+  - id: nakonets-to
+    from: "наконецто"
+    to: "наконец-то"
+  - id: kak-to
+    from: "както"
+    to: "как-то"
+  - id: vsyo-taki
+    from: "всетаки"
+    to: "всё-таки"
+  # Союзы и вводные штампы, слитые в одно слово.
+  - id: vryad-li
+    from: "врятли"
+    to: "вряд ли"
+  - id: kak-budto
+    from: "какбудто"
+    to: "как будто"
+
+suffixParticles:
+  - id: particle-to
+    suffix: "то"
+    bases: [кто, что, где, куда, когда, почему, зачем, чей, какой, сколько, чем, кому, кого]
+  - id: particle-nibud
+    suffix: "нибудь"
+    bases: [кто, что, где, куда, когда, почему, зачем, чей, какой, сколько, чем, кому, кого]
+  - id: particle-libo
+    suffix: "либо"
+    bases: [кто, что, где, куда, когда, почему, зачем, чей, какой, сколько, чем, кому, кого]
+
+abbreviations:
+  - id: abbreviation-td
+    compact: "т.д."
+    spaced: "т. д."
+  - id: abbreviation-te
+    compact: "т.е."
+    spaced: "т. е."
+  - id: abbreviation-tp
+    compact: "т.п."
+    spaced: "т. п."
+  - id: abbreviation-tk
+    compact: "т.к."
+    spaced: "т. к."
+  - id: abbreviation-io
+    compact: "и.о."
+    spaced: "и. о."

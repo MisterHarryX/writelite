@@ -258,6 +258,7 @@ public sealed class DoubleClickWordObserver : IDisposable
         }
         catch
         {
+            // The provider may have disposed the element before handing it back; treat as a miss.
             hit = null;
         }
 
@@ -274,7 +275,7 @@ public sealed class DoubleClickWordObserver : IDisposable
             }
 
             try { candidate = TreeWalker.ControlViewWalker.GetParent(candidate); }
-            catch { break; }
+            catch { break; } // element removed from the tree mid-walk; no ancestors left to try
         }
 
         var focused = _getFocusedElement();
@@ -303,7 +304,7 @@ public sealed class DoubleClickWordObserver : IDisposable
     private static bool HasKeyboardFocus(AutomationElement element)
     {
         try { return element.Current.HasKeyboardFocus; }
-        catch { return false; }
+        catch { return false; } // element may be gone between resolution and this property read
     }
 
     private static bool ContainsPoint(AutomationElement element, Point screenPoint)
@@ -315,6 +316,7 @@ public sealed class DoubleClickWordObserver : IDisposable
         }
         catch
         {
+            // BoundingRectangle races with element teardown; treat as outside the target.
             return false;
         }
     }
@@ -413,6 +415,7 @@ public sealed class DoubleClickWordObserver : IDisposable
         }
         catch
         {
+            // Runtime id may be unavailable on a dying provider; fall back to the stable id.
             runtimeId = state.TargetId ?? processId.ToString();
         }
 

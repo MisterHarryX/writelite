@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:WriteLite.Controls"
+             xmlns:res="clr-namespace:WriteLite.Resources"
              Background="{DynamicResource WlBgBase}"
              FontFamily="{DynamicResource WlFont}">
     <!--
@@ -13,212 +14,212 @@
         <StackPanel MaxWidth="720" HorizontalAlignment="Left" Margin="36,30,36,48">
 
             <!-- ═══ 01 Общие ════════════════════════════════════════════════ -->
-            <controls:SectionHeader Index="01" Title="Общие"
-                                    Description="Поведение WriteLite при запуске и в системном трее." />
+            <controls:SectionHeader Index="01" Title="{x:Static res:Strings.SETTINGS_SECTION_GENERAL}"
+                                    Description="{x:Static res:Strings.SETTINGS_SECTION_GENERAL_DESC}" />
             <StackPanel Margin="0,4,0,0">
-                <controls:SettingRow Label="Проверка текста"
-                                     Description="Полностью включает или выключает анализ активных полей.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_CHECKING}"
+                                     Description="{x:Static res:Strings.SETTINGS_CHECKING_DESC}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkChecking" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Проверка текста включена"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_CHECKING_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Индикатор рядом с полем"
-                                     Description="Плавающая метка с числом замечаний возле активного поля.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_INDICATOR}"
+                                     Description="{x:Static res:Strings.SETTINGS_INDICATOR_DESC}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkIndicator" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Показывать индикатор"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_INDICATOR_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow x:Name="RowAutostart" Label="Запуск вместе с Windows">
+                <controls:SettingRow x:Name="RowAutostart" Label="{x:Static res:Strings.SETTINGS_AUTOSTART}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkAutostart" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Запускать вместе с Windows"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_AUTOSTART_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Открывать главное окно при запуске"
-                                     Description="Иначе WriteLite стартует свёрнутым в трей.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_OPEN_MAIN}"
+                                     Description="{x:Static res:Strings.SETTINGS_OPEN_MAIN_DESC}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkOpenMain" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Открывать главное окно при запуске"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_OPEN_MAIN_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Сворачивать в трей при закрытии"
-                                     Description="Закрытие окна не завершает проверку в других приложениях.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_TRAY_CLOSE}"
+                                     Description="{x:Static res:Strings.SETTINGS_TRAY_CLOSE_DESC}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkTrayClose" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Сворачивать в трей при закрытии"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_TRAY_CLOSE_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
             </StackPanel>
 
             <!-- ═══ 02 Проверка ═════════════════════════════════════════════ -->
-            <controls:SectionHeader Index="02" Title="Проверка"
-                                    Description="Какие типы замечаний WriteLite показывает."
+            <controls:SectionHeader Index="02" Title="{x:Static res:Strings.SETTINGS_SECTION_CHECKING}"
+                                    Description="{x:Static res:Strings.SETTINGS_SECTION_CHECKING_DESC}"
                                     Margin="0,40,0,0" />
             <StackPanel Margin="0,4,0,0">
-                <controls:SettingRow Label="Расширенная проверка"
-                                     Description="Дополнительный языковой движок поверх быстрых правил.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_EXTENDED}"
+                                     Description="{x:Static res:Strings.SETTINGS_EXTENDED_DESC}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkExtended" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Расширенная проверка"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_EXTENDED_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Орфография">
+                <controls:SettingRow Label="{x:Static res:Strings.Filter_Orthography}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkOrtho" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Орфография"
+                                  AutomationProperties.Name="{x:Static res:Strings.Filter_Orthography}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Пунктуация">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_PUNCTUATION}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkPunct" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Пунктуация"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_PUNCTUATION}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Грамматика">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_GRAMMAR}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkGrammar" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Грамматика"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_GRAMMAR}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Стиль">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_STYLE}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkStyle" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Стиль"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_STYLE}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Типографика"
-                                     Description="Кавычки, тире и пробелы вокруг знаков.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_TYPOGRAPHY}"
+                                     Description="{x:Static res:Strings.SETTINGS_TYPOGRAPHY_DESC}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkTypo" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Типографика"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_TYPOGRAPHY}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Повторы">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_REPEATS}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkRepeats" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Повторы"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_REPEATS}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Исправлять все безопасные замечания"
-                                     Description="Кнопка «Исправить все» применяет только уверенные правки.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_SAFE_ALL}"
+                                     Description="{x:Static res:Strings.SETTINGS_SAFE_ALL_DESC}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkSafeAll" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Безопасное исправление всех замечаний"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_SAFE_ALL_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
             </StackPanel>
 
             <!-- ═══ 03 Языки ════════════════════════════════════════════════ -->
-            <controls:SectionHeader Index="03" Title="Языки"
-                                    Description="Русская проверка доступна в beta; английская в разработке."
+            <controls:SectionHeader Index="03" Title="{x:Static res:Strings.SETTINGS_SECTION_LANGUAGES}"
+                                    Description="{x:Static res:Strings.SETTINGS_SECTION_LANGUAGES_DESC}"
                                     Margin="0,40,0,0" />
             <StackPanel Margin="0,4,0,0">
-                <controls:SettingRow Label="Язык проверки"
-                                     Description="Смешанный RU/EN текст определяется автоматически.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_LANGUAGE}"
+                                     Description="{x:Static res:Strings.SETTINGS_LANGUAGE_DESC}">
                     <controls:SettingRow.Control>
-                        <TextBlock Text="Русский" Style="{DynamicResource WlMonoValue}"
+                        <TextBlock Text="{x:Static res:Strings.SETTINGS_LANGUAGE_RUSSIAN}" Style="{DynamicResource WlMonoValue}"
                                    Foreground="{DynamicResource WlText}" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
             </StackPanel>
 
             <!-- ═══ 04 Поведение интерфейса ═════════════════════════════════ -->
-            <controls:SectionHeader Index="04" Title="Интерфейс"
-                                    Description="Когда WriteLite появляется и как ведут себя подчёркивания."
+            <controls:SectionHeader Index="04" Title="{x:Static res:Strings.SETTINGS_SECTION_UI}"
+                                    Description="{x:Static res:Strings.SETTINGS_SECTION_UI_DESC}"
                                     Margin="0,40,0,0" />
             <StackPanel Margin="0,4,0,0">
-                <controls:SettingRow Label="Задержка анализа"
-                                     Description="Пауза после ввода перед проверкой, в миллисекундах.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_DELAY}"
+                                     Description="{x:Static res:Strings.SETTINGS_DELAY_DESC}">
                     <controls:SettingRow.Control>
                         <TextBox x:Name="TxtDelay" Style="{DynamicResource WlSmallInput}"
-                                 AutomationProperties.Name="Задержка анализа в миллисекундах"
+                                 AutomationProperties.Name="{x:Static res:Strings.SETTINGS_DELAY_AP_NAME}"
                                  LostFocus="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Максимальная длина текста"
-                                     Description="Более длинный текст проверяется частями.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_MAX_LENGTH}"
+                                     Description="{x:Static res:Strings.SETTINGS_MAX_LENGTH_DESC}">
                     <controls:SettingRow.Control>
                         <TextBox x:Name="TxtMaxLen" Style="{DynamicResource WlSmallInput}"
-                                 AutomationProperties.Name="Максимальная длина текста"
+                                 AutomationProperties.Name="{x:Static res:Strings.SETTINGS_MAX_LENGTH_AP_NAME}"
                                  LostFocus="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Пауза до скрытия интерфейса"
-                                     Description="Секунды бездействия, 2–30.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_IDLE_GRACE}"
+                                     Description="{x:Static res:Strings.SETTINGS_IDLE_GRACE_DESC}">
                     <controls:SettingRow.Control>
                         <TextBox x:Name="TxtIdleGrace" Style="{DynamicResource WlSmallInput}" Width="72"
-                                 AutomationProperties.Name="Пауза до скрытия интерфейса в секундах"
+                                 AutomationProperties.Name="{x:Static res:Strings.SETTINGS_IDLE_GRACE_AP_NAME}"
                                  LostFocus="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Показывать индикатор без ошибок"
-                                     Description="Спокойная отметка, когда замечаний нет.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_SHOW_GREEN}"
+                                     Description="{x:Static res:Strings.SETTINGS_SHOW_GREEN_DESC}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkGreen" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Показывать индикатор без ошибок"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_SHOW_GREEN_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Скрывать панель после исправления">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_HIDE_PANEL}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkHidePanel" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Скрывать панель после успешного исправления"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_HIDE_PANEL_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Показывать интерфейс только во время ввода">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_ONLY_EDITING}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkOnlyEditing" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Показывать интерфейс только во время ввода"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_ONLY_EDITING_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Словарная карточка по двойному щелчку"
-                                     Description="Формы, синонимы и толкование прямо в поле ввода.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_LEXICAL_CARD}"
+                                     Description="{x:Static res:Strings.SETTINGS_LEXICAL_CARD_DESC}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkLexical" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Словарная карточка по двойному щелчку"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_LEXICAL_CARD_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Минимизировать дублирование подчёркиваний"
-                                     Description="Делает линии WriteLite тоньше рядом с системной проверкой.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_MINIMIZE_DUP}"
+                                     Description="{x:Static res:Strings.SETTINGS_MINIMIZE_DUP_DESC}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkMinimizeDup" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Минимизировать дублирование с системной проверкой"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_MINIMIZE_DUP_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
@@ -226,47 +227,47 @@
 
             <Border Style="{DynamicResource WlCard}" Margin="0,20,0,0" Padding="16,14">
                 <StackPanel>
-                    <TextBlock Style="{DynamicResource WlCardTitle}" Text="Системная проверка орфографии" />
+                    <TextBlock Style="{DynamicResource WlCardTitle}" Text="{x:Static res:Strings.SETTINGS_SYSTEM_SPELLING_TITLE}" />
                     <TextBlock Style="{DynamicResource WlSecondary}" Margin="0,7,0,10"
-                               Text="WriteLite не отключает встроенную проверку Windows и браузеров: это небезопасно и не универсально. Чтобы убрать двойные волны, отключите проверку в самом приложении:" />
+                               Text="{x:Static res:Strings.SETTINGS_SYSTEM_SPELLING_BODY}" />
                     <TextBlock Style="{DynamicResource WlCaption}" Margin="0,0,0,5"
-                               Text="Edge / Chrome — Параметры → Языки → Проверка правописания." />
+                               Text="{x:Static res:Strings.SETTINGS_SYSTEM_SPELLING_EDGE}" />
                     <TextBlock Style="{DynamicResource WlCaption}" Margin="0,0,0,5"
-                               Text="Word — Файл → Параметры → Правописание → «Проверять орфографию в процессе набора»." />
+                               Text="{x:Static res:Strings.SETTINGS_SYSTEM_SPELLING_WORD}" />
                     <TextBlock Style="{DynamicResource WlCaption}" Margin="0,0,0,5"
-                               Text="Блокнот (Windows 11) — Параметры → Правописание." />
+                               Text="{x:Static res:Strings.SETTINGS_SYSTEM_SPELLING_NOTEPAD}" />
                     <TextBlock Style="{DynamicResource WlCaption}"
-                               Text="Outlook — Файл → Параметры → Почта → Орфография и автозамена." />
+                               Text="{x:Static res:Strings.SETTINGS_SYSTEM_SPELLING_OUTLOOK}" />
                 </StackPanel>
             </Border>
 
             <!-- ═══ 05 WriteAI ══════════════════════════════════════════════ -->
             <controls:SectionHeader Index="05" Title="WriteAI"
-                                    Description="Умные действия на этом компьютере. Текст не покидает ваш компьютер."
+                                    Description="{x:Static res:Strings.SETTINGS_SECTION_AI_DESC}"
                                     Margin="0,40,0,0" />
             <StackPanel Margin="0,4,0,0">
                 <controls:SettingRow Label="WriteAI">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkLocalAi" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Включить WriteAI"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_AI_ENABLE}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Использовать WriteAI, если сервер доступен">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_AI_PREFER}">
                     <controls:SettingRow.Control>
                         <CheckBox x:Name="ChkPreferQwen" Style="{DynamicResource WlToggleSwitch}"
-                                  AutomationProperties.Name="Использовать WriteAI"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_AI_PREFER_AP_NAME}"
                                   Checked="Setting_Changed" Unchecked="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Профиль"
-                                     Description="Lite не требует Python и сети; Quality сильнее нагружает CPU.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_AI_PROFILE}"
+                                     Description="{x:Static res:Strings.SETTINGS_AI_PROFILE_DESC}">
                     <controls:SettingRow.Control>
                         <ComboBox x:Name="CmbLocalAiProfile" Style="{DynamicResource WlComboBox}"
                                   Width="150"
-                                  AutomationProperties.Name="Профиль WriteAI"
+                                  AutomationProperties.Name="{x:Static res:Strings.SETTINGS_AI_PROFILE_AP_NAME}"
                                   SelectionChanged="Setting_Changed">
                             <ComboBoxItem Content="Lite" />
                             <ComboBoxItem Content="Standard" />
@@ -276,46 +277,46 @@
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
 
-                <controls:SettingRow Label="Адрес сервера WriteAI"
-                                     Description="Локальный адрес, по которому работает WriteAI.">
+                <controls:SettingRow Label="{x:Static res:Strings.SETTINGS_AI_ENDPOINT}"
+                                     Description="{x:Static res:Strings.SETTINGS_AI_ENDPOINT_DESC}">
                     <controls:SettingRow.Control>
                         <TextBox x:Name="TxtQwenEndpoint" Style="{DynamicResource WlTextInput}"
                                  Width="240"
                                  FontFamily="{DynamicResource WlFontMono}"
                                  FontSize="12"
                                  Tag="http://127.0.0.1:8742"
-                                 AutomationProperties.Name="Адрес сервера WriteAI"
+                                 AutomationProperties.Name="{x:Static res:Strings.SETTINGS_AI_ENDPOINT_AP_NAME}"
                                  LostFocus="Setting_Changed" />
                     </controls:SettingRow.Control>
                 </controls:SettingRow>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                <Button Style="{DynamicResource WlSecondaryButton}" Content="Проверить подключение" Click="ProbeWriteAi_Click" />
+                <Button Style="{DynamicResource WlSecondaryButton}" Content="{x:Static res:Strings.SETTINGS_AI_PROBE}" Click="ProbeWriteAi_Click" />
             </StackPanel>
             <TextBlock x:Name="LocalAiStatusHint" Style="{DynamicResource WlCaption}" Margin="0,10,0,0" />
 
             <!-- ═══ 06 Приватность ══════════════════════════════════════════ -->
-            <controls:SectionHeader Index="06" Title="Сочетания клавиш"
-                                    Description="Щёлкните по сочетанию и нажмите новые клавиши. Escape — отмена."
+            <controls:SectionHeader Index="06" Title="{x:Static res:Strings.SETTINGS_SECTION_SHORTCUTS}"
+                                    Description="{x:Static res:Strings.SETTINGS_SECTION_SHORTCUTS_DESC}"
                                     Margin="0,40,0,0" />
 
             <StackPanel x:Name="ShortcutList" Margin="0,4,0,0" />
 
             <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
                 <Button Style="{DynamicResource WlSecondaryButton}"
-                        Content="Сбросить все сочетания"
+                        Content="{x:Static res:Strings.SETTINGS_SHORTCUTS_RESET}"
                         Click="ResetShortcuts_Click"
-                        AutomationProperties.Name="Сбросить все сочетания клавиш" />
+                        AutomationProperties.Name="{x:Static res:Strings.SETTINGS_SHORTCUTS_RESET_AP_NAME}" />
             </StackPanel>
             <TextBlock x:Name="ShortcutHint" Style="{DynamicResource WlCaption}" Margin="0,10,0,0" TextWrapping="Wrap" />
 
-            <controls:SectionHeader Index="07" Title="Приватность" Margin="0,40,0,0" />
+            <controls:SectionHeader Index="07" Title="{x:Static res:Strings.SETTINGS_SECTION_PRIVACY}" Margin="0,40,0,0" />
             <TextBlock Style="{DynamicResource WlBody}"
                        Foreground="{DynamicResource WlTextSecondary}"
                        LineHeight="23"
                        Margin="0,18,0,0"
-                       Text="Проверка текста выполняется локально. WriteLite не отправляет текст во внешние ИИ-сервисы. Сведения о сторонних компонентах — в файле THIRD_PARTY_NOTICES." />
+                       Text="{x:Static res:Strings.SETTINGS_PRIVACY_BODY}" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

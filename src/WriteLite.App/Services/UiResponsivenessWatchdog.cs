@@ -51,15 +51,15 @@ public sealed class UiResponsivenessWatchdog : IDisposable
     private Func<string>? _contextProvider;
 
     /// <summary>Probe round-trips above this are logged as delays.</summary>
-    private const double DelayThresholdMs = 250;
+    private static readonly double DelayThresholdMs = WriteLiteDefaults.Monitor.UiResponsivenessDelayThreshold.TotalMilliseconds;
 
     /// <summary>Probes outstanding this long are logged as suspected hangs.</summary>
-    private const double HangThresholdMs = 2000;
+    private static readonly double HangThresholdMs = WriteLiteDefaults.Monitor.UiResponsivenessHangThreshold.TotalMilliseconds;
 
     public UiResponsivenessWatchdog(Dispatcher dispatcher, TimeSpan? interval = null)
     {
         _dispatcher = dispatcher;
-        _interval = interval ?? TimeSpan.FromMilliseconds(400);
+        _interval = interval ?? WriteLiteDefaults.Monitor.UiResponsivenessWatchdogInterval;
     }
 
     public event EventHandler<UiResponsivenessSnapshot>? SnapshotChanged;
@@ -178,14 +178,14 @@ public sealed class UiResponsivenessWatchdog : IDisposable
     private string SafeContext()
     {
         try { return _contextProvider?.Invoke() ?? string.Empty; }
-        catch { return string.Empty; }
+        catch { return string.Empty; } // the context callback must never crash the watchdog probe
     }
 
     private UiResponsivenessSnapshot BuildSnapshotUnlocked()
     {
-        var level = _lastDelayMs >= 2000
+        var level = _lastDelayMs >= HangThresholdMs
             ? UiResponsivenessLevel.HangSuspected
-            : _lastDelayMs >= 250
+            : _lastDelayMs >= DelayThresholdMs
                 ? UiResponsivenessLevel.Delayed
                 : UiResponsivenessLevel.Normal;
 

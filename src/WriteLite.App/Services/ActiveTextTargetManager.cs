@@ -70,6 +70,7 @@ public sealed record ActiveTextTargetIdentity(
         }
         catch
         {
+            // Runtime id may be unavailable on a torn-down provider; keep identity matchable by stable fields.
             runtimeId = [];
         }
 

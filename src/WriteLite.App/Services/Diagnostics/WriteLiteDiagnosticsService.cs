@@ -288,8 +288,10 @@ public sealed class WriteLiteDiagnosticsService
                 .ToList();
             return lines.Select(StripSensitive).ToList();
         }
-        catch
+        catch (Exception exception)
         {
+            // Logs may be locked or deleted concurrently; tailing is best-effort.
+            CompatibilityLogger.Technical("diagnostics-tail-failed", $"type={exception.GetType().Name}");
             return [];
         }
     }
@@ -303,6 +305,7 @@ public sealed class WriteLiteDiagnosticsService
         }
         catch
         {
+            // The process may have exited; an em dash keeps the report tidy.
             return "—";
         }
     }

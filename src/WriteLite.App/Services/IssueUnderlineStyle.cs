@@ -22,19 +22,19 @@ public static class IssueUnderlineTheme
     // error colours is exactly what the WriteLite visual language avoids.
 
     // Brand orange — orthography, the most common and most certain correction
-    public static readonly Color Orthography = Color.FromArgb(0xFF, 0xEC, 0x6C, 0x08);
+    public static readonly Color Orthography = WriteLiteDefaults.ParseColor(WriteLiteDefaults.UnderlineTheme.OrthographyColor);
     // Amber — grammar
-    public static readonly Color Grammar = Color.FromArgb(0xFF, 0xE0, 0xA6, 0x4B);
+    public static readonly Color Grammar = WriteLiteDefaults.ParseColor(WriteLiteDefaults.UnderlineTheme.GrammarColor);
     // Warm sand — punctuation
-    public static readonly Color Punctuation = Color.FromArgb(0xFF, 0xE8, 0x96, 0x45);
+    public static readonly Color Punctuation = WriteLiteDefaults.ParseColor(WriteLiteDefaults.UnderlineTheme.PunctuationColor);
     // Muted ochre — style / readability, the quietest of the four
-    public static readonly Color Style = Color.FromArgb(0xFF, 0xA4, 0x84, 0x47);
+    public static readonly Color Style = WriteLiteDefaults.ParseColor(WriteLiteDefaults.UnderlineTheme.StyleColor);
 
-    public const double DefaultThickness = 1.25;
-    public const double DefaultWaveHeight = 1.35;
-    public const double DefaultOpacity = 0.88;
-    public const double SuggestionOpacity = 0.62;
-    public const double WaveStep = 3.25;
+    public static readonly double DefaultThickness = WriteLiteDefaults.UnderlineTheme.DefaultThickness;
+    public static readonly double DefaultWaveHeight = WriteLiteDefaults.UnderlineTheme.DefaultWaveHeight;
+    public static readonly double DefaultOpacity = WriteLiteDefaults.UnderlineTheme.DefaultOpacity;
+    public static readonly double SuggestionOpacity = WriteLiteDefaults.UnderlineTheme.SuggestionOpacity;
+    public static readonly double WaveStep = WriteLiteDefaults.UnderlineTheme.WaveStep;
 
     /// <summary>
     /// When true, WriteLite keeps underlines thinner/softer to reduce visual clash
@@ -57,7 +57,7 @@ public static class IssueUnderlineTheme
         var opacity = severity switch
         {
             IssueSeverity.Suggestion => SuggestionOpacity,
-            IssueSeverity.Warning => 0.78,
+            IssueSeverity.Warning => WriteLiteDefaults.UnderlineTheme.WarningOpacity,
             _ => DefaultOpacity
         };
 
@@ -65,9 +65,9 @@ public static class IssueUnderlineTheme
         var wave = DefaultWaveHeight;
         if (MinimizeDuplication)
         {
-            thickness = 1.0;
-            wave = 1.1;
-            opacity *= 0.85;
+            thickness = WriteLiteDefaults.UnderlineTheme.MinimizeDuplicationThickness;
+            wave = WriteLiteDefaults.UnderlineTheme.MinimizeDuplicationWaveHeight;
+            opacity *= WriteLiteDefaults.UnderlineTheme.MinimizeDuplicationOpacityFactor;
         }
 
         return new IssueUnderlineStyle(color, thickness, wave, opacity);

@@ -1,1461 +1,1261 @@
 {
-  "schemaVersion": 1,
-  "packVersion": "ru-1.6.0",
-  "language": "ru",
-  "rules": [
-    {
-      "ruleId": "ru.spacing.repeated-space",
-      "language": "ru",
-      "category": "ExtraSpace",
-      "issueCategory": "Readability",
-      "title": "Лишние пробелы",
-      "shortMessage": "Между словами больше одного пробела.",
-      "detailedExplanation": "В обычном русском тексте между словами используется один пробел.",
-      "badExamples": [
-        "два  слова"
-      ],
-      "goodExamples": [
-        "два слова"
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Оставить один пробел."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "[ \\t\\u00A0]{2,}",
-        "replacement": " "
-      },
-      "tests": [
-        {
-          "name": "double",
-          "input": "два  слова",
-          "shouldMatch": true,
-          "expectedSuggestion": " "
-        },
-        {
-          "name": "single",
-          "input": "два слова",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.space-before-mark",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Пробел перед знаком",
-      "shortMessage": "Перед знаком препинания пробел не ставится.",
-      "detailedExplanation": "Перед запятой, точкой, двоеточием, точкой с запятой, вопросительным или восклицательным знаком пробел не нужен.",
-      "badExamples": [
-        "слово ,"
-      ],
-      "goodExamples": [
-        "слово,"
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Убрать пробел перед знаком."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "[ \\t\\u00A0]+([,.;:!?])",
-        "replacement": "$1"
-      },
-      "tests": [
-        {
-          "name": "comma",
-          "input": "слово ,",
-          "shouldMatch": true,
-          "expectedSuggestion": ","
-        },
-        {
-          "name": "normal",
-          "input": "слово,",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.space-after-mark",
-      "language": "ru",
-      "category": "MissingSpace",
-      "issueCategory": "Punctuation",
-      "title": "Нет пробела после знака",
-      "shortMessage": "После знака препинания нужен пробел.",
-      "detailedExplanation": "Между знаком препинания и следующим русским словом обычно ставится пробел.",
-      "badExamples": [
-        "да,нет"
-      ],
-      "goodExamples": [
-        "да, нет"
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Добавить один пробел."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "([,;:!?])(?=[А-Яа-яЁё])",
-        "replacement": "$1 "
-      },
-      "tests": [
-        {
-          "name": "comma",
-          "input": "да,нет",
-          "shouldMatch": true,
-          "expectedSuggestion": ", "
-        },
-        {
-          "name": "normal",
-          "input": "да, нет",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.repeated-mark",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Повтор знака",
-      "shortMessage": "Знак препинания повторён.",
-      "detailedExplanation": "Повтор вопросительных и восклицательных знаков может быть намеренной экспрессией, поэтому исправление требует подтверждения.",
-      "badExamples": [
-        "Правда???"
-      ],
-      "goodExamples": [
-        "Правда?"
-      ],
-      "severity": "Suggestion",
-      "suggestions": [
-        "Оставить один знак, если повтор не передаёт интонацию."
-      ],
-      "safeToApply": false,
-      "source": "Авторская эвристика WriteLite.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "([!?.,])\\1+",
-        "replacement": "$1"
-      },
-      "tests": [
-        {
-          "name": "repeated",
-          "input": "Правда???",
-          "shouldMatch": true,
-          "expectedSuggestion": "?"
-        },
-        {
-          "name": "single",
-          "input": "Правда?",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.typography.ellipsis",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Readability",
-      "title": "Многоточие",
-      "shortMessage": "Три точки можно заменить знаком многоточия.",
-      "detailedExplanation": "Типографский знак «…» часто предпочтительнее трёх отдельных точек, но это стилистическая правка.",
-      "badExamples": [
-        "Ну..."
-      ],
-      "goodExamples": [
-        "Ну…"
-      ],
-      "severity": "Suggestion",
-      "suggestions": [
-        "…"
-      ],
-      "safeToApply": false,
-      "source": "Авторская типографская рекомендация WriteLite.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "\\.{3,}",
-        "replacement": "…"
-      },
-      "tests": [
-        {
-          "name": "three-dots",
-          "input": "Ну...",
-          "shouldMatch": true,
-          "expectedSuggestion": "…"
-        },
-        {
-          "name": "version",
-          "input": "Версия 1.2.3",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.typography.double-hyphen",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Readability",
-      "title": "Два дефиса вместо тире",
-      "shortMessage": "Два дефиса могут обозначать тире.",
-      "detailedExplanation": "В обычном тексте вместо двух дефисов используют тире. В коде и командной строке правило подавляется защищёнными диапазонами.",
-      "badExamples": [
-        "да -- нет"
-      ],
-      "goodExamples": [
-        "да — нет"
-      ],
-      "severity": "Suggestion",
-      "suggestions": [
-        "—"
-      ],
-      "safeToApply": false,
-      "source": "Авторская типографская рекомендация WriteLite.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "(?<!-)--(?!-)",
-        "replacement": "—"
-      },
-      "tests": [
-        {
-          "name": "plain-text",
-          "input": "да -- нет",
-          "shouldMatch": true,
-          "expectedSuggestion": "—"
-        },
-        {
-          "name": "typographic",
-          "input": "да — нет",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.open-paren-space",
-      "language": "ru",
-      "category": "ExtraSpace",
-      "issueCategory": "Punctuation",
-      "title": "Пробел после открывающей скобки",
-      "shortMessage": "После открывающей скобки пробел не нужен.",
-      "detailedExplanation": "Текст внутри круглых скобок обычно начинается без пробела.",
-      "badExamples": [
-        "( текст)"
-      ],
-      "goodExamples": [
-        "(текст)"
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Убрать пробел."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "\\([ \\t\\u00A0]+",
-        "replacement": "("
-      },
-      "tests": [
-        {
-          "name": "space",
-          "input": "( текст)",
-          "shouldMatch": true,
-          "expectedSuggestion": "("
-        },
-        {
-          "name": "normal",
-          "input": "(текст)",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.close-paren-space",
-      "language": "ru",
-      "category": "ExtraSpace",
-      "issueCategory": "Punctuation",
-      "title": "Пробел перед закрывающей скобкой",
-      "shortMessage": "Перед закрывающей скобкой пробел не нужен.",
-      "detailedExplanation": "Текст внутри круглых скобок обычно заканчивается без пробела.",
-      "badExamples": [
-        "(текст )"
-      ],
-      "goodExamples": [
-        "(текст)"
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Убрать пробел."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "[ \\t\\u00A0]+\\)",
-        "replacement": ")"
-      },
-      "tests": [
-        {
-          "name": "space",
-          "input": "(текст )",
-          "shouldMatch": true,
-          "expectedSuggestion": ")"
-        },
-        {
-          "name": "normal",
-          "input": "(текст)",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.open-quote-space",
-      "language": "ru",
-      "category": "ExtraSpace",
-      "issueCategory": "Punctuation",
-      "title": "Пробел после открывающей кавычки",
-      "shortMessage": "После « пробел не нужен.",
-      "detailedExplanation": "Текст внутри русских кавычек начинается без пробела.",
-      "badExamples": [
-        "« текст»"
-      ],
-      "goodExamples": [
-        "«текст»"
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Убрать пробел."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "«[ \\t\\u00A0]+",
-        "replacement": "«"
-      },
-      "tests": [
-        {
-          "name": "space",
-          "input": "« текст»",
-          "shouldMatch": true,
-          "expectedSuggestion": "«"
-        },
-        {
-          "name": "normal",
-          "input": "«текст»",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.close-quote-space",
-      "language": "ru",
-      "category": "ExtraSpace",
-      "issueCategory": "Punctuation",
-      "title": "Пробел перед закрывающей кавычкой",
-      "shortMessage": "Перед » пробел не нужен.",
-      "detailedExplanation": "Текст внутри русских кавычек заканчивается без пробела.",
-      "badExamples": [
-        "«текст »"
-      ],
-      "goodExamples": [
-        "«текст»"
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Убрать пробел."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "[ \\t\\u00A0]+»",
-        "replacement": "»"
-      },
-      "tests": [
-        {
-          "name": "space",
-          "input": "«текст »",
-          "shouldMatch": true,
-          "expectedSuggestion": "»"
-        },
-        {
-          "name": "normal",
-          "input": "«текст»",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.abbreviation-td",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Сокращение «т. д.»",
-      "shortMessage": "Между частями сокращения нужен пробел.",
-      "detailedExplanation": "Общепринятое оформление сокращения: «т. д.».",
-      "badExamples": [
-        "т.д."
-      ],
-      "goodExamples": [
-        "т. д."
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "т. д."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite; общепринятая русская орфография.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "\\bт\\.д\\.",
-        "replacement": "т. д.",
-        "ignoreCase": true
-      },
-      "tests": [
-        {
-          "name": "compact",
-          "input": "и т.д.",
-          "shouldMatch": true,
-          "expectedSuggestion": "т. д."
-        },
-        {
-          "name": "normal",
-          "input": "и т. д.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.abbreviation-te",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Сокращение «т. е.»",
-      "shortMessage": "Между частями сокращения нужен пробел.",
-      "detailedExplanation": "Общепринятое оформление сокращения: «т. е.».",
-      "badExamples": [
-        "т.е."
-      ],
-      "goodExamples": [
-        "т. е."
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "т. е."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite; общепринятая русская орфография.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "\\bт\\.е\\.",
-        "replacement": "т. е.",
-        "ignoreCase": true
-      },
-      "tests": [
-        {
-          "name": "compact",
-          "input": "т.е. пример",
-          "shouldMatch": true,
-          "expectedSuggestion": "т. е."
-        },
-        {
-          "name": "normal",
-          "input": "т. е. пример",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.orthography.sentence-capital",
-      "language": "ru",
-      "category": "EndingError",
-      "issueCategory": "Orthography",
-      "title": "Регистр в начале предложения",
-      "shortMessage": "Предложение обычно начинается с заглавной буквы.",
-      "detailedExplanation": "Строчная буква после завершённого предложения может быть ошибкой, но регистр иногда выбран намеренно, поэтому исправление требует подтверждения.",
-      "badExamples": [
-        "Первое. второе."
-      ],
-      "goodExamples": [
-        "Первое. Второе."
-      ],
-      "severity": "Warning",
-      "suggestions": [
-        "Начать предложение с заглавной буквы."
-      ],
-      "safeToApply": false,
-      "source": "Авторская эвристика WriteLite.",
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "lowercase",
-          "input": "Первое. второе.",
-          "shouldMatch": true,
-          "expectedSuggestion": "Второе"
-        },
-        {
-          "name": "uppercase",
-          "input": "Первое. Второе.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.terminal.insert",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Возможно, нет знака в конце",
-      "shortMessage": "В конце предложения может отсутствовать знак.",
-      "detailedExplanation": "В конце законченного предложения ставят точку, вопросительный или восклицательный знак. Тип знака зависит от смысла, поэтому автоматическая правка отключена.",
-      "badExamples": [
-        "Это законченное предложение без точки"
-      ],
-      "goodExamples": [
-        "Это законченное предложение с точкой."
-      ],
-      "severity": "Suggestion",
-      "suggestions": [
-        "Добавить подходящий конечный знак."
-      ],
-      "safeToApply": false,
-      "source": "Авторская эвристика WriteLite.",
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "missing",
-          "input": "Это законченное предложение без точки",
-          "shouldMatch": true,
-          "expectedSuggestion": "."
-        },
-        {
-          "name": "present",
-          "input": "Это законченное предложение с точкой.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.comma-before-chtoby",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Запятая перед «чтобы»",
-      "shortMessage": "Перед придаточной частью цели нужна запятая.",
-      "detailedExplanation": "Перед придаточной частью цели с союзом «чтобы» нужна запятая. Правило использует ограниченный контекст.",
-      "badExamples": [
-        "Он пришёл чтобы помочь."
-      ],
-      "goodExamples": [
-        "Он пришёл, чтобы помочь.",
-        "Чтобы помочь, он пришёл."
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Вставить запятую перед «чтобы»."
-      ],
-      "safeToApply": true,
-      "source": "Авторское контекстное правило WriteLite.",
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "purpose",
-          "input": "Он пришёл чтобы помочь.",
-          "shouldMatch": true,
-          "expectedSuggestion": ","
-        },
-        {
-          "name": "initial",
-          "input": "Чтобы помочь, он пришёл.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.intro-comma.info",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Возможна пропущенная запятая",
-      "shortMessage": "Проверьте границу частей предложения.",
-      "detailedExplanation": "После начальной придаточной части часто нужна запятая. Эвристика только отмечает место для ручной проверки.",
-      "badExamples": [
-        "Когда закончилось занятие мы ушли."
-      ],
-      "goodExamples": [
-        "Когда закончилось занятие, мы ушли."
-      ],
-      "severity": "Suggestion",
-      "suggestions": [
-        "Проверить, нужна ли запятая на границе частей."
-      ],
-      "safeToApply": false,
-      "source": "Авторская эвристика WriteLite.",
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "possible",
-          "input": "Когда закончилось занятие мы ушли.",
-          "shouldMatch": true
-        },
-        {
-          "name": "present",
-          "input": "Когда закончилось занятие, мы ушли.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.subordinate-comma",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Возможна запятая перед союзом",
-      "shortMessage": "Проверьте границу придаточной части.",
-      "detailedExplanation": "Запятая перед союзом зависит от синтаксической структуры. Даже при предложенной замене правило не применяется автоматически.",
-      "badExamples": [
-        "Я думаю что это важно."
-      ],
-      "goodExamples": [
-        "Я думаю, что это важно."
-      ],
-      "severity": "Suggestion",
-      "suggestions": [
-        "Проверить запятую перед союзом."
-      ],
-      "safeToApply": false,
-      "source": "Авторская эвристика WriteLite.",
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "possible",
-          "input": "Я думаю что это важно.",
-          "shouldMatch": true
-        },
-        {
-          "name": "present",
-          "input": "Я думаю, что это важно.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.subordinate-comma.info",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Возможна граница придаточной части",
-      "shortMessage": "Проверьте пунктуацию перед союзом.",
-      "detailedExplanation": "Структура предложения неоднозначна, поэтому WriteLite не предлагает автоматическое исправление.",
-      "badExamples": [
-        "Мы продолжим если будет время."
-      ],
-      "goodExamples": [
-        "Мы продолжим, если будет время."
-      ],
-      "severity": "Suggestion",
-      "suggestions": [
-        "Проверить структуру предложения вручную."
-      ],
-      "safeToApply": false,
-      "source": "Авторская эвристика WriteLite.",
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "possible",
-          "input": "Мы продолжим если будет время.",
-          "shouldMatch": true
-        },
-        {
-          "name": "initial",
-          "input": "Если будет время, мы продолжим.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.abbreviation-tp",
-      "language": "ru",
-      "category": "MissingSpace",
-      "issueCategory": "Punctuation",
-      "title": "Пробел в сокращении «и т. п.»",
-      "shortMessage": "В сокращении «т. п.» ставится пробел.",
-      "detailedExplanation": "В графических сокращениях, состоящих из нескольких слов, после точки ставится пробел: «и т. п.».",
-      "badExamples": [
-        "книги, тетради и т.п."
-      ],
-      "goodExamples": [
-        "книги, тетради и т. п."
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "т. п."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "\\bт\\.п\\.",
-        "replacement": "т. п.",
-        "ignoreCase": true
-      },
-      "tests": [
-        {
-          "name": "no-space",
-          "input": "книги и т.п.",
-          "shouldMatch": true,
-          "expectedSuggestion": "т. п."
-        },
-        {
-          "name": "with-space",
-          "input": "книги и т. п.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.abbreviation-tk",
-      "language": "ru",
-      "category": "MissingSpace",
-      "issueCategory": "Punctuation",
-      "title": "Пробел в сокращении «т. к.»",
-      "shortMessage": "В сокращении «т. к.» ставится пробел.",
-      "detailedExplanation": "В графическом сокращении «так как» после первой точки ставится пробел: «т. к.».",
-      "badExamples": [
-        "Отменили, т.к. был дождь."
-      ],
-      "goodExamples": [
-        "Отменили, т. к. был дождь."
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "т. к."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "\\bт\\.к\\.",
-        "replacement": "т. к.",
-        "ignoreCase": true
-      },
-      "tests": [
-        {
-          "name": "no-space",
-          "input": "Отменили, т.к. был дождь.",
-          "shouldMatch": true,
-          "expectedSuggestion": "т. к."
-        },
-        {
-          "name": "with-space",
-          "input": "Отменили, т. к. был дождь.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.abbreviation-io",
-      "language": "ru",
-      "category": "MissingSpace",
-      "issueCategory": "Punctuation",
-      "title": "Пробел в сокращении «и. о.»",
-      "shortMessage": "В сокращении «и. о.» ставится пробел.",
-      "detailedExplanation": "Сокращение «исполняющий обязанности» записывается с пробелом: «и. о.».",
-      "badExamples": [
-        "и.о. директора"
-      ],
-      "goodExamples": [
-        "и. о. директора"
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "и. о."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "\\bи\\.о\\.",
-        "replacement": "и. о.",
-        "ignoreCase": true
-      },
-      "tests": [
-        {
-          "name": "no-space",
-          "input": "Назначен и.о. директора.",
-          "shouldMatch": true,
-          "expectedSuggestion": "и. о."
-        },
-        {
-          "name": "with-space",
-          "input": "Назначен и. о. директора.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.space-after-close-paren",
-      "language": "ru",
-      "category": "MissingSpace",
-      "issueCategory": "Punctuation",
-      "title": "Пропущен пробел после закрывающей скобки",
-      "shortMessage": "После закрывающей скобки нужен пробел.",
-      "detailedExplanation": "Если сразу за закрывающей скобкой начинается слово, между ними ставится пробел.",
-      "badExamples": [
-        "(см. выше)далее по тексту"
-      ],
-      "goodExamples": [
-        "(см. выше) далее по тексту"
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Добавить пробел после скобки."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "\\)(?=[А-Яа-яЁё])",
-        "replacement": ") "
-      },
-      "tests": [
-        {
-          "name": "missing-space",
-          "input": "(см. выше)далее",
-          "shouldMatch": true
-        },
-        {
-          "name": "has-space",
-          "input": "(см. выше) далее",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.typography.spaced-hyphen-dash",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Дефис вместо тире между словами",
-      "shortMessage": "Между словами вместо дефиса ставится тире.",
-      "detailedExplanation": "Дефис, окружённый пробелами, обычно набран вместо тире. В русской типографике в этой позиции используется тире «—».",
-      "badExamples": [
-        "Москва - столица России."
-      ],
-      "goodExamples": [
-        "Москва — столица России.",
-        "интернет-магазин"
-      ],
-      "severity": "Suggestion",
-      "suggestions": [
-        "—"
-      ],
-      "safeToApply": false,
-      "source": "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "(?<=\\S) - (?=\\S)",
-        "replacement": " — "
-      },
-      "tests": [
-        {
-          "name": "spaced-hyphen",
-          "input": "Москва - столица России.",
-          "shouldMatch": true
-        },
-        {
-          "name": "compound-word",
-          "input": "интернет-магазин работает",
-          "shouldMatch": false
-        },
-        {
-          "name": "already-dash",
-          "input": "Москва — столица России.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.space-before-ellipsis",
-      "language": "ru",
-      "category": "ExtraSpace",
-      "issueCategory": "Punctuation",
-      "title": "Лишний пробел перед многоточием",
-      "shortMessage": "Перед многоточием пробел не ставится.",
-      "detailedExplanation": "Многоточие, как и другие знаки конца предложения, примыкает к предыдущему слову без пробела.",
-      "badExamples": [
-        "Он замолчал …"
-      ],
-      "goodExamples": [
-        "Он замолчал…"
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Убрать пробел перед многоточием."
-      ],
-      "safeToApply": true,
-      "source": "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
-      "implementation": {
-        "engine": "regex",
-        "pattern": "[ \\t ]+…",
-        "replacement": "…"
-      },
-      "tests": [
-        {
-          "name": "space-before",
-          "input": "Он замолчал …",
-          "shouldMatch": true,
-          "expectedSuggestion": "…"
-        },
-        {
-          "name": "no-space",
-          "input": "Он замолчал…",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.intro-word-comma",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Вводное слово выделяется запятой",
-      "shortMessage": "После вводного слова нужна запятая.",
-      "detailedExplanation": "Вводные слова и сочетания («к сожалению», «конечно», «кроме того», «например») не являются членами предложения и отделяются запятой. В начале предложения запятая ставится после вводного слова.",
-      "badExamples": [
-        "К сожалению поезд опоздал.",
-        "Конечно я тебе помогу.",
-        "Кроме того нам нужно закончить отчёт."
-      ],
-      "goodExamples": [
-        "К сожалению, поезд опоздал.",
-        "Конечно, я тебе помогу.",
-        "Кроме того, нам нужно закончить отчёт."
-      ],
-      "severity": "Warning",
-      "suggestions": [
-        "Поставить запятую после вводного слова."
-      ],
-      "safeToApply": true,
-      "source": "Правила русской орфографии и пунктуации, §91 (вводные слова и словосочетания).",
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "sorrow",
-          "input": "К сожалению поезд опоздал на полчаса.",
-          "shouldMatch": true
-        },
-        {
-          "name": "besides",
-          "input": "Кроме того нам нужно закончить отчёт.",
-          "shouldMatch": true
-        },
-        {
-          "name": "ofcourse",
-          "input": "Конечно я тебе обязательно помогу.",
-          "shouldMatch": true
-        },
-        {
-          "name": "firstly",
-          "input": "Во-первых это дорого.",
-          "shouldMatch": true
-        },
-        {
-          "name": "already-present",
-          "input": "К сожалению, поезд опоздал.",
-          "shouldMatch": false
-        },
-        {
-          "name": "not-sentence-initial",
-          "input": "Он сказал что конечно поможет.",
-          "shouldMatch": false
-        },
-        {
-          "name": "not-in-list",
-          "input": "Вчера поезд опоздал на полчаса.",
-          "shouldMatch": false
-        },
-        {
-          "name": "alone",
-          "input": "Конечно.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.adversative-comma",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Запятая перед противительным союзом",
-      "shortMessage": "Перед «однако» и «зато» в середине предложения нужна запятая.",
-      "detailedExplanation": "Противительные союзы «а», «однако» и «зато» в середине предложения соединяют части сложного предложения или однородные члены, и перед ними ставится запятая. В начале предложения «однако» выступает как союз «но» и запятой не требует.",
-      "badExamples": [
-        "Всё было готово однако никто не пришёл.",
-        "Работа трудная зато интересная.",
-        "Я говорил о достижениях а теперь скажу о планах."
-      ],
-      "goodExamples": [
-        "Всё было готово, однако никто не пришёл.",
-        "Работа трудная, зато интересная.",
-        "Я говорил о достижениях, а теперь скажу о планах."
-      ],
-      "severity": "Warning",
-      "suggestions": [
-        "Поставить запятую перед союзом."
-      ],
-      "source": "Правила русской орфографии и пунктуации, §137 (запятая между частями сложносочинённого предложения).",
-      "safeToApply": true,
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "however",
-          "input": "Всё было готово однако никто не пришёл.",
-          "shouldMatch": true
-        },
-        {
-          "name": "whereas",
-          "input": "Работа трудная зато интересная.",
-          "shouldMatch": true
-        },
-        {
-          "name": "a-conjunction",
-          "input": "Я говорил о достижениях а теперь скажу о планах.",
-          "shouldMatch": true
-        },
-        {
-          "name": "already-present",
-          "input": "Всё было готово, однако никто не пришёл.",
-          "shouldMatch": false
-        },
-        {
-          "name": "sentence-initial",
-          "input": "Однако никто не пришёл.",
-          "shouldMatch": false
-        },
-        {
-          "name": "after-dash",
-          "input": "Всё было готово — однако никто не пришёл.",
-          "shouldMatch": false
-        },
-        {
-          "name": "enumeration-label",
-          "input": "Смотрите пункт а и пункт б.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.vocative-comma",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Обращение выделяется запятой",
-      "shortMessage": "Обращение после приветствия отделяется запятой.",
-      "detailedExplanation": "Обращение — слово или сочетание, называющее того, к кому обращена речь. Оно не является членом предложения и отделяется запятой: после приветствия или междометия («Привет», «Спасибо», «Слушай», «Добрый вечер») запятая ставится перед обращением.",
-      "badExamples": [
-        "Привет дорогой друг.",
-        "Спасибо Алексей.",
-        "Добрый вечер коллеги."
-      ],
-      "goodExamples": [
-        "Привет, дорогой друг.",
-        "Спасибо, Алексей.",
-        "Добрый вечер, коллеги."
-      ],
-      "severity": "Warning",
-      "suggestions": [
-        "Поставьте запятую перед обращением."
-      ],
-      "source": "Правила русской орфографии и пунктуации, §101 (обращения).",
-      "safeToApply": true,
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "greeting-with-modifier",
-          "input": "Привет дорогой друг.",
-          "shouldMatch": true
-        },
-        {
-          "name": "thanks-with-name",
-          "input": "Спасибо Алексей.",
-          "shouldMatch": true
-        },
-        {
-          "name": "collective",
-          "input": "Добрый вечер коллеги.",
-          "shouldMatch": true
-        },
-        {
-          "name": "already-present",
-          "input": "Привет, дорогой друг.",
-          "shouldMatch": false
-        },
-        {
-          "name": "not-an-address",
-          "input": "Привет из Москвы.",
-          "shouldMatch": false
-        },
-        {
-          "name": "adjective-only",
-          "input": "Спасибо большое.",
-          "shouldMatch": false
-        },
-        {
-          "name": "greeting-is-subject",
-          "input": "Добрый вечер начался хорошо.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.greeting-sentence-boundary",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Здесь заканчивается предложение",
-      "shortMessage": "Приветствие и вопрос — разные предложения.",
-      "detailedExplanation": "Приветствие с обращением и следующий за ним вопрос — два разных предложения. Приветствие закрывается точкой или восклицательным знаком, а вопрос — вопросительным знаком: «Привет, дорогой друг! Как твои дела?»",
-      "badExamples": [
-        "Привет дорогой друг как твои дела",
-        "Здравствуйте Мария как ваши дела"
-      ],
-      "goodExamples": [
-        "Привет, дорогой друг! Как твои дела?",
-        "Здравствуйте, Мария! Как ваши дела?"
-      ],
-      "severity": "Suggestion",
-      "suggestions": [
-        "Разделите приветствие и вопрос на два предложения."
-      ],
-      "source": "Правила русской орфографии и пунктуации, §1–§4 (знаки конца предложения).",
-      "safeToApply": false,
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "greeting-question",
-          "input": "Привет дорогой друг как твои дела",
-          "shouldMatch": true
-        },
-        {
-          "name": "already-split",
-          "input": "Привет, дорогой друг! Как твои дела?",
-          "shouldMatch": false
-        },
-        {
-          "name": "comparison-not-question",
-          "input": "Спасибо Алексей как всегда",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.subordinate-clause-end",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Придаточная часть отделяется запятой",
-      "shortMessage": "Здесь заканчивается придаточная часть.",
-      "detailedExplanation": "Если сложноподчинённое предложение начинается с придаточной части («когда», «если», «хотя», «несмотря на то что»), то перед главной частью ставится запятая: «Когда я пришёл, он уже ушёл».",
-      "badExamples": [
-        "Когда я пришёл он уже ушёл.",
-        "Если будет время я позвоню.",
-        "Несмотря на то что задача сложная мы её решили."
-      ],
-      "goodExamples": [
-        "Когда я пришёл, он уже ушёл.",
-        "Если будет время, я позвоню.",
-        "Несмотря на то что задача сложная, мы её решили."
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Поставьте запятую перед главной частью."
-      ],
-      "source": "Правила русской орфографии и пунктуации, §107 (сложноподчинённое предложение).",
-      "safeToApply": true,
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "kogda",
-          "input": "Когда я пришёл он уже ушёл.",
-          "shouldMatch": true
-        },
-        {
-          "name": "esli",
-          "input": "Если будет время я позвоню.",
-          "shouldMatch": true
-        },
-        {
-          "name": "nesmotrya",
-          "input": "Несмотря на то что задача сложная мы её решили.",
-          "shouldMatch": true
-        },
-        {
-          "name": "already-punctuated",
-          "input": "Когда я пришёл, он уже ушёл.",
-          "shouldMatch": false
-        },
-        {
-          "name": "subordinate-subject-only",
-          "input": "Если я приду завтра будет хорошо.",
-          "shouldMatch": false
-        },
-        {
-          "name": "no-fronted-conjunction",
-          "input": "Он пришёл домой и сразу лёг спать.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.paired-conjunction-to",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Запятая перед «то»",
-      "shortMessage": "В двойном союзе «если… то…» нужна запятая.",
-      "detailedExplanation": "В двойных союзах «если… то…», «когда… то…» запятая ставится перед второй частью: «Если начать сегодня, то успеем». Указательное местоимение «то» перед существительным запятой не требует.",
-      "badExamples": [
-        "Если начать сегодня то успеем."
-      ],
-      "goodExamples": [
-        "Если начать сегодня, то успеем."
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Поставьте запятую перед «то»."
-      ],
-      "source": "Правила русской орфографии и пунктуации, §107 (двойные союзы).",
-      "safeToApply": true,
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "esli-to",
-          "input": "Если начать сегодня то успеем.",
-          "shouldMatch": true
-        },
-        {
-          "name": "demonstrative",
-          "input": "Если бы я знал то место я бы пошёл.",
-          "shouldMatch": false
-        },
-        {
-          "name": "no-conditional",
-          "input": "Я знаю то что он сказал.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.consequence-comma",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Запятая перед «поэтому»",
-      "shortMessage": "Перед «поэтому» ставится запятая.",
-      "detailedExplanation": "Союз «поэтому» присоединяет вторую часть сложного предложения, и перед ним ставится запятая. Исключение — сочетания «именно поэтому», «вот поэтому», где «поэтому» входит в состав усилительного оборота.",
-      "badExamples": [
-        "API отвечает быстро поэтому задержек нет."
-      ],
-      "goodExamples": [
-        "API отвечает быстро, поэтому задержек нет."
-      ],
-      "severity": "Warning",
-      "suggestions": [
-        "Поставьте запятую перед «поэтому»."
-      ],
-      "source": "Правила русской орфографии и пунктуации, §137 (сложносочинённое предложение).",
-      "safeToApply": true,
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "consequence",
-          "input": "API отвечает быстро поэтому задержек нет.",
-          "shouldMatch": true
-        },
-        {
-          "name": "imenno",
-          "input": "Именно поэтому он ушёл.",
-          "shouldMatch": false
-        },
-        {
-          "name": "already-present",
-          "input": "API отвечает быстро, поэтому задержек нет.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.gerund-phrase",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Деепричастный оборот выделяется запятой",
-      "shortMessage": "Деепричастный оборот отделяется запятой.",
-      "detailedExplanation": "Деепричастие с зависимыми словами образует оборот, который выделяется запятыми независимо от места в предложении. Одиночное деепричастие без зависимых слов может переходить в наречие («он ел стоя») и запятой не отделяется, поэтому правило требует хотя бы одного зависимого слова. Деепричастия, ставшие предлогами — «начиная с», «исходя из», «несмотря на», «судя по», — исключены.",
-      "badExamples": [
-        "Прочитав письмо он надолго задумался.",
-        "Он читал книгу сидя у открытого окна."
-      ],
-      "goodExamples": [
-        "Прочитав письмо, он надолго задумался.",
-        "Он читал книгу, сидя у открытого окна."
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Отделите деепричастный оборот запятой."
-      ],
-      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 93: обособление обстоятельств, выраженных деепричастиями.",
-      "safeToApply": true,
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "fronted",
-          "input": "Прочитав письмо он надолго задумался.",
-          "shouldMatch": true
-        },
-        {
-          "name": "embedded",
-          "input": "Он читал книгу сидя у открытого окна.",
-          "shouldMatch": true
-        },
-        {
-          "name": "already-punctuated",
-          "input": "Прочитав письмо, он надолго задумался.",
-          "shouldMatch": false
-        },
-        {
-          "name": "prepositional-gerund",
-          "input": "Несмотря на дождь мы пошли гулять.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.clause-coordination",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Запятая при союзе «и»",
-      "shortMessage": "Запятая перед «и» зависит от того, одно предложение или два.",
-      "detailedExplanation": "Перед союзами «и», «или» запятая ставится, если они соединяют части сложносочинённого предложения, у каждой из которых своё подлежащее. Если союз соединяет однородные сказуемые при одном подлежащем, запятая не ставится. Правило проверяет наличие собственного подлежащего во второй части и поэтому и добавляет пропущенную запятую, и убирает лишнюю.",
-      "badExamples": [
-        "Дождь закончился и выглянуло солнце.",
-        "Он вошёл, и сел за стол."
-      ],
-      "goodExamples": [
-        "Дождь закончился, и выглянуло солнце.",
-        "Он вошёл и сел за стол."
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Поставьте запятую, если у каждой части своё подлежащее.",
-        "Уберите запятую, если союз соединяет однородные сказуемые."
-      ],
-      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 103: знаки препинания в сложносочинённом предложении.",
-      "safeToApply": true,
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "two-subjects",
-          "input": "Дождь закончился и выглянуло солнце.",
-          "shouldMatch": true
-        },
-        {
-          "name": "shared-subject-extra-comma",
-          "input": "Он вошёл, и сел за стол.",
-          "shouldMatch": true
-        },
-        {
-          "name": "shared-subject-correct",
-          "input": "Он вошёл и сел за стол.",
-          "shouldMatch": false
-        },
-        {
-          "name": "noun-list",
-          "input": "Он купил хлеб и молоко.",
-          "shouldMatch": false
-        }
-      ]
-    },
-    {
-      "ruleId": "ru.punctuation.homogeneous-comma",
-      "language": "ru",
-      "category": "PunctuationRecommendation",
-      "issueCategory": "Punctuation",
-      "title": "Однородные члены разделяются запятой",
-      "shortMessage": "При перечислении нужна запятая.",
-      "detailedExplanation": "Однородные члены предложения, не соединённые союзами, разделяются запятыми; перед одиночным «и» в конце перечисления запятая не ставится. Правило срабатывает, когда три существительных стоят подряд в одном падеже и последние два соединены союзом «и».",
-      "badExamples": [
-        "Он купил хлеб молоко и сыр."
-      ],
-      "goodExamples": [
-        "Он купил хлеб, молоко и сыр."
-      ],
-      "severity": "Error",
-      "suggestions": [
-        "Разделите однородные члены запятой."
-      ],
-      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 83: знаки препинания при однородных членах.",
-      "safeToApply": true,
-      "implementation": {
-        "engine": "builtin"
-      },
-      "tests": [
-        {
-          "name": "three-nouns",
-          "input": "Он купил хлеб молоко и сыр.",
-          "shouldMatch": true
-        },
-        {
-          "name": "already-punctuated",
-          "input": "Он купил хлеб, молоко и сыр.",
-          "shouldMatch": false
-        },
-        {
-          "name": "genitive-chain",
-          "input": "Это отчёт директора отдела и бухгалтерии.",
-          "shouldMatch": false
-        }
-      ]
-    }
-  ]
+    "schemaVersion":  1,
+    "packVersion":  "ru-1.6.0",
+    "language":  "ru",
+    "rules":  [
+                  {
+                      "ruleId":  "ru.spacing.repeated-space",
+                      "language":  "ru",
+                      "category":  "ExtraSpace",
+                      "issueCategory":  "Readability",
+                      "title":  "Лишние пробелы",
+                      "shortMessage":  "Между словами больше одного пробела.",
+                      "detailedExplanation":  "В обычном русском тексте между словами используется один пробел.",
+                      "badExamples":  [
+                                          "два  слова"
+                                      ],
+                      "goodExamples":  [
+                                           "два слова"
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Оставить один пробел."
+                                      ],
+                      "safeToApply":  true,
+                      "source":  "Авторское правило WriteLite.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "[ \\t\\u00A0]{2,}",
+                                             "replacement":  " "
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "double",
+                                        "input":  "два  слова",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  " "
+                                    },
+                                    {
+                                        "name":  "single",
+                                        "input":  "два слова",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.space-before-mark",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Пробел перед знаком",
+                      "shortMessage":  "Перед знаком препинания пробел не ставится.",
+                      "detailedExplanation":  "Перед запятой, точкой, двоеточием, точкой с запятой, вопросительным или восклицательным знаком пробел не нужен.",
+                      "badExamples":  [
+                                          "слово ,"
+                                      ],
+                      "goodExamples":  [
+                                           "слово,"
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Убрать пробел перед знаком."
+                                      ],
+                      "safeToApply":  true,
+                      "source":  "Авторское правило WriteLite.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "[ \\t\\u00A0]+([,.;:!?])",
+                                             "replacement":  "$1"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "comma",
+                                        "input":  "слово ,",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  ","
+                                    },
+                                    {
+                                        "name":  "normal",
+                                        "input":  "слово,",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.space-after-mark",
+                      "language":  "ru",
+                      "category":  "MissingSpace",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Нет пробела после знака",
+                      "shortMessage":  "После знака препинания нужен пробел.",
+                      "detailedExplanation":  "Между знаком препинания и следующим русским словом обычно ставится пробел.",
+                      "badExamples":  [
+                                          "да,нет"
+                                      ],
+                      "goodExamples":  [
+                                           "да, нет"
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Добавить один пробел."
+                                      ],
+                      "safeToApply":  true,
+                      "source":  "Авторское правило WriteLite.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "([,;:!?])(?=[А-Яа-яЁё])",
+                                             "replacement":  "$1 "
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "comma",
+                                        "input":  "да,нет",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  ", "
+                                    },
+                                    {
+                                        "name":  "normal",
+                                        "input":  "да, нет",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.repeated-mark",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Повтор знака",
+                      "shortMessage":  "Знак препинания повторён.",
+                      "detailedExplanation":  "Повтор вопросительных и восклицательных знаков может быть намеренной экспрессией, поэтому исправление требует подтверждения.",
+                      "badExamples":  [
+                                          "Правда???"
+                                      ],
+                      "goodExamples":  [
+                                           "Правда?"
+                                       ],
+                      "severity":  "Suggestion",
+                      "suggestions":  [
+                                          "Оставить один знак, если повтор не передаёт интонацию."
+                                      ],
+                      "safeToApply":  false,
+                      "source":  "Авторская эвристика WriteLite.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "([!?.,])\\1+",
+                                             "replacement":  "$1"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "repeated",
+                                        "input":  "Правда???",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  "?"
+                                    },
+                                    {
+                                        "name":  "single",
+                                        "input":  "Правда?",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.typography.ellipsis",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Readability",
+                      "title":  "Многоточие",
+                      "shortMessage":  "Три точки можно заменить знаком многоточия.",
+                      "detailedExplanation":  "Типографский знак «…» часто предпочтительнее трёх отдельных точек, но это стилистическая правка.",
+                      "badExamples":  [
+                                          "Ну..."
+                                      ],
+                      "goodExamples":  [
+                                           "Ну…"
+                                       ],
+                      "severity":  "Suggestion",
+                      "suggestions":  [
+                                          "…"
+                                      ],
+                      "safeToApply":  false,
+                      "source":  "Авторская типографская рекомендация WriteLite.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "\\.{3,}",
+                                             "replacement":  "…"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "three-dots",
+                                        "input":  "Ну...",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  "…"
+                                    },
+                                    {
+                                        "name":  "version",
+                                        "input":  "Версия 1.2.3",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.typography.double-hyphen",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Readability",
+                      "title":  "Два дефиса вместо тире",
+                      "shortMessage":  "Два дефиса могут обозначать тире.",
+                      "detailedExplanation":  "В обычном тексте вместо двух дефисов используют тире. В коде и командной строке правило подавляется защищёнными диапазонами.",
+                      "badExamples":  [
+                                          "да -- нет"
+                                      ],
+                      "goodExamples":  [
+                                           "да — нет"
+                                       ],
+                      "severity":  "Suggestion",
+                      "suggestions":  [
+                                          "—"
+                                      ],
+                      "safeToApply":  false,
+                      "source":  "Авторская типографская рекомендация WriteLite.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "(?\u003c!-)--(?!-)",
+                                             "replacement":  "—"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "plain-text",
+                                        "input":  "да -- нет",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  "—"
+                                    },
+                                    {
+                                        "name":  "typographic",
+                                        "input":  "да — нет",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.open-paren-space",
+                      "language":  "ru",
+                      "category":  "ExtraSpace",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Пробел после открывающей скобки",
+                      "shortMessage":  "После открывающей скобки пробел не нужен.",
+                      "detailedExplanation":  "Текст внутри круглых скобок обычно начинается без пробела.",
+                      "badExamples":  [
+                                          "( текст)"
+                                      ],
+                      "goodExamples":  [
+                                           "(текст)"
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Убрать пробел."
+                                      ],
+                      "safeToApply":  true,
+                      "source":  "Авторское правило WriteLite.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "\\([ \\t\\u00A0]+",
+                                             "replacement":  "("
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "space",
+                                        "input":  "( текст)",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  "("
+                                    },
+                                    {
+                                        "name":  "normal",
+                                        "input":  "(текст)",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.close-paren-space",
+                      "language":  "ru",
+                      "category":  "ExtraSpace",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Пробел перед закрывающей скобкой",
+                      "shortMessage":  "Перед закрывающей скобкой пробел не нужен.",
+                      "detailedExplanation":  "Текст внутри круглых скобок обычно заканчивается без пробела.",
+                      "badExamples":  [
+                                          "(текст )"
+                                      ],
+                      "goodExamples":  [
+                                           "(текст)"
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Убрать пробел."
+                                      ],
+                      "safeToApply":  true,
+                      "source":  "Авторское правило WriteLite.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "[ \\t\\u00A0]+\\)",
+                                             "replacement":  ")"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "space",
+                                        "input":  "(текст )",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  ")"
+                                    },
+                                    {
+                                        "name":  "normal",
+                                        "input":  "(текст)",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.open-quote-space",
+                      "language":  "ru",
+                      "category":  "ExtraSpace",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Пробел после открывающей кавычки",
+                      "shortMessage":  "После « пробел не нужен.",
+                      "detailedExplanation":  "Текст внутри русских кавычек начинается без пробела.",
+                      "badExamples":  [
+                                          "« текст»"
+                                      ],
+                      "goodExamples":  [
+                                           "«текст»"
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Убрать пробел."
+                                      ],
+                      "safeToApply":  true,
+                      "source":  "Авторское правило WriteLite.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "«[ \\t\\u00A0]+",
+                                             "replacement":  "«"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "space",
+                                        "input":  "« текст»",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  "«"
+                                    },
+                                    {
+                                        "name":  "normal",
+                                        "input":  "«текст»",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.close-quote-space",
+                      "language":  "ru",
+                      "category":  "ExtraSpace",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Пробел перед закрывающей кавычкой",
+                      "shortMessage":  "Перед » пробел не нужен.",
+                      "detailedExplanation":  "Текст внутри русских кавычек заканчивается без пробела.",
+                      "badExamples":  [
+                                          "«текст »"
+                                      ],
+                      "goodExamples":  [
+                                           "«текст»"
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Убрать пробел."
+                                      ],
+                      "safeToApply":  true,
+                      "source":  "Авторское правило WriteLite.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "[ \\t\\u00A0]+»",
+                                             "replacement":  "»"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "space",
+                                        "input":  "«текст »",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  "»"
+                                    },
+                                    {
+                                        "name":  "normal",
+                                        "input":  "«текст»",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.orthography.sentence-capital",
+                      "language":  "ru",
+                      "category":  "EndingError",
+                      "issueCategory":  "Orthography",
+                      "title":  "Регистр в начале предложения",
+                      "shortMessage":  "Предложение обычно начинается с заглавной буквы.",
+                      "detailedExplanation":  "Строчная буква после завершённого предложения может быть ошибкой, но регистр иногда выбран намеренно, поэтому исправление требует подтверждения.",
+                      "badExamples":  [
+                                          "Первое. второе."
+                                      ],
+                      "goodExamples":  [
+                                           "Первое. Второе."
+                                       ],
+                      "severity":  "Warning",
+                      "suggestions":  [
+                                          "Начать предложение с заглавной буквы."
+                                      ],
+                      "safeToApply":  false,
+                      "source":  "Авторская эвристика WriteLite.",
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "lowercase",
+                                        "input":  "Первое. второе.",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  "Второе"
+                                    },
+                                    {
+                                        "name":  "uppercase",
+                                        "input":  "Первое. Второе.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.terminal.insert",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Возможно, нет знака в конце",
+                      "shortMessage":  "В конце предложения может отсутствовать знак.",
+                      "detailedExplanation":  "В конце законченного предложения ставят точку, вопросительный или восклицательный знак. Тип знака зависит от смысла, поэтому автоматическая правка отключена.",
+                      "badExamples":  [
+                                          "Это законченное предложение без точки"
+                                      ],
+                      "goodExamples":  [
+                                           "Это законченное предложение с точкой."
+                                       ],
+                      "severity":  "Suggestion",
+                      "suggestions":  [
+                                          "Добавить подходящий конечный знак."
+                                      ],
+                      "safeToApply":  false,
+                      "source":  "Авторская эвристика WriteLite.",
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "missing",
+                                        "input":  "Это законченное предложение без точки",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  "."
+                                    },
+                                    {
+                                        "name":  "present",
+                                        "input":  "Это законченное предложение с точкой.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.comma-before-chtoby",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Запятая перед «чтобы»",
+                      "shortMessage":  "Перед придаточной частью цели нужна запятая.",
+                      "detailedExplanation":  "Перед придаточной частью цели с союзом «чтобы» нужна запятая. Правило использует ограниченный контекст.",
+                      "badExamples":  [
+                                          "Он пришёл чтобы помочь."
+                                      ],
+                      "goodExamples":  [
+                                           "Он пришёл, чтобы помочь.",
+                                           "Чтобы помочь, он пришёл."
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Вставить запятую перед «чтобы»."
+                                      ],
+                      "safeToApply":  true,
+                      "source":  "Авторское контекстное правило WriteLite.",
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "purpose",
+                                        "input":  "Он пришёл чтобы помочь.",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  ","
+                                    },
+                                    {
+                                        "name":  "initial",
+                                        "input":  "Чтобы помочь, он пришёл.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.intro-comma.info",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Возможна пропущенная запятая",
+                      "shortMessage":  "Проверьте границу частей предложения.",
+                      "detailedExplanation":  "После начальной придаточной части часто нужна запятая. Эвристика только отмечает место для ручной проверки.",
+                      "badExamples":  [
+                                          "Когда закончилось занятие мы ушли."
+                                      ],
+                      "goodExamples":  [
+                                           "Когда закончилось занятие, мы ушли."
+                                       ],
+                      "severity":  "Suggestion",
+                      "suggestions":  [
+                                          "Проверить, нужна ли запятая на границе частей."
+                                      ],
+                      "safeToApply":  false,
+                      "source":  "Авторская эвристика WriteLite.",
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "possible",
+                                        "input":  "Когда закончилось занятие мы ушли.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "present",
+                                        "input":  "Когда закончилось занятие, мы ушли.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.subordinate-comma",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Возможна запятая перед союзом",
+                      "shortMessage":  "Проверьте границу придаточной части.",
+                      "detailedExplanation":  "Запятая перед союзом зависит от синтаксической структуры. Даже при предложенной замене правило не применяется автоматически.",
+                      "badExamples":  [
+                                          "Я думаю что это важно."
+                                      ],
+                      "goodExamples":  [
+                                           "Я думаю, что это важно."
+                                       ],
+                      "severity":  "Suggestion",
+                      "suggestions":  [
+                                          "Проверить запятую перед союзом."
+                                      ],
+                      "safeToApply":  false,
+                      "source":  "Авторская эвристика WriteLite.",
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "possible",
+                                        "input":  "Я думаю что это важно.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "present",
+                                        "input":  "Я думаю, что это важно.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.subordinate-comma.info",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Возможна граница придаточной части",
+                      "shortMessage":  "Проверьте пунктуацию перед союзом.",
+                      "detailedExplanation":  "Структура предложения неоднозначна, поэтому WriteLite не предлагает автоматическое исправление.",
+                      "badExamples":  [
+                                          "Мы продолжим если будет время."
+                                      ],
+                      "goodExamples":  [
+                                           "Мы продолжим, если будет время."
+                                       ],
+                      "severity":  "Suggestion",
+                      "suggestions":  [
+                                          "Проверить структуру предложения вручную."
+                                      ],
+                      "safeToApply":  false,
+                      "source":  "Авторская эвристика WriteLite.",
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "possible",
+                                        "input":  "Мы продолжим если будет время.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "initial",
+                                        "input":  "Если будет время, мы продолжим.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.space-after-close-paren",
+                      "language":  "ru",
+                      "category":  "MissingSpace",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Пропущен пробел после закрывающей скобки",
+                      "shortMessage":  "После закрывающей скобки нужен пробел.",
+                      "detailedExplanation":  "Если сразу за закрывающей скобкой начинается слово, между ними ставится пробел.",
+                      "badExamples":  [
+                                          "(см. выше)далее по тексту"
+                                      ],
+                      "goodExamples":  [
+                                           "(см. выше) далее по тексту"
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Добавить пробел после скобки."
+                                      ],
+                      "safeToApply":  true,
+                      "source":  "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "\\)(?=[А-Яа-яЁё])",
+                                             "replacement":  ") "
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "missing-space",
+                                        "input":  "(см. выше)далее",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "has-space",
+                                        "input":  "(см. выше) далее",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.typography.spaced-hyphen-dash",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Дефис вместо тире между словами",
+                      "shortMessage":  "Между словами вместо дефиса ставится тире.",
+                      "detailedExplanation":  "Дефис, окружённый пробелами, обычно набран вместо тире. В русской типографике в этой позиции используется тире «—».",
+                      "badExamples":  [
+                                          "Москва - столица России."
+                                      ],
+                      "goodExamples":  [
+                                           "Москва — столица России.",
+                                           "интернет-магазин"
+                                       ],
+                      "severity":  "Suggestion",
+                      "suggestions":  [
+                                          "—"
+                                      ],
+                      "safeToApply":  false,
+                      "source":  "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "(?\u003c=\\S) - (?=\\S)",
+                                             "replacement":  " — "
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "spaced-hyphen",
+                                        "input":  "Москва - столица России.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "compound-word",
+                                        "input":  "интернет-магазин работает",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "already-dash",
+                                        "input":  "Москва — столица России.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.space-before-ellipsis",
+                      "language":  "ru",
+                      "category":  "ExtraSpace",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Лишний пробел перед многоточием",
+                      "shortMessage":  "Перед многоточием пробел не ставится.",
+                      "detailedExplanation":  "Многоточие, как и другие знаки конца предложения, примыкает к предыдущему слову без пробела.",
+                      "badExamples":  [
+                                          "Он замолчал …"
+                                      ],
+                      "goodExamples":  [
+                                           "Он замолчал…"
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Убрать пробел перед многоточием."
+                                      ],
+                      "safeToApply":  true,
+                      "source":  "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "[ \\t ]+…",
+                                             "replacement":  "…"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "space-before",
+                                        "input":  "Он замолчал …",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  "…"
+                                    },
+                                    {
+                                        "name":  "no-space",
+                                        "input":  "Он замолчал…",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.intro-word-comma",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Вводное слово выделяется запятой",
+                      "shortMessage":  "После вводного слова нужна запятая.",
+                      "detailedExplanation":  "Вводные слова и сочетания («к сожалению», «конечно», «кроме того», «например») не являются членами предложения и отделяются запятой. В начале предложения запятая ставится после вводного слова.",
+                      "badExamples":  [
+                                          "К сожалению поезд опоздал.",
+                                          "Конечно я тебе помогу.",
+                                          "Кроме того нам нужно закончить отчёт."
+                                      ],
+                      "goodExamples":  [
+                                           "К сожалению, поезд опоздал.",
+                                           "Конечно, я тебе помогу.",
+                                           "Кроме того, нам нужно закончить отчёт."
+                                       ],
+                      "severity":  "Warning",
+                      "suggestions":  [
+                                          "Поставить запятую после вводного слова."
+                                      ],
+                      "safeToApply":  true,
+                      "source":  "Правила русской орфографии и пунктуации, §91 (вводные слова и словосочетания).",
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "sorrow",
+                                        "input":  "К сожалению поезд опоздал на полчаса.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "besides",
+                                        "input":  "Кроме того нам нужно закончить отчёт.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "ofcourse",
+                                        "input":  "Конечно я тебе обязательно помогу.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "firstly",
+                                        "input":  "Во-первых это дорого.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "already-present",
+                                        "input":  "К сожалению, поезд опоздал.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "not-sentence-initial",
+                                        "input":  "Он сказал что конечно поможет.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "not-in-list",
+                                        "input":  "Вчера поезд опоздал на полчаса.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "alone",
+                                        "input":  "Конечно.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.adversative-comma",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Запятая перед противительным союзом",
+                      "shortMessage":  "Перед «однако» и «зато» в середине предложения нужна запятая.",
+                      "detailedExplanation":  "Противительные союзы «а», «однако» и «зато» в середине предложения соединяют части сложного предложения или однородные члены, и перед ними ставится запятая. В начале предложения «однако» выступает как союз «но» и запятой не требует.",
+                      "badExamples":  [
+                                          "Всё было готово однако никто не пришёл.",
+                                          "Работа трудная зато интересная.",
+                                          "Я говорил о достижениях а теперь скажу о планах."
+                                      ],
+                      "goodExamples":  [
+                                           "Всё было готово, однако никто не пришёл.",
+                                           "Работа трудная, зато интересная.",
+                                           "Я говорил о достижениях, а теперь скажу о планах."
+                                       ],
+                      "severity":  "Warning",
+                      "suggestions":  [
+                                          "Поставить запятую перед союзом."
+                                      ],
+                      "source":  "Правила русской орфографии и пунктуации, §137 (запятая между частями сложносочинённого предложения).",
+                      "safeToApply":  true,
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "however",
+                                        "input":  "Всё было готово однако никто не пришёл.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "whereas",
+                                        "input":  "Работа трудная зато интересная.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "a-conjunction",
+                                        "input":  "Я говорил о достижениях а теперь скажу о планах.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "already-present",
+                                        "input":  "Всё было готово, однако никто не пришёл.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "sentence-initial",
+                                        "input":  "Однако никто не пришёл.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "after-dash",
+                                        "input":  "Всё было готово — однако никто не пришёл.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "enumeration-label",
+                                        "input":  "Смотрите пункт а и пункт б.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.vocative-comma",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Обращение выделяется запятой",
+                      "shortMessage":  "Обращение после приветствия отделяется запятой.",
+                      "detailedExplanation":  "Обращение — слово или сочетание, называющее того, к кому обращена речь. Оно не является членом предложения и отделяется запятой: после приветствия или междометия («Привет», «Спасибо», «Слушай», «Добрый вечер») запятая ставится перед обращением.",
+                      "badExamples":  [
+                                          "Привет дорогой друг.",
+                                          "Спасибо Алексей.",
+                                          "Добрый вечер коллеги."
+                                      ],
+                      "goodExamples":  [
+                                           "Привет, дорогой друг.",
+                                           "Спасибо, Алексей.",
+                                           "Добрый вечер, коллеги."
+                                       ],
+                      "severity":  "Warning",
+                      "suggestions":  [
+                                          "Поставьте запятую перед обращением."
+                                      ],
+                      "source":  "Правила русской орфографии и пунктуации, §101 (обращения).",
+                      "safeToApply":  true,
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "greeting-with-modifier",
+                                        "input":  "Привет дорогой друг.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "thanks-with-name",
+                                        "input":  "Спасибо Алексей.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "collective",
+                                        "input":  "Добрый вечер коллеги.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "already-present",
+                                        "input":  "Привет, дорогой друг.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "not-an-address",
+                                        "input":  "Привет из Москвы.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "adjective-only",
+                                        "input":  "Спасибо большое.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "greeting-is-subject",
+                                        "input":  "Добрый вечер начался хорошо.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.greeting-sentence-boundary",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Здесь заканчивается предложение",
+                      "shortMessage":  "Приветствие и вопрос — разные предложения.",
+                      "detailedExplanation":  "Приветствие с обращением и следующий за ним вопрос — два разных предложения. Приветствие закрывается точкой или восклицательным знаком, а вопрос — вопросительным знаком: «Привет, дорогой друг! Как твои дела?»",
+                      "badExamples":  [
+                                          "Привет дорогой друг как твои дела",
+                                          "Здравствуйте Мария как ваши дела"
+                                      ],
+                      "goodExamples":  [
+                                           "Привет, дорогой друг! Как твои дела?",
+                                           "Здравствуйте, Мария! Как ваши дела?"
+                                       ],
+                      "severity":  "Suggestion",
+                      "suggestions":  [
+                                          "Разделите приветствие и вопрос на два предложения."
+                                      ],
+                      "source":  "Правила русской орфографии и пунктуации, §1–§4 (знаки конца предложения).",
+                      "safeToApply":  false,
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "greeting-question",
+                                        "input":  "Привет дорогой друг как твои дела",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "already-split",
+                                        "input":  "Привет, дорогой друг! Как твои дела?",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "comparison-not-question",
+                                        "input":  "Спасибо Алексей как всегда",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.subordinate-clause-end",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Придаточная часть отделяется запятой",
+                      "shortMessage":  "Здесь заканчивается придаточная часть.",
+                      "detailedExplanation":  "Если сложноподчинённое предложение начинается с придаточной части («когда», «если», «хотя», «несмотря на то что»), то перед главной частью ставится запятая: «Когда я пришёл, он уже ушёл».",
+                      "badExamples":  [
+                                          "Когда я пришёл он уже ушёл.",
+                                          "Если будет время я позвоню.",
+                                          "Несмотря на то что задача сложная мы её решили."
+                                      ],
+                      "goodExamples":  [
+                                           "Когда я пришёл, он уже ушёл.",
+                                           "Если будет время, я позвоню.",
+                                           "Несмотря на то что задача сложная, мы её решили."
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Поставьте запятую перед главной частью."
+                                      ],
+                      "source":  "Правила русской орфографии и пунктуации, §107 (сложноподчинённое предложение).",
+                      "safeToApply":  true,
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "kogda",
+                                        "input":  "Когда я пришёл он уже ушёл.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "esli",
+                                        "input":  "Если будет время я позвоню.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "nesmotrya",
+                                        "input":  "Несмотря на то что задача сложная мы её решили.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "already-punctuated",
+                                        "input":  "Когда я пришёл, он уже ушёл.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "subordinate-subject-only",
+                                        "input":  "Если я приду завтра будет хорошо.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "no-fronted-conjunction",
+                                        "input":  "Он пришёл домой и сразу лёг спать.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.paired-conjunction-to",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Запятая перед «то»",
+                      "shortMessage":  "В двойном союзе «если… то…» нужна запятая.",
+                      "detailedExplanation":  "В двойных союзах «если… то…», «когда… то…» запятая ставится перед второй частью: «Если начать сегодня, то успеем». Указательное местоимение «то» перед существительным запятой не требует.",
+                      "badExamples":  [
+                                          "Если начать сегодня то успеем."
+                                      ],
+                      "goodExamples":  [
+                                           "Если начать сегодня, то успеем."
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Поставьте запятую перед «то»."
+                                      ],
+                      "source":  "Правила русской орфографии и пунктуации, §107 (двойные союзы).",
+                      "safeToApply":  true,
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "esli-to",
+                                        "input":  "Если начать сегодня то успеем.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "demonstrative",
+                                        "input":  "Если бы я знал то место я бы пошёл.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "no-conditional",
+                                        "input":  "Я знаю то что он сказал.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.consequence-comma",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Запятая перед «поэтому»",
+                      "shortMessage":  "Перед «поэтому» ставится запятая.",
+                      "detailedExplanation":  "Союз «поэтому» присоединяет вторую часть сложного предложения, и перед ним ставится запятая. Исключение — сочетания «именно поэтому», «вот поэтому», где «поэтому» входит в состав усилительного оборота.",
+                      "badExamples":  [
+                                          "API отвечает быстро поэтому задержек нет."
+                                      ],
+                      "goodExamples":  [
+                                           "API отвечает быстро, поэтому задержек нет."
+                                       ],
+                      "severity":  "Warning",
+                      "suggestions":  [
+                                          "Поставьте запятую перед «поэтому»."
+                                      ],
+                      "source":  "Правила русской орфографии и пунктуации, §137 (сложносочинённое предложение).",
+                      "safeToApply":  true,
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "consequence",
+                                        "input":  "API отвечает быстро поэтому задержек нет.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "imenno",
+                                        "input":  "Именно поэтому он ушёл.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "already-present",
+                                        "input":  "API отвечает быстро, поэтому задержек нет.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.gerund-phrase",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Деепричастный оборот выделяется запятой",
+                      "shortMessage":  "Деепричастный оборот отделяется запятой.",
+                      "detailedExplanation":  "Деепричастие с зависимыми словами образует оборот, который выделяется запятыми независимо от места в предложении. Одиночное деепричастие без зависимых слов может переходить в наречие («он ел стоя») и запятой не отделяется, поэтому правило требует хотя бы одного зависимого слова. Деепричастия, ставшие предлогами — «начиная с», «исходя из», «несмотря на», «судя по», — исключены.",
+                      "badExamples":  [
+                                          "Прочитав письмо он надолго задумался.",
+                                          "Он читал книгу сидя у открытого окна."
+                                      ],
+                      "goodExamples":  [
+                                           "Прочитав письмо, он надолго задумался.",
+                                           "Он читал книгу, сидя у открытого окна."
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Отделите деепричастный оборот запятой."
+                                      ],
+                      "source":  "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 93: обособление обстоятельств, выраженных деепричастиями.",
+                      "safeToApply":  true,
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "fronted",
+                                        "input":  "Прочитав письмо он надолго задумался.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "embedded",
+                                        "input":  "Он читал книгу сидя у открытого окна.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "already-punctuated",
+                                        "input":  "Прочитав письмо, он надолго задумался.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "prepositional-gerund",
+                                        "input":  "Несмотря на дождь мы пошли гулять.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.clause-coordination",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Запятая при союзе «и»",
+                      "shortMessage":  "Запятая перед «и» зависит от того, одно предложение или два.",
+                      "detailedExplanation":  "Перед союзами «и», «или» запятая ставится, если они соединяют части сложносочинённого предложения, у каждой из которых своё подлежащее. Если союз соединяет однородные сказуемые при одном подлежащем, запятая не ставится. Правило проверяет наличие собственного подлежащего во второй части и поэтому и добавляет пропущенную запятую, и убирает лишнюю.",
+                      "badExamples":  [
+                                          "Дождь закончился и выглянуло солнце.",
+                                          "Он вошёл, и сел за стол."
+                                      ],
+                      "goodExamples":  [
+                                           "Дождь закончился, и выглянуло солнце.",
+                                           "Он вошёл и сел за стол."
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Поставьте запятую, если у каждой части своё подлежащее.",
+                                          "Уберите запятую, если союз соединяет однородные сказуемые."
+                                      ],
+                      "source":  "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 103: знаки препинания в сложносочинённом предложении.",
+                      "safeToApply":  true,
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "two-subjects",
+                                        "input":  "Дождь закончился и выглянуло солнце.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "shared-subject-extra-comma",
+                                        "input":  "Он вошёл, и сел за стол.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "shared-subject-correct",
+                                        "input":  "Он вошёл и сел за стол.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "noun-list",
+                                        "input":  "Он купил хлеб и молоко.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.homogeneous-comma",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Однородные члены разделяются запятой",
+                      "shortMessage":  "При перечислении нужна запятая.",
+                      "detailedExplanation":  "Однородные члены предложения, не соединённые союзами, разделяются запятыми; перед одиночным «и» в конце перечисления запятая не ставится. Правило срабатывает, когда три существительных стоят подряд в одном падеже и последние два соединены союзом «и».",
+                      "badExamples":  [
+                                          "Он купил хлеб молоко и сыр."
+                                      ],
+                      "goodExamples":  [
+                                           "Он купил хлеб, молоко и сыр."
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Разделите однородные члены запятой."
+                                      ],
+                      "source":  "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 83: знаки препинания при однородных членах.",
+                      "safeToApply":  true,
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "three-nouns",
+                                        "input":  "Он купил хлеб молоко и сыр.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "already-punctuated",
+                                        "input":  "Он купил хлеб, молоко и сыр.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "genitive-chain",
+                                        "input":  "Это отчёт директора отдела и бухгалтерии.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  }
+              ]
 }

@@ -44,6 +44,7 @@ public sealed class WriteLitePortAllocator : IWriteLitePortAllocator
         }
         catch
         {
+            // A binding failure means exactly what it says: the port is taken.
             return false;
         }
     }

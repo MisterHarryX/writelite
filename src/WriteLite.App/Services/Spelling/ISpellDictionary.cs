@@ -1,3 +1,5 @@
+using WriteLite.Language.Russian;
+
 namespace WriteLite.Services.Spelling;
 
 public interface ISpellDictionary
@@ -21,5 +23,5 @@ public sealed record DictionaryMetadata(
     int WordCount,
     DateTimeOffset? VersionDate,
     int SchemaVersion = 1,
-    string Language = "ru",
+    string Language = RussianLanguageProfile.IsoCode,
     string? Sha256 = null);

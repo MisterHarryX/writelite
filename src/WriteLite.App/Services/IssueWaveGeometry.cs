@@ -14,7 +14,7 @@ namespace WriteLite.Services;
 public static class IssueWaveGeometry
 {
     /// <summary>Distance from the text baseline box to the top of the wave.</summary>
-    public const double BaselineOffset = 1.25;
+    public static readonly double BaselineOffset = WriteLiteDefaults.UnderlineTheme.BaselineOffset;
 
     /// <summary>A wave spanning <paramref name="rect"/>, hanging just below its bottom edge.</summary>
     public static Geometry BuildWave(Rect rect, double waveHeight)

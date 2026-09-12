@@ -251,7 +251,7 @@ public sealed class HybridTextAnalysisService : IStagedTextAnalyzer, IDisposable
 
         // Debounce before spending anything: typing must never queue inferences that a
         // keystroke two hundred milliseconds later makes irrelevant.
-        var aiDebounce = TimeSpan.FromMilliseconds(Math.Clamp(_settings.AiDebounceMs, 200, 2000));
+        var aiDebounce = TimeSpan.FromMilliseconds(Math.Clamp(_settings.AiDebounceMs, WriteLiteDefaults.Debounce.AiDebounceClampMinMs, WriteLiteDefaults.Debounce.AiDebounceClampMaxMs));
         try
         {
             await Task.Delay(aiDebounce, cancellationToken).ConfigureAwait(false);
@@ -292,7 +292,7 @@ public sealed class HybridTextAnalysisService : IStagedTextAnalyzer, IDisposable
         catch (Exception ex)
         {
             // §63: the deterministic findings the caller already has are not affected.
-            CompatibilityLogger.Technical("hybrid-ai-error", $"type={ex.GetType().Name}");
+            CompatibilityLogger.Technical("hybrid-ai-error", ex);
             return [];
         }
 

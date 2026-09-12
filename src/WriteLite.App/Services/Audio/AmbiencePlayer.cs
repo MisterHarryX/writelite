@@ -45,7 +45,7 @@ public sealed class AmbiencePlayer : IDisposable
     {
         _ticker = new DispatcherTimer(DispatcherPriority.Background)
         {
-            Interval = TimeSpan.FromMilliseconds(250)
+            Interval = WriteLiteDefaults.Audio.AmbienceTickerInterval
         };
         _ticker.Tick += (_, _) => ProgressChanged?.Invoke();
 
@@ -174,7 +174,7 @@ public sealed class AmbiencePlayer : IDisposable
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            CompatibilityLogger.Technical("ambience-scan-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("ambience-scan-failed", exception);
         }
     }
 
@@ -243,7 +243,7 @@ public sealed class AmbiencePlayer : IDisposable
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("ambience-play-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("ambience-play-failed", exception);
             Stop();
         }
     }
@@ -268,7 +268,7 @@ public sealed class AmbiencePlayer : IDisposable
         // Restart the current track when it is more than three seconds in, before
         // stepping back a track. Every music player behaves this way and hands are
         // trained on it.
-        if (Position > TimeSpan.FromSeconds(3))
+        if (Position > WriteLiteDefaults.Audio.AmbienceRestartThreshold)
         {
             _player.Position = TimeSpan.Zero;
             ProgressChanged?.Invoke();
@@ -306,7 +306,7 @@ public sealed class AmbiencePlayer : IDisposable
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("ambience-open-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("ambience-open-failed", exception);
             Stop();
             return;
         }
@@ -350,7 +350,7 @@ public sealed class AmbiencePlayer : IDisposable
 
     private void OnMediaFailed(object? sender, ExceptionEventArgs e)
     {
-        CompatibilityLogger.Technical("ambience-media-failed", $"type={e.ErrorException?.GetType().Name}");
+        CompatibilityLogger.Technical("ambience-media-failed", e.ErrorException);
         Stop();
     }
 

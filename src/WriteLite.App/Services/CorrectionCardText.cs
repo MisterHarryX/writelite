@@ -1,6 +1,7 @@
 using System.Windows.Media;
 using WriteLite.Language.Core;
 using WriteLite.Models;
+using WriteLite.Resources;
 using Brush = System.Windows.Media.Brush;
 
 namespace WriteLite.Services;
@@ -21,23 +22,23 @@ public static class CorrectionCardText
     /// <summary>Uppercase category name for the mono eyebrow on a card.</summary>
     public static string CategoryLabelUpper(IssueCategory category) => category switch
     {
-        IssueCategory.Orthography => "ОРФОГРАФИЯ",
-        IssueCategory.Grammar => "ГРАММАТИКА",
-        IssueCategory.Punctuation => "ПУНКТУАЦИЯ",
-        IssueCategory.Style => "СТИЛЬ",
-        IssueCategory.Readability => "ОФОРМЛЕНИЕ",
-        _ => "ЗАМЕЧАНИЕ"
+        IssueCategory.Orthography => Strings.Corr_CategoryOrthographyUpper,
+        IssueCategory.Grammar => Strings.Corr_CategoryGrammarUpper,
+        IssueCategory.Punctuation => Strings.Corr_CategoryPunctuationUpper,
+        IssueCategory.Style => Strings.Corr_CategoryStyleUpper,
+        IssueCategory.Readability => Strings.Corr_CategoryReadabilityUpper,
+        _ => Strings.Corr_CategoryDefaultUpper
     };
 
     /// <summary>Sentence-case category name for prose contexts.</summary>
     public static string CategoryLabel(IssueCategory category) => category switch
     {
-        IssueCategory.Orthography => "Орфография",
-        IssueCategory.Grammar => "Грамматика",
-        IssueCategory.Punctuation => "Пунктуация",
-        IssueCategory.Style => "Стиль",
-        IssueCategory.Readability => "Оформление",
-        _ => "Замечание"
+        IssueCategory.Orthography => Strings.Filter_Orthography,
+        IssueCategory.Grammar => Strings.Filter_Grammar,
+        IssueCategory.Punctuation => Strings.Filter_Punctuation,
+        IssueCategory.Style => Strings.Filter_Style,
+        IssueCategory.Readability => Strings.Corr_CategoryReadability,
+        _ => Strings.Corr_CategoryDefault
     };
 
     /// <summary>
@@ -50,18 +51,18 @@ public static class CorrectionCardText
     /// </remarks>
     public static string ClassLabel(IssueClass issueClass) => issueClass switch
     {
-        IssueClass.Error => "Ошибка",
-        IssueClass.Warning => "Возможная ошибка",
-        IssueClass.Style => "Рекомендация",
-        _ => "Замечание",
+        IssueClass.Error => Strings.Corr_ClassError,
+        IssueClass.Warning => Strings.Corr_ClassWarning,
+        IssueClass.Style => Strings.Corr_ClassStyle,
+        _ => Strings.Corr_CategoryDefault,
     };
 
     /// <summary>How firmly the correction is held — §12.</summary>
     public static string CertaintyLabel(CorrectionCertainty certainty) => certainty switch
     {
-        CorrectionCertainty.Certain => "Точно",
-        CorrectionCertainty.Likely => "Вероятно",
-        _ => "На ваше усмотрение",
+        CorrectionCertainty.Certain => Strings.Corr_CertaintyCertain,
+        CorrectionCertainty.Likely => Strings.Corr_CertaintyLikely,
+        _ => Strings.Corr_CertaintyDiscretion,
     };
 
     public static (Brush Foreground, Brush Background) CategoryBrushes(IssueCategory category) => category switch
@@ -136,8 +137,8 @@ public static class CorrectionCardText
     public static string SourceLabel(TextIssue issue) =>
         issue.RuleId.StartsWith("ru.spelling", StringComparison.Ordinal)
         || issue.RuleId.StartsWith("en.spelling", StringComparison.Ordinal)
-            ? "СЛОВАРЬ"
-            : "ПРАВИЛА";
+            ? Strings.Corr_SourceDictionary
+            : Strings.Corr_SourceRules;
 
     private static string Present(string value, string counterpart)
     {

@@ -1,5 +1,6 @@
 using WriteLite.Language.Core;
 using WriteLite.Models;
+using WriteLite.Resources;
 using WriteLite.Services.Writing;
 
 namespace WriteLite.Services;
@@ -36,19 +37,19 @@ public sealed record CorrectionApplicationOutcome(
     {
         var (text, copy, refresh) = status switch
         {
-            CorrectionApplicationStatus.CorrectionApplied => ("Исправление применено.", false, false),
-            CorrectionApplicationStatus.CorrectionStale => ("Текст изменился. Обновите предложение.", false, true),
-            CorrectionApplicationStatus.TargetUnavailable => ("Поле ввода временно недоступно.", false, true),
-            CorrectionApplicationStatus.RangeUnavailable => ("Не удалось найти фрагмент для правки.", true, true),
-            CorrectionApplicationStatus.OriginalMismatch => ("Текст изменился. Обновите предложение.", false, true),
-            CorrectionApplicationStatus.ReadOnly => ("Поле только для чтения. Исправленный фрагмент можно скопировать.", true, false),
-            CorrectionApplicationStatus.UnsupportedWritePattern => ("WriteLite не удалось изменить текст в этом поле. Исправление скопировано.", true, true),
-            CorrectionApplicationStatus.ProtectedTokenConflict => ("Правка затронула защищённый фрагмент (код, URL или число).", true, false),
-            CorrectionApplicationStatus.AmbiguousRelocation => ("Найдено несколько совпадений. Обновите предложение.", false, true),
-            CorrectionApplicationStatus.VerificationFailed => ("Поле не подтвердило применённую правку. Обновите текст перед следующей попыткой.", false, true),
-            CorrectionApplicationStatus.Cancelled => ("Операция отменена.", false, false),
-            CorrectionApplicationStatus.Blocked => ("Предыдущая правка ещё выполняется.", false, false),
-            _ => ("Не удалось применить исправление.", true, true)
+            CorrectionApplicationStatus.CorrectionApplied => (Strings.Corr_Applied, false, false),
+            CorrectionApplicationStatus.CorrectionStale => (Strings.Corr_TextChangedRefresh, false, true),
+            CorrectionApplicationStatus.TargetUnavailable => (Strings.Corr_TargetUnavailable, false, true),
+            CorrectionApplicationStatus.RangeUnavailable => (Strings.Corr_RangeUnavailable, true, true),
+            CorrectionApplicationStatus.OriginalMismatch => (Strings.Corr_TextChangedRefresh, false, true),
+            CorrectionApplicationStatus.ReadOnly => (Strings.Corr_ReadOnly, true, false),
+            CorrectionApplicationStatus.UnsupportedWritePattern => (Strings.Corr_UnsupportedWritePattern, true, true),
+            CorrectionApplicationStatus.ProtectedTokenConflict => (Strings.Corr_ProtectedTokenConflict, true, false),
+            CorrectionApplicationStatus.AmbiguousRelocation => (Strings.Corr_AmbiguousRelocation, false, true),
+            CorrectionApplicationStatus.VerificationFailed => (Strings.Corr_VerificationFailed, false, true),
+            CorrectionApplicationStatus.Cancelled => (Strings.Corr_Cancelled, false, false),
+            CorrectionApplicationStatus.Blocked => (Strings.Corr_Blocked, false, false),
+            _ => (Strings.Corr_ApplyFailed, true, true)
         };
         return new CorrectionApplicationOutcome(
             status,
@@ -88,7 +89,7 @@ public sealed class CorrectionApplicationService : ICorrectionApplicationService
     /// No longer on any path the user waits on — see <see cref="ScheduleBackgroundRefresh"/> —
     /// so it is a property of the target application's behaviour rather than a latency budget.
     /// </remarks>
-    public static readonly TimeSpan PostWriteSettleDelay = TimeSpan.FromMilliseconds(350);
+    public static readonly TimeSpan PostWriteSettleDelay = WriteLiteDefaults.Analysis.PostWriteSettleDelay;
 
     private readonly UiaCircuitBreaker _circuitBreaker;
     private readonly Func<TextSnapshot, TextFieldMonitor, CorrectionApplicationStatus> _snapshotValidator;
@@ -202,7 +203,7 @@ public sealed class CorrectionApplicationService : ICorrectionApplicationService
             {
                 return CorrectionApplicationOutcome.FromStatus(
                     CorrectionApplicationStatus.Failed,
-                    "Нет текста замены для этой рекомендации.");
+                    Strings.Corr_NoReplacementText);
             }
 
             if (CorrectionCandidateValidityPolicy.IsIdenticalCorrection(issue.Original, issue.Replacement)
@@ -210,7 +211,7 @@ public sealed class CorrectionApplicationService : ICorrectionApplicationService
             {
                 return CorrectionApplicationOutcome.FromStatus(
                     CorrectionApplicationStatus.Failed,
-                    "Предложенный вариант совпадает с исходным текстом и не будет применён.");
+                    Strings.Corr_IdenticalCorrection);
             }
 
             var read = await snapshot.Target
@@ -286,7 +287,7 @@ public sealed class CorrectionApplicationService : ICorrectionApplicationService
             return new CorrectionApplicationOutcome(
                 CorrectionApplicationStatus.CorrectionApplied,
                 Succeeded: true,
-                UserMessage: "Исправление применено.",
+                UserMessage: Strings.Corr_Applied,
                 AppliedStart: start,
                 AppliedLength: length,
                 AppliedReplacement: replacement,
@@ -356,7 +357,7 @@ public sealed class CorrectionApplicationService : ICorrectionApplicationService
             {
                 return CorrectionApplicationOutcome.FromStatus(
                     CorrectionApplicationStatus.Failed,
-                    "Нет безопасных автоматических исправлений.");
+                    Strings.Corr_NoSafeFixes);
             }
 
             snapshotStatus = _snapshotValidator(snapshot, monitor);
@@ -373,7 +374,7 @@ public sealed class CorrectionApplicationService : ICorrectionApplicationService
             {
                 return CorrectionApplicationOutcome.FromStatus(
                     CorrectionApplicationStatus.Failed,
-                    "Нет безопасных автоматических исправлений.");
+                    Strings.Corr_NoSafeFixes);
             }
 
             var write = await snapshot.Target

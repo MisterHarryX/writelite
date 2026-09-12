@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using WriteLite.Models;
+using WriteLite.Resources;
 using WriteLite.Services;
 using Button = System.Windows.Controls.Button;
 using Brush = System.Windows.Media.Brush;
@@ -116,10 +117,10 @@ public partial class SuggestionsWindow : Window
         var count = snapshot.Issues.Count;
         SummaryText.Text = count switch
         {
-            0 when snapshot.IndicatorState is AnalysisIndicatorState.Analyzing => "Анализ текста…",
-            0 when !snapshot.IsFullDictionaryLoaded => "Словарь загружается",
-            0 when !snapshot.Target.SupportsDirectWrite => "Только для чтения",
-            0 => "Нет замечаний",
+            0 when snapshot.IndicatorState is AnalysisIndicatorState.Analyzing => Strings.Suggestions_HeaderAnalyzing,
+            0 when !snapshot.IsFullDictionaryLoaded => Strings.Suggestions_HeaderDictionaryLoading,
+            0 when !snapshot.Target.SupportsDirectWrite => Strings.Suggestions_HeaderReadOnly,
+            0 => Strings.Suggestions_HeaderNoIssues,
             _ => RussianPlural.Issues(count)
         };
     }
@@ -127,11 +128,11 @@ public partial class SuggestionsWindow : Window
     private void UpdateTabCounts(TextSnapshot snapshot)
     {
         var counts = IssueCountSummary.From(snapshot.Issues);
-        TabAll.Content = $"Все {counts.All}";
-        TabOrthography.Content = $"Орфография {counts.Orthography}";
-        TabPunctuation.Content = $"Пунктуация {counts.Punctuation}";
-        TabGrammar.Content = $"Грамматика {counts.Grammar}";
-        TabStyle.Content = $"Стиль {counts.Style}";
+        TabAll.Content = string.Format(Strings.Filter_All_Count, counts.All);
+        TabOrthography.Content = string.Format(Strings.Filter_Orthography_Count, counts.Orthography);
+        TabPunctuation.Content = string.Format(Strings.Filter_Punctuation_Count, counts.Punctuation);
+        TabGrammar.Content = string.Format(Strings.Filter_Grammar_Count, counts.Grammar);
+        TabStyle.Content = string.Format(Strings.Filter_Style_Count, counts.Style);
     }
 
     /// <summary>
@@ -145,11 +146,7 @@ public partial class SuggestionsWindow : Window
     /// </remarks>
     public void ShowApplyFeedback(string message, string? replacementForCopy)
     {
-        if (!Dispatcher.CheckAccess())
-        {
-            Dispatcher.BeginInvoke(() => ShowApplyFeedback(message, replacementForCopy));
-            return;
-        }
+        if (Dispatcher.InvokeIfNeeded(() => ShowApplyFeedback(message, replacementForCopy))) return;
 
         _pendingCopy = replacementForCopy;
         ApplyFeedbackText.Text = message;
@@ -168,12 +165,12 @@ public partial class SuggestionsWindow : Window
         try
         {
             System.Windows.Clipboard.SetText(_pendingCopy);
-            ApplyFeedbackText.Text = "Исправление скопировано в буфер обмена.";
+            ApplyFeedbackText.Text = Strings.Suggestions_CopiedToClipboard;
             ApplyFeedbackCopy.Visibility = Visibility.Collapsed;
         }
         catch (Exception exception)
         {
-            CompatibilityLogger.Technical("clipboard-copy-failed", $"type={exception.GetType().Name}");
+            CompatibilityLogger.Technical("clipboard-copy-failed", exception);
         }
     }
 
@@ -250,8 +247,8 @@ public partial class SuggestionsWindow : Window
         var safeCount = _allIssues.Count(c => c.CanApply);
         FooterBar.Visibility = hasAny ? Visibility.Visible : Visibility.Collapsed;
         SafeCountText.Text = safeCount > 0
-            ? $"{safeCount} можно исправить автоматически"
-            : "Нет безопасных автоправок";
+            ? string.Format(Strings.Suggestions_SafeCount, safeCount)
+            : Strings.Suggestions_NoSafeAutoFixes;
         ApplyAllButton.IsEnabled = safeCount > 0 && !_isBusy;
     }
 
@@ -343,7 +340,7 @@ public partial class SuggestionsWindow : Window
 
     private void SetupSpin()
     {
-        var animation = new DoubleAnimation(0, 360, TimeSpan.FromSeconds(0.9))
+        var animation = new DoubleAnimation(0, 360, WriteLiteDefaults.Motion.SpinnerRotationDuration)
         {
             RepeatBehavior = RepeatBehavior.Forever
         };

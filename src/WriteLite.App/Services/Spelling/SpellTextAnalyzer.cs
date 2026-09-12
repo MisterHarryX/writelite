@@ -219,7 +219,7 @@ public sealed partial class SpellTextAnalyzer(ISpellChecker spellChecker) : ITex
         {
             // A contextual pass is an enhancement. If the model misbehaves the user still
             // gets every lexical result rather than an empty panel.
-            CompatibilityLogger.Technical("contextual-realword-failed", $"type={ex.GetType().Name}");
+            CompatibilityLogger.Technical("contextual-realword-failed", ex);
             return;
         }
 
@@ -310,6 +310,8 @@ public sealed partial class SpellTextAnalyzer(ISpellChecker spellChecker) : ITex
         return false;
     }
 
+    /// <summary>Underscore is part of a token here — real-word detection scans host
+    /// identifiers (snake_case and friends), not dictionary words.</summary>
     [GeneratedRegex(@"[\p{L}_][\p{L}\p{N}_]*", RegexOptions.CultureInvariant)]
     private static partial Regex WordRegex();
 }

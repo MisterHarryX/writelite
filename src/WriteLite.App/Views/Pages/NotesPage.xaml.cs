@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using WriteLite.Controls;
+using WriteLite.Resources;
 using WriteLite.Services;
 using WriteLite.Services.Notes;
 using ContextMenu = System.Windows.Controls.ContextMenu;
@@ -375,16 +376,16 @@ public partial class NotesPage : UserControl
 
         (EmptyTitle.Text, EmptyHint.Text) = (searching, _filter) switch
         {
-            (true, _) => ("Ничего не найдено",
-                $"По запросу «{_search.Trim()}» нет ни одной заметки. Попробуйте другое слово или другой фильтр."),
-            (false, NotesFilter.Tasks) => ("Задач пока нет",
-                "Создайте задачу или список — их можно отмечать выполненными прямо на карточке."),
-            (false, NotesFilter.Goals) => ("Целей пока нет",
-                "Цель — это крупная задача с подпунктами. Подойдёт для того, что не делается за один раз."),
-            (false, NotesFilter.Completed) => ("Здесь пока пусто",
-                "Выполненные задачи и цели собираются на этой вкладке. Любую из них можно вернуть в работу."),
-            _ => ("Пока пусто",
-                "Создайте первую заметку, задачу или цель — всё останется на этом компьютере.")
+            (true, _) => (Strings.Notes_EmptySearchTitle,
+                string.Format(Strings.Notes_EmptySearchHint, _search.Trim())),
+            (false, NotesFilter.Tasks) => (Strings.Notes_EmptyTasksTitle,
+                Strings.Notes_EmptyTasksHint),
+            (false, NotesFilter.Goals) => (Strings.Notes_EmptyGoalsTitle,
+                Strings.Notes_EmptyGoalsHint),
+            (false, NotesFilter.Completed) => (Strings.Notes_EmptyCompletedTitle,
+                Strings.Notes_EmptyCompletedHint),
+            _ => (Strings.Notes_EmptyTitle,
+                Strings.Notes_EmptyHint)
         };
     }
 
@@ -403,12 +404,12 @@ public partial class NotesPage : UserControl
 
         if (counts.Tasks > 0)
         {
-            parts.Add($"{counts.Tasks} В РАБОТЕ");
+            parts.Add(string.Format(Strings.Notes_StatusInProgress, counts.Tasks));
         }
 
         if (counts.Completed > 0)
         {
-            parts.Add($"{counts.Completed} ВЫПОЛНЕНО");
+            parts.Add(string.Format(Strings.Notes_StatusCompleted, counts.Completed));
         }
 
         Controls.Type.SetTracked(StatusText, string.Join(" · ", parts));
@@ -427,10 +428,10 @@ public partial class NotesPage : UserControl
             Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom
         };
 
-        menu.Items.Add(KindItem("Заметка", NoteKind.Note));
-        menu.Items.Add(KindItem("Задача", NoteKind.Task));
-        menu.Items.Add(KindItem("Список", NoteKind.Checklist));
-        menu.Items.Add(KindItem("Цель", NoteKind.Goal));
+        menu.Items.Add(KindItem(Strings.Notes_KindNote, NoteKind.Note));
+        menu.Items.Add(KindItem(Strings.Notes_KindTask, NoteKind.Task));
+        menu.Items.Add(KindItem(Strings.Notes_KindChecklist, NoteKind.Checklist));
+        menu.Items.Add(KindItem(Strings.Notes_KindGoal, NoteKind.Goal));
 
         menu.IsOpen = true;
     }
@@ -520,8 +521,8 @@ public partial class NotesPage : UserControl
         }
 
         var confirm = MessageBox.Show(
-            $"Удалить «{note.DisplayTitle}»?",
-            "Заметки",
+            string.Format(Strings.Notes_DeleteConfirm, note.DisplayTitle),
+            Strings.Nav_Notes,
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 

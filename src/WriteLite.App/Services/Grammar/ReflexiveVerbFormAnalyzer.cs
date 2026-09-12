@@ -99,7 +99,7 @@ public static partial class ReflexiveVerbFormAnalyzer
             }
 
             var word = m.Value;
-            var infinitive = PreserveCase(word, word[..^3] + "ться");
+            var infinitive = RussianTokens.MatchLeadingCase(word, word[..^3] + "ться");
 
             issues.Add(new TextIssue(
                 m.Index,
@@ -165,7 +165,7 @@ public static partial class ReflexiveVerbFormAnalyzer
                 continue;
             }
 
-            var replacement = PreserveCase(word, finite);
+            var replacement = RussianTokens.MatchLeadingCase(word, finite);
             var message = BuildMessage(word);
 
             issues.Add(new TextIssue(
@@ -261,7 +261,7 @@ public static partial class ReflexiveVerbFormAnalyzer
         }
 
         // Avoid bare list / title fragments: require that we are mid-clause (letter/punct before).
-        var prevChar = PreviousNonWhitespace(text, verbIndex - 1);
+        var prevChar = RussianTokens.PreviousNonWhitespace(text, verbIndex - 1);
         if (prevChar == '\0')
         {
             return false;
@@ -270,25 +270,10 @@ public static partial class ReflexiveVerbFormAnalyzer
         return char.IsLetter(prevChar) || prevChar is ',' or ';' or ':' or '—' or '–';
     }
 
-    private static char PreviousNonWhitespace(string text, int index)
-    {
-        while (index >= 0)
-        {
-            if (!char.IsWhiteSpace(text[index]))
-            {
-                return text[index];
-            }
-
-            index--;
-        }
-
-        return '\0';
-    }
-
     private static List<string> TokenizeLeft(string left, int maxTokens)
     {
         var list = new List<string>();
-        var matches = LeftTokenRegex().Matches(left);
+        var matches = RussianTokens.LettersTokenRegex().Matches(left);
         for (var i = matches.Count - 1; i >= 0 && list.Count < maxTokens; i--)
         {
             list.Add(matches[i].Value);
@@ -297,28 +282,10 @@ public static partial class ReflexiveVerbFormAnalyzer
         return list;
     }
 
-    private static string PreserveCase(string original, string replacement)
-    {
-        if (original.Length == 0)
-        {
-            return replacement;
-        }
-
-        if (char.IsUpper(original[0]))
-        {
-            return char.ToUpper(replacement[0], new System.Globalization.CultureInfo("ru-RU")) + replacement[1..];
-        }
-
-        return replacement;
-    }
-
     [GeneratedRegex(@"\b\p{L}+ться\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex ReflexiveInfinitiveRegex();
 
     /// <summary>A reflexive form ending in -тся, which -ться would have written with a soft sign.</summary>
     [GeneratedRegex(@"\b\p{L}+тся\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex ReflexiveFiniteRegex();
-
-    [GeneratedRegex(@"\p{L}+", RegexOptions.CultureInvariant)]
-    private static partial Regex LeftTokenRegex();
 }

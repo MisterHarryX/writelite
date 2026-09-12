@@ -27,7 +27,7 @@ namespace WriteLite.Services.Grammar;
 /// recorded part of speech separates the two; guessing from the ending merges them, which is
 /// how a rule of this shape produces «лучше решение».</para>
 /// </remarks>
-public sealed class RussianComparativeAnalyzer
+public sealed class RussianComparativeAnalyzer : GrammarAnalyzerBase
 {
     private readonly RussianMorphology _morphology;
 
@@ -40,14 +40,12 @@ public sealed class RussianComparativeAnalyzer
         return morphology is null ? null : new RussianComparativeAnalyzer(morphology);
     }
 
-    public void Collect(
+    protected override void CollectCore(
         string text,
         IReadOnlyList<(int Start, int End)> protectedSpans,
         ICollection<TextIssue> issues)
     {
-        if (string.IsNullOrWhiteSpace(text)) return;
-
-        var tokens = RussianTokens.Split(text);
+        var tokens = TokensAtLeast(text, 2);
         for (var i = 0; i + 1 < tokens.Count; i++)
         {
             var head = tokens[i].Value.ToLowerInvariant();

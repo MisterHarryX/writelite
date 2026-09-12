@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using WriteLite.Resources;
 using WriteLite.Services.Diagnostics;
 using UserControl = System.Windows.Controls.UserControl;
 using MessageBox = System.Windows.MessageBox;
@@ -34,21 +35,36 @@ public partial class DiagnosticsPage : UserControl
         }
 
         _last = _service.Capture();
-        AppBlock.Text =
-            $"WriteLite: запущен\nВерсия: {_last.AppVersion}\nСборка: {_last.BuildConfiguration}";
-        FieldBlock.Text =
-            $"Обнаружено: {_last.FieldDetected}\nПроцесс: {_last.FieldProcess}\nЭлемент: {_last.FieldControl}\n" +
-            $"Чтение: {_last.FieldRead}\nЗапись: {_last.FieldWrite}\nValuePattern: {_last.FieldValuePattern}\n" +
-            $"TextPattern: {_last.FieldTextPattern}\nГраницы: {_last.FieldBounds}\nЗамечаний: {_last.LastIssueCount}";
-        EngineBlock.Text =
-            $"Статус: {_last.EngineStatus}\nПоследний успех: {_last.LastSuccessUtc}\n" +
-            $"Длительность: {_last.LastAnalysisDuration}\nЗамечания: {_last.LastIssueCount}\n" +
-            $"Перезапусков: {_last.EngineRestarts}\nРасширенная проверка: {_last.ExtendedChecking}";
-        SystemBlock.Text =
-            $"Windows: {_last.WindowsVersion}\n.NET: {_last.DotNetVersion}\n" +
-            $"DPI / масштаб: {_last.DpiScale}\nРабочая область: {_last.WorkArea}\n" +
-            $"Память WriteLite: {_last.AppMemoryMb} МБ\nПамять дочернего процесса: {_last.ChildMemoryMb} МБ\n" +
-            $"UI responsiveness: {_last.UiResponsiveness}\nОчереди анализа: {_last.AnalysisQueues}";
+        AppBlock.Text = string.Join("\n",
+            Strings.Diag_AppRunning,
+            string.Format(Strings.Diag_AppVersion, _last.AppVersion),
+            string.Format(Strings.Diag_AppBuild, _last.BuildConfiguration));
+        FieldBlock.Text = string.Join("\n",
+            string.Format(Strings.Diag_FieldDetected, _last.FieldDetected),
+            string.Format(Strings.Diag_FieldProcess, _last.FieldProcess),
+            string.Format(Strings.Diag_FieldControl, _last.FieldControl),
+            string.Format(Strings.Diag_FieldRead, _last.FieldRead),
+            string.Format(Strings.Diag_FieldWrite, _last.FieldWrite),
+            $"ValuePattern: {_last.FieldValuePattern}",
+            $"TextPattern: {_last.FieldTextPattern}",
+            string.Format(Strings.Diag_FieldBounds, _last.FieldBounds),
+            string.Format(Strings.Diag_FieldIssueCount, _last.LastIssueCount));
+        EngineBlock.Text = string.Join("\n",
+            string.Format(Strings.Diag_EngineStatus, _last.EngineStatus),
+            string.Format(Strings.Diag_EngineLastSuccess, _last.LastSuccessUtc),
+            string.Format(Strings.Diag_EngineDuration, _last.LastAnalysisDuration),
+            string.Format(Strings.Diag_EngineIssueCount, _last.LastIssueCount),
+            string.Format(Strings.Diag_EngineRestarts, _last.EngineRestarts),
+            string.Format(Strings.Diag_EngineExtendedChecking, _last.ExtendedChecking));
+        SystemBlock.Text = string.Join("\n",
+            $"Windows: {_last.WindowsVersion}",
+            $".NET: {_last.DotNetVersion}",
+            string.Format(Strings.Diag_SystemDpi, _last.DpiScale),
+            string.Format(Strings.Diag_SystemWorkArea, _last.WorkArea),
+            string.Format(Strings.Diag_SystemAppMemory, _last.AppMemoryMb),
+            string.Format(Strings.Diag_SystemChildMemory, _last.ChildMemoryMb),
+            $"UI responsiveness: {_last.UiResponsiveness}",
+            string.Format(Strings.Diag_SystemAnalysisQueues, _last.AnalysisQueues));
         EventsList.ItemsSource = _last.RecentEvents.Reverse().ToList();
     }
 
@@ -64,11 +80,11 @@ public partial class DiagnosticsPage : UserControl
         try
         {
             Clipboard.SetText(_service.BuildCopyableReport(_last));
-            MessageBox.Show("Отчёт скопирован в буфер обмена.", "Диагностика");
+            MessageBox.Show(Strings.Diag_ReportCopied, Strings.Nav_Diagnostics);
         }
         catch (Exception ex)
         {
-            MessageBox.Show("Не удалось скопировать отчёт.", "Диагностика");
+            MessageBox.Show(Strings.Diag_CopyFailed, Strings.Nav_Diagnostics);
             _ = ex;
         }
     }
@@ -87,7 +103,7 @@ public partial class DiagnosticsPage : UserControl
         }
         catch
         {
-            MessageBox.Show("Не удалось открыть папку логов.", "Диагностика");
+            MessageBox.Show(Strings.Diag_OpenLogsFailed, Strings.Nav_Diagnostics);
         }
     }
 
@@ -101,7 +117,7 @@ public partial class DiagnosticsPage : UserControl
         var ok = await _restartEngine();
         Refresh();
         MessageBox.Show(
-            ok ? "Расширенная проверка перезапущена." : "Не удалось перезапустить. Работает базовая проверка WriteLite.",
-            "Диагностика");
+            ok ? Strings.Diag_RestartSucceeded : Strings.Diag_RestartFailed,
+            Strings.Nav_Diagnostics);
     }
 }

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json;
+using WriteLite.Language.Russian;
 
 namespace WriteLite.Services.Lexical;
 
@@ -231,7 +232,7 @@ public sealed class LexicalPackCatalogService
             packs.Add(new LexicalPackDescriptor(
                 root.TryGetProperty("packId", out var id) ? id.GetString() ?? "historical-sample" : "historical-sample",
                 root.TryGetProperty("displayName", out var name) ? name.GetString() ?? "Historical sample" : "Historical sample",
-                "RU", "Исторические толкования", "WriteLite authors",
+                RussianLanguageProfile.IsoCode, "Исторические толкования", "WriteLite authors",
                 root.TryGetProperty("license", out var license) ? license.GetString() ?? "CC0-1.0" : "CC0-1.0",
                 root.TryGetProperty("version", out var version) ? version.GetString() ?? "1.0" : "1.0",
                 count, SafeLength(entries) + SafeLength(manifestPath), File.GetLastWriteTimeUtc(entries), true, true, true,
@@ -239,7 +240,7 @@ public sealed class LexicalPackCatalogService
         }
         catch (Exception ex)
         {
-            CompatibilityLogger.Technical("dictionary-catalog-error", $"type={ex.GetType().Name}");
+            CompatibilityLogger.Technical("dictionary-catalog-error", ex);
         }
     }
 
@@ -254,6 +255,6 @@ public sealed class LexicalPackCatalogService
     private static long SafeLength(string path)
     {
         try { return new FileInfo(path).Length; }
-        catch { return 0; }
+        catch { return 0; } // file may be deleted or locked between listing and this read
     }
 }
