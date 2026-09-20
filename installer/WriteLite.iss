@@ -74,14 +74,23 @@ AppCopyright=Copyright (C) 2026 {#AppPublisher}
 
 DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
+; Inno 6 hides the welcome page unless asked. WriteLite wants it: it is where the
+; product says what it is, and where an unsigned build warns about SmartScreen
+; before Windows does.
+DisableWelcomePage=no
 ; The Start Menu group is a [Tasks] checkbox instead of a wizard page, so the
 ; three optional extras all live in one place the user actually reads.
 DisableProgramGroupPage=yes
 DisableDirPage=no
 AllowNoIcons=yes
 
+; Per-user only, and deliberately not offered as a choice.
+; CompatibilityLogger writes to AppContext.BaseDirectory\logs — next to the
+; executable. An all-users install lands in Program Files, where that write is
+; denied, so «установить для всех пользователей» would offer a configuration
+; that cannot log. PrivilegesRequiredOverridesAllowed is therefore left unset,
+; which also removes the mode-choice dialog in front of the welcome page.
 PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
@@ -119,9 +128,6 @@ Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [CustomMessages]
-russian.WelcomeSub=WriteLite — интеллектуальный помощник для работы с текстом.%n%nПроверяет орфографию, пунктуацию, грамматику и стиль прямо на вашем компьютере — без облака и без регистрации.%n%nСборка не подписана цифровым сертификатом, поэтому Windows SmartScreen может показать предупреждение.
-english.WelcomeSub=WriteLite is an intelligent writing assistant.%n%nIt checks spelling, punctuation, grammar and style on your own computer — no cloud, no account.%n%nThis build is not code-signed, so Windows SmartScreen may show a warning.
-
 russian.DesktopIcon=Создать ярлык на рабочем столе
 english.DesktopIcon=Create a desktop shortcut
 russian.StartMenuIcon=Добавить WriteLite в меню «Пуск»
@@ -141,12 +147,24 @@ russian.RemoveUserDataPrompt=Удалить также пользователь�
 english.RemoveUserDataPrompt=Also remove WriteLite user settings and data?%n%nThis includes your dictionaries, added words, ignore list and settings from:%n%s%n%nIf you plan to install WriteLite again, choose No.
 
 [Messages]
+; [Messages] values are plain strings: Inno does not expand {cm:...} here, which
+; is why the welcome subtitle once shipped reading literally "{cm:WelcomeSub}".
+; The text therefore lives inline, per language.
 russian.WelcomeLabel1=Добро пожаловать в программу установки [name]
 english.WelcomeLabel1=Welcome to the [name] Setup
-russian.WelcomeLabel2={cm:WelcomeSub}
-english.WelcomeLabel2={cm:WelcomeSub}
+russian.WelcomeLabel2=WriteLite — интеллектуальный помощник для работы с текстом.%n%nПроверяет орфографию, пунктуацию, грамматику и стиль прямо на вашем компьютере — без облака и без регистрации.%n%nСборка не подписана цифровым сертификатом, поэтому Windows SmartScreen может показать предупреждение.
+english.WelcomeLabel2=WriteLite is an intelligent writing assistant.%n%nIt checks spelling, punctuation, grammar and style on your own computer — no cloud, no account.%n%nThis build is not code-signed, so Windows SmartScreen may show a warning.
 russian.FinishedHeadingLabel=WriteLite установлен
 english.FinishedHeadingLabel=WriteLite is installed
+
+; The default wording is «закройте все экземпляры приложения», which is not
+; actionable here: closing the WriteLite window minimises it to the notification
+; area by default, so the user does exactly as asked and the installer keeps
+; refusing. Say where it actually is.
+russian.SetupAppRunningError=WriteLite сейчас запущен.%n%nЗакрытие окна сворачивает WriteLite в область уведомлений, поэтому он может работать, даже если окна не видно. Нажмите правой кнопкой на значок WriteLite рядом с часами и выберите «Завершить WriteLite» — или откройте окно и нажмите «Завершить WriteLite» слева внизу.%n%nЗатем нажмите «OK», чтобы продолжить, или «Отмена», чтобы выйти.
+russian.UninstallAppRunningError=WriteLite сейчас запущен.%n%nЗакрытие окна сворачивает WriteLite в область уведомлений, поэтому он может работать, даже если окна не видно. Нажмите правой кнопкой на значок WriteLite рядом с часами и выберите «Завершить WriteLite».%n%nЗатем нажмите «OK», чтобы продолжить, или «Отмена», чтобы выйти.
+english.SetupAppRunningError=WriteLite is currently running.%n%nClosing its window minimises WriteLite to the notification area, so it can still be running with no window in sight. Right-click the WriteLite icon next to the clock and choose «Завершить WriteLite» — or open the window and use «Завершить WriteLite» at the bottom left.%n%nThen click OK to continue, or Cancel to exit.
+english.UninstallAppRunningError=WriteLite is currently running.%n%nClosing its window minimises WriteLite to the notification area, so it can still be running with no window in sight. Right-click the WriteLite icon next to the clock and choose «Завершить WriteLite».%n%nThen click OK to continue, or Cancel to exit.
 
 [Tasks]
 ; Order matches the order the user was promised: desktop off, Start menu on,
@@ -198,8 +216,6 @@ Type: files; Name: "{app}\*.log"
 Type: dirifempty; Name: "{app}"
 
 [Code]
-var
-  RemoveDataCheckBox: TNewCheckBox;
 
 { ---------------------------------------------------------------- install side }
 
@@ -232,18 +248,9 @@ begin
   Result := ExpandConstant('{localappdata}\WriteLite');
 end;
 
-{ The offer to delete personal data belongs on the uninstall wizard, not in a
-  message box after the fact, and it is off unless the user turns it on. }
-procedure InitializeUninstallProgressForm();
-begin
-  { nothing; kept so the form is created before we read the checkbox }
-end;
-
-function InitializeUninstall(): Boolean;
-begin
-  Result := True;
-end;
-
+{ The offer to delete personal data is a question, asked once, defaulting to No.
+  It is deliberately not a silent default-on step: dictionaries and added words
+  are the user's work, and a reinstall must find them where they left them. }
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   Dir: String;
