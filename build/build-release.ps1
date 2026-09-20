@@ -275,7 +275,14 @@ $manifest = [ordered]@{
         }
     )
 }
-$manifest | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $Dist 'release-manifest.json') -Encoding utf8
+# UTF-8 *without* a BOM. Windows PowerShell's -Encoding utf8 writes one, and the
+# website reads this file with JSON.parse, which throws on a leading BOM — the
+# download page then silently fell back to "—" for size, date and checksum with
+# no error anywhere. Written through .NET so the encoding is not up to the host.
+[System.IO.File]::WriteAllText(
+    (Join-Path $Dist 'release-manifest.json'),
+    ($manifest | ConvertTo-Json -Depth 6),
+    (New-Object System.Text.UTF8Encoding $false))
 
 Write-Host ''
 Write-Host 'Release build complete.' -ForegroundColor Green
