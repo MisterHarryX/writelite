@@ -26,8 +26,12 @@
     <AssemblyVersion>$(WriteLiteVersion).0</AssemblyVersion>
     <FileVersion>$(WriteLiteVersion).0</FileVersion>
     <!-- Win32 ProductVersion. Plain, with no +metadata suffix, so what the file
-         properties dialog shows is exactly what the download is called. -->
+         properties dialog shows is exactly what the download is called.
+         The SDK appends "+<commit sha>" to InformationalVersion by default, which
+         turned the shipped ProductVersion into "1.0.0+77c333f2…"; this turns that off
+         rather than leaving every consumer to strip it. -->
     <InformationalVersion>$(WriteLiteVersion)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <PropertyGroup>

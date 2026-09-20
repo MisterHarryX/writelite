@@ -15,6 +15,11 @@
          Directory.Build.props; only the per-assembly description belongs here. -->
     <AssemblyTitle>WriteLite</AssemblyTitle>
     <Description>WriteLite — интеллектуальный помощник для работы с текстом.</Description>
+
+    <!-- The UI exists in Russian only. Without this the publish carries satellite
+         assemblies for thirteen more languages — 221 files in the 1.0.0 installer —
+         that nothing can ever display. -->
+    <SatelliteResourceLanguages>ru;en</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>

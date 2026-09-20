@@ -91,6 +91,87 @@ public sealed class AutostartReconcilerTests
     }
 
     /// <summary>
+    /// The upgrade case the Run value alone cannot express: the user has had WriteLite
+    /// before with autostart off, and has just ticked the installer's checkbox. Their own
+    /// older answer must not undo the one they gave a minute ago.
+    /// </summary>
+    [TestMethod]
+    public void InstallerChoiceBeatsAnOlderStoredPreference()
+    {
+        var autostart = new FakeAutostart { IsEnabled = true, CanEnableForCurrentBinary = true };
+        var settings = new WriteLiteAppSettings { StartWithWindows = false };
+
+        var changed = AutostartReconciler.Reconcile(
+            settings, autostart, hasPersistedSettings: true, installerRequest: true);
+
+        Assert.IsTrue(changed, "the adopted choice has to be written to settings");
+        Assert.IsTrue(settings.StartWithWindows);
+        Assert.IsTrue(autostart.IsEnabled, "the Run value the installer wrote must stay");
+        CollectionAssert.AreEqual(new[] { true }, autostart.Writes.ToArray());
+    }
+
+    /// <summary>
+    /// And the other direction: leaving the box unticked on a reinstall turns autostart
+    /// off for someone who had it on, rather than silently keeping it.
+    /// </summary>
+    [TestMethod]
+    public void InstallerDeclineTurnsAutostartOff()
+    {
+        var autostart = new FakeAutostart { IsEnabled = true, CanEnableForCurrentBinary = true };
+        var settings = new WriteLiteAppSettings { StartWithWindows = true };
+
+        var changed = AutostartReconciler.Reconcile(
+            settings, autostart, hasPersistedSettings: true, installerRequest: false);
+
+        Assert.IsTrue(changed);
+        Assert.IsFalse(settings.StartWithWindows);
+        Assert.IsFalse(autostart.IsEnabled);
+    }
+
+    /// <summary>
+    /// An installer note that agrees with settings still applies the Run value but needs
+    /// no save — a launch that changes nothing should not rewrite settings.json.
+    /// </summary>
+    [TestMethod]
+    public void InstallerChoiceMatchingSettings_AppliesWithoutSaving()
+    {
+        var autostart = new FakeAutostart { IsEnabled = false, CanEnableForCurrentBinary = true };
+        var settings = new WriteLiteAppSettings { StartWithWindows = true };
+
+        var changed = AutostartReconciler.Reconcile(
+            settings, autostart, hasPersistedSettings: true, installerRequest: true);
+
+        Assert.IsFalse(changed);
+        Assert.IsTrue(autostart.IsEnabled);
+    }
+
+    /// <summary>
+    /// The registry names the installer writes and the application reads are one
+    /// contract in two files. If either side is renamed, this fails.
+    /// </summary>
+    [TestMethod]
+    public void HandoffRegistryNamesMatchTheInstallerScript()
+    {
+        Assert.AreEqual(@"Software\WriteLite\Setup", WriteLiteSetupHandoff.KeyPath);
+        Assert.AreEqual("AutostartRequested", WriteLiteSetupHandoff.AutostartValueName);
+
+        var iss = Path.Combine(
+            AppContext.BaseDirectory, "..", "..", "..", "..", "..",
+            "installer", "WriteLite.iss");
+        if (!File.Exists(iss))
+        {
+            Assert.Inconclusive($"installer script not reachable from the test output: {iss}");
+        }
+
+        var text = File.ReadAllText(iss);
+        StringAssert.Contains(text, $"#define SetupKey       \"{WriteLiteSetupHandoff.KeyPath}\"");
+        StringAssert.Contains(text, $"#define AutostartValue \"{WriteLiteSetupHandoff.AutostartValueName}\"");
+        StringAssert.Contains(
+            text,
+            $"#define RunValueName   \"{WriteLiteAutostartService.RunValueName}\"");
+    }
+
+    /// <summary>
     /// The store must be able to answer "has the user ever had settings" before Load()
     /// flattens that into defaults.
     /// </summary>

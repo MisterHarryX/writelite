@@ -51,6 +51,10 @@
 #define RunKey         "Software\Microsoft\Windows\CurrentVersion\Run"
 #define RunValueName   "WriteLite"
 
+; Must match WriteLiteSetupHandoff.KeyPath / AutostartValueName.
+#define SetupKey       "Software\WriteLite\Setup"
+#define AutostartValue "AutostartRequested"
+
 [Setup]
 ; Never change AppId — it is what lets a new build upgrade an old one in place,
 ; and what «Установленные приложения» keys the entry on.
@@ -172,6 +176,17 @@ Root: HKCU; Subkey: "{#RunKey}"; ValueType: string; ValueName: "{#RunValueName}"
   ValueData: """{app}\{#AppExe}"""; Flags: uninsdeletevalue; Tasks: autostart
 Root: HKCU; Subkey: "{#RunKey}"; ValueType: none; ValueName: "{#RunValueName}"; \
   Flags: deletevalue uninsdeletevalue; Tasks: not autostart
+
+; The same choice, left where the application can read it once on its next launch.
+; Without this the Run value is ambiguous on an upgrade: a user whose settings.json
+; says autostart is off would have the box they just ticked undone by their own older
+; answer. WriteLiteSetupHandoff reads this, folds it into settings and deletes it.
+Root: HKCU; Subkey: "Software\WriteLite"; Flags: uninsdeletekeyifempty
+Root: HKCU; Subkey: "{#SetupKey}"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "{#SetupKey}"; ValueType: dword; ValueName: "{#AutostartValue}"; \
+  ValueData: "1"; Tasks: autostart
+Root: HKCU; Subkey: "{#SetupKey}"; ValueType: dword; ValueName: "{#AutostartValue}"; \
+  ValueData: "0"; Tasks: not autostart
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchApp}"; Flags: nowait postinstall skipifsilent

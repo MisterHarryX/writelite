@@ -141,12 +141,22 @@ public partial class App : System.Windows.Application
         // wins. See AutostartReconciler for why the direction is not fixed.
         try
         {
-            if (AutostartReconciler.Reconcile(_settings, _autostart, hadPersistedSettings))
+            var handoff = new WriteLiteSetupHandoff();
+            var installerRequest = handoff.ReadAutostartRequest();
+
+            if (AutostartReconciler.Reconcile(_settings, _autostart, hadPersistedSettings, installerRequest))
             {
                 _settingsStore.Save(_settings);
                 CompatibilityLogger.Technical(
-                    "autostart-adopted-from-registry",
-                    $"startWithWindows={(_settings.StartWithWindows ? 1 : 0)}");
+                    "autostart-adopted",
+                    $"startWithWindows={(_settings.StartWithWindows ? 1 : 0)} "
+                    + $"source={(installerRequest.HasValue ? "installer" : "registry")}");
+            }
+
+            if (installerRequest.HasValue)
+            {
+                // Acted on; the note must not survive to a second launch.
+                handoff.Clear();
             }
         }
         catch (Exception exception)

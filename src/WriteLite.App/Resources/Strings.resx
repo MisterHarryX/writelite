@@ -55,7 +55,7 @@
   <data name="Main_PageName_Home" xml:space="preserve"><value>ГЛАВНАЯ</value></data>
   <data name="Main_EngineState" xml:space="preserve"><value>ЛОКАЛЬНАЯ ПРОВЕРКА</value></data>
   <data name="Main_EngineStatePaused" xml:space="preserve"><value>ПРОВЕРКА НА ПАУЗЕ</value></data>
-  <data name="Main_Footnote" xml:space="preserve"><value>BETA · ЛОКАЛЬНО</value></data>
+  <data name="Main_Footnote" xml:space="preserve"><value>1.0 · ЛОКАЛЬНО</value></data>
   <data name="Main_GroupWorkspace" xml:space="preserve"><value>РАБОЧЕЕ ПРОСТРАНСТВО</value></data>
   <data name="Main_GroupSystem" xml:space="preserve"><value>СИСТЕМА</value></data>
   <data name="Main_Minimize" xml:space="preserve"><value>Свернуть</value></data>

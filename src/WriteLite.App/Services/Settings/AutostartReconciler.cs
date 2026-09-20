@@ -32,13 +32,19 @@ public static class AutostartReconciler
     /// <param name="hasPersistedSettings">
     /// Whether a settings file existed before this launch. False means first run.
     /// </param>
+    /// <param name="installerRequest">
+    /// What the installer's autostart checkbox was set to during the install that
+    /// preceded this launch, or null when there is no pending note. See
+    /// <see cref="IWriteLiteSetupHandoff"/>.
+    /// </param>
     /// <returns>
     /// True when <paramref name="settings"/> was changed and should be saved.
     /// </returns>
     public static bool Reconcile(
         WriteLiteAppSettings settings,
         IWriteLiteAutostartService autostart,
-        bool hasPersistedSettings)
+        bool hasPersistedSettings,
+        bool? installerRequest = null)
     {
         ArgumentNullException.ThrowIfNull(settings);
         ArgumentNullException.ThrowIfNull(autostart);
@@ -50,6 +56,22 @@ public static class AutostartReconciler
         if (!autostart.CanEnableForCurrentBinary)
         {
             return false;
+        }
+
+        if (installerRequest is bool requested)
+        {
+            // The newest statement of intent there is: the user answered it during the
+            // install that produced this very binary. It wins over a settings file that
+            // predates the install, which is the upgrade case the Run value alone cannot
+            // distinguish from a stale entry.
+            autostart.SetEnabled(requested);
+            if (settings.StartWithWindows == requested)
+            {
+                return false;
+            }
+
+            settings.StartWithWindows = requested;
+            return true;
         }
 
         if (!hasPersistedSettings)

@@ -120,7 +120,6 @@ Step 'Publishing WriteLite (self-contained, win-x64)'
     -p:PublishSingleFile=false `
     -p:DebugType=none `
     -p:DebugSymbols=false `
-    -p:SatelliteResourceLanguages='ru;en' `
     -o $Publish `
     --nologo
 if ($LASTEXITCODE -ne 0) { Fail 'dotnet publish failed.' }

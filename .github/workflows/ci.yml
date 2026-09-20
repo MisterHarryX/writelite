@@ -1,0 +1,63 @@
+name: CI
+
+# Build and test on every push and pull request. This is the gate that has to be
+# green before a release tag is pushed; release.yml runs it again against the tag.
+on:
+  push:
+    branches: [main, 'release/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    # WPF, WinForms and UI Automation: the solution only builds on Windows.
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore WriteLite.sln
+
+      - name: Build (Release)
+        run: dotnet build WriteLite.sln -c Release --no-restore -warnaserror:NU1605
+
+      - name: Report the stamped version
+        shell: pwsh
+        run: |
+          # Directory.Build.props is the only place the version is declared; print
+          # what the build actually produced so a mismatch is visible in the log.
+          $exe = Get-ChildItem -Recurse -Filter WriteLite.exe `
+            -Path src/WriteLite.App/bin/Release | Select-Object -First 1
+          if (-not $exe) { throw 'WriteLite.exe was not produced' }
+          $info = $exe.VersionInfo
+          Write-Host "ProductName    : $($info.ProductName)"
+          Write-Host "ProductVersion : $($info.ProductVersion)"
+          Write-Host "FileVersion    : $($info.FileVersion)"
+          Write-Host "Company        : $($info.CompanyName)"
+          if ($info.ProductName -ne 'WriteLite') { throw 'ProductName is not WriteLite' }
+
+      - name: Test
+        run: >
+          dotnet test tests/WriteLite.Tests/WriteLite.Tests.csproj
+          -c Release --no-build
+          --logger "trx;LogFileName=WriteLite.Tests.trx"
+          --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/*.trx
+          if-no-files-found: warn
