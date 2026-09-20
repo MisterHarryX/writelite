@@ -55,12 +55,39 @@ jobs:
       - name: Build (Release)
         run: dotnet build WriteLite.sln -c Release --no-restore
 
-      - name: Test
+      - name: Is the language corpus present?
+        id: corpus
+        shell: pwsh
+        run: |
+          $needed = @(
+            'resources/lexical/writelight-lexical.db',
+            'models/writelite-punctuation/model.onnx',
+            'models/writelight-qwen/writelight-qwen-q4_k_m.gguf'
+          )
+          $missing = $needed | Where-Object { -not (Test-Path $_) }
+          "present=$(($missing.Count -eq 0).ToString().ToLower())" >> $env:GITHUB_OUTPUT
+
+      - name: Test (full suite)
+        if: steps.corpus.outputs.present == 'true'
         run: >
           dotnet test tests/WriteLite.Tests/WriteLite.Tests.csproj
           -c Release --no-build
           --logger "trx;LogFileName=WriteLite.Tests.trx"
           --results-directory TestResults
+
+      - name: Test (corpus-independent subset)
+        if: steps.corpus.outputs.present != 'true'
+        shell: pwsh
+        run: |
+          # See ci.yml for why a hosted runner cannot run the analyser tests.
+          # The installer this tag points at was built by build/build-release.ps1,
+          # which runs the whole suite first and refuses to package otherwise.
+          Write-Host '::warning::Language corpus is not in this checkout; analyser tests did not run here. The tagged installer was built behind a full-suite gate.'
+          dotnet test tests/WriteLite.Tests/WriteLite.Tests.csproj `
+            -c Release --no-build `
+            --filter 'FullyQualifiedName~StringResourceIntegrity|FullyQualifiedName~AutostartReconciler|FullyQualifiedName~BundledJavaRuntimeContract' `
+            --logger 'trx;LogFileName=WriteLite.Subset.trx' `
+            --results-directory TestResults
 
       - name: Upload test results
         if: always()
