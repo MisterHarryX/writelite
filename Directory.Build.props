@@ -1,0 +1,43 @@
+<Project>
+
+  <!--
+    One place for the product identity every assembly in the tree reports.
+
+    Before this file there was none: no <Version>, no <Product>, no <Company>
+    anywhere, so the shipped binaries carried the SDK defaults — ProductName fell
+    back to the assembly name and the version to 1.0.0.0 by accident rather than by
+    decision. The Diagnostics page reads Assembly.GetName().Version, the Windows
+    file-properties dialog reads FileVersion and ProductVersion, and the installer
+    is built against the same numbers, so they have to come from one declaration.
+
+    Raising the release version is an edit to WriteLiteVersion here. build/build-release.ps1
+    reads it back out of the published binary rather than repeating it, so the
+    installer and the assembly can never disagree.
+  -->
+
+  <PropertyGroup>
+    <WriteLiteVersion>1.0.0</WriteLiteVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Version>$(WriteLiteVersion)</Version>
+    <!-- Kept at the major.minor.0.0 form: assembly identity is a binding contract and
+         should not change for a patch release. -->
+    <AssemblyVersion>$(WriteLiteVersion).0</AssemblyVersion>
+    <FileVersion>$(WriteLiteVersion).0</FileVersion>
+    <!-- Win32 ProductVersion. Plain, with no +metadata suffix, so what the file
+         properties dialog shows is exactly what the download is called. -->
+    <InformationalVersion>$(WriteLiteVersion)</InformationalVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Product>WriteLite</Product>
+    <!-- From NOTICE («Copyright 2026 MisterHarryX»). Not a legal entity, and not
+         invented: it is the copyright holder the repository already declares. -->
+    <Company>MisterHarryX</Company>
+    <Authors>MisterHarryX</Authors>
+    <Copyright>Copyright © 2026 MisterHarryX</Copyright>
+    <NeutralLanguage>ru-RU</NeutralLanguage>
+  </PropertyGroup>
+
+</Project>

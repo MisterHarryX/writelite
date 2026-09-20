@@ -9,6 +9,12 @@
     <AssemblyName>WriteLite</AssemblyName>
     <RootNamespace>WriteLite</RootNamespace>
     <ApplicationIcon>..\..\assets\WriteLite.ico</ApplicationIcon>
+
+    <!-- What Windows shows under «Описание» for WriteLite.exe, and what Task Manager
+         labels the process. The shared identity (product, company, version) comes from
+         Directory.Build.props; only the per-assembly description belongs here. -->
+    <AssemblyTitle>WriteLite</AssemblyTitle>
+    <Description>WriteLite — интеллектуальный помощник для работы с текстом.</Description>
   </PropertyGroup>
 
   <ItemGroup>
