@@ -555,12 +555,12 @@
   <data name="Bubble_PenMenu" xml:space="preserve"><value>Меню WriteLite</value></data>
   <data name="Bubble_WindowTitle" xml:space="preserve"><value>WriteLite — индикатор</value></data>
   <data name="Chip_NoArticle" xml:space="preserve"><value>Нет статьи в установленных словарях</value></data>
-  <data name="Corr_AddComma" xml:space="preserve"><value>запятую</value></data>
-  <data name="Corr_AddDash" xml:space="preserve"><value>тире</value></data>
-  <data name="Corr_AddEllipsis" xml:space="preserve"><value>многоточие</value></data>
-  <data name="Corr_AddExclamation" xml:space="preserve"><value>восклицательный знак</value></data>
-  <data name="Corr_AddPeriod" xml:space="preserve"><value>точку</value></data>
-  <data name="Corr_AddQuestion" xml:space="preserve"><value>вопросительный знак</value></data>
+  <data name="Corr_AddComma" xml:space="preserve"><value>Добавить запятую</value></data>
+  <data name="Corr_AddDash" xml:space="preserve"><value>Добавить тире</value></data>
+  <data name="Corr_AddEllipsis" xml:space="preserve"><value>Добавить многоточие</value></data>
+  <data name="Corr_AddExclamation" xml:space="preserve"><value>Добавить восклицательный знак</value></data>
+  <data name="Corr_AddPeriod" xml:space="preserve"><value>Добавить точку</value></data>
+  <data name="Corr_AddQuestion" xml:space="preserve"><value>Добавить вопросительный знак</value></data>
   <data name="Corr_AmbiguousRelocation" xml:space="preserve"><value>Фрагмент сместился — изменения не применены.</value></data>
   <data name="Corr_Applied" xml:space="preserve"><value>Исправление применено.</value></data>
   <data name="Corr_ApplyFailed" xml:space="preserve"><value>Не удалось применить исправление.</value></data>
@@ -582,10 +582,11 @@
   <data name="Corr_ClassError" xml:space="preserve"><value>Ошибка</value></data>
   <data name="Corr_ClassStyle" xml:space="preserve"><value>Рекомендация</value></data>
   <data name="Corr_ClassWarning" xml:space="preserve"><value>Возможная ошибка</value></data>
+  <data name="Corr_Copy" xml:space="preserve"><value>Скопировать</value></data>
   <data name="Corr_IdenticalCorrection" xml:space="preserve"><value>Исправление совпадает с исходным текстом.</value></data>
   <data name="Corr_InsertMark" xml:space="preserve"><value>Вставить «{0}»</value></data>
-  <data name="Corr_NoConfidentFix" xml:space="preserve"><value>Нет уверенного исправления.</value></data>
-  <data name="Corr_NoConfidentFixForWord" xml:space="preserve"><value>…для «{0}».</value></data>
+  <data name="Corr_NoConfidentFix" xml:space="preserve"><value>WriteLite не удалось подобрать уверенное исправление.</value></data>
+  <data name="Corr_NoConfidentFixForWord" xml:space="preserve"><value>WriteLite не удалось подобрать уверенное исправление для «{0}».</value></data>
   <data name="Corr_NoReplacementText" xml:space="preserve"><value>Нет текста для замены.</value></data>
   <data name="Corr_NoSafeFixes" xml:space="preserve"><value>Нет безопасных исправлений.</value></data>
   <data name="Corr_ProtectedTokenConflict" xml:space="preserve"><value>Нельзя править защищённый фрагмент.</value></data>
@@ -598,26 +599,26 @@
   <data name="Corr_TextChangedRefresh" xml:space="preserve"><value>Текст изменился. Проверка обновлена.</value></data>
   <data name="Corr_UnsupportedWritePattern" xml:space="preserve"><value>Прямая замена в этом поле не поддерживается.</value></data>
   <data name="Corr_VerificationFailed" xml:space="preserve"><value>Проверка правки не пройдена.</value></data>
-  <data name="Corr_WordNotFound" xml:space="preserve"><value>Слово не найдено в тексте.</value></data>
+  <data name="Corr_WordNotFound" xml:space="preserve"><value>Слово не найдено в словаре</value></data>
   <data name="Diag_AppBuild" xml:space="preserve"><value>Сборка: {0}</value></data>
   <data name="Diag_AppRunning" xml:space="preserve"><value>WriteLite работает</value></data>
   <data name="Diag_AppVersion" xml:space="preserve"><value>Версия: {0}</value></data>
   <data name="Diag_CopyFailed" xml:space="preserve"><value>Не удалось скопировать отчёт.</value></data>
   <data name="Diag_CopyReport" xml:space="preserve"><value>Копировать отчёт</value></data>
   <data name="Diag_Description" xml:space="preserve"><value>Диагностика проверки: состояние движка, поля и системные параметры.</value></data>
-  <data name="Diag_EngineDuration" xml:space="preserve"><value>Длительность анализа</value></data>
-  <data name="Diag_EngineExtendedChecking" xml:space="preserve"><value>Расширенная проверка</value></data>
-  <data name="Diag_EngineIssueCount" xml:space="preserve"><value>Замечаний в последнем анализе</value></data>
-  <data name="Diag_EngineLastSuccess" xml:space="preserve"><value>Последний успешный анализ</value></data>
-  <data name="Diag_EngineRestarts" xml:space="preserve"><value>Перезапусков движка</value></data>
-  <data name="Diag_EngineStatus" xml:space="preserve"><value>Статус</value></data>
-  <data name="Diag_FieldBounds" xml:space="preserve"><value>Границы</value></data>
-  <data name="Diag_FieldControl" xml:space="preserve"><value>Элемент управления</value></data>
-  <data name="Diag_FieldDetected" xml:space="preserve"><value>Поле</value></data>
+  <data name="Diag_EngineDuration" xml:space="preserve"><value>Длительность анализа: {0}</value></data>
+  <data name="Diag_EngineExtendedChecking" xml:space="preserve"><value>Расширенная проверка: {0}</value></data>
+  <data name="Diag_EngineIssueCount" xml:space="preserve"><value>Замечаний в последнем анализе: {0}</value></data>
+  <data name="Diag_EngineLastSuccess" xml:space="preserve"><value>Последний успешный анализ: {0}</value></data>
+  <data name="Diag_EngineRestarts" xml:space="preserve"><value>Перезапусков движка: {0}</value></data>
+  <data name="Diag_EngineStatus" xml:space="preserve"><value>Статус: {0}</value></data>
+  <data name="Diag_FieldBounds" xml:space="preserve"><value>Границы: {0}</value></data>
+  <data name="Diag_FieldControl" xml:space="preserve"><value>Элемент управления: {0}</value></data>
+  <data name="Diag_FieldDetected" xml:space="preserve"><value>Поле: {0}</value></data>
   <data name="Diag_FieldIssueCount" xml:space="preserve"><value>Замечаний: {0}</value></data>
-  <data name="Diag_FieldProcess" xml:space="preserve"><value>Процесс</value></data>
-  <data name="Diag_FieldRead" xml:space="preserve"><value>Чтение</value></data>
-  <data name="Diag_FieldWrite" xml:space="preserve"><value>Запись</value></data>
+  <data name="Diag_FieldProcess" xml:space="preserve"><value>Процесс: {0}</value></data>
+  <data name="Diag_FieldRead" xml:space="preserve"><value>Чтение: {0}</value></data>
+  <data name="Diag_FieldWrite" xml:space="preserve"><value>Запись: {0}</value></data>
   <data name="Diag_OpenLogs" xml:space="preserve"><value>Открыть журналы</value></data>
   <data name="Diag_OpenLogsFailed" xml:space="preserve"><value>Не удалось открыть папку с журналами.</value></data>
   <data name="Diag_Refresh" xml:space="preserve"><value>Обновить</value></data>
@@ -631,11 +632,11 @@
   <data name="Diag_SectionEventsAutomation" xml:space="preserve"><value>События диагностики</value></data>
   <data name="Diag_SectionField" xml:space="preserve"><value>Активное поле</value></data>
   <data name="Diag_SectionSystem" xml:space="preserve"><value>Система</value></data>
-  <data name="Diag_SystemAnalysisQueues" xml:space="preserve"><value>Очереди анализа</value></data>
+  <data name="Diag_SystemAnalysisQueues" xml:space="preserve"><value>Очереди анализа: {0}</value></data>
   <data name="Diag_SystemAppMemory" xml:space="preserve"><value>Память WriteLite: {0} МБ</value></data>
-  <data name="Diag_SystemChildMemory" xml:space="preserve"><value>Память дочерних процессов</value></data>
+  <data name="Diag_SystemChildMemory" xml:space="preserve"><value>Память дочерних процессов: {0} МБ</value></data>
   <data name="Diag_SystemDpi" xml:space="preserve"><value>DPI / масштаб: {0}</value></data>
-  <data name="Diag_SystemWorkArea" xml:space="preserve"><value>Рабочая область</value></data>
+  <data name="Diag_SystemWorkArea" xml:space="preserve"><value>Рабочая область: {0}</value></data>
   <data name="Home_FeatureAccuracyDesc" xml:space="preserve"><value>Диапазон и исходный фрагмент проверяются перед показом и перед заменой.</value></data>
   <data name="Home_FeatureAccuracyTitle" xml:space="preserve"><value>Точные исправления</value></data>
   <data name="Home_FeatureExplanationDesc" xml:space="preserve"><value>Каждое замечание сопровождается причиной, а не только заменой.</value></data>
