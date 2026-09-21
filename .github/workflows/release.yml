@@ -1,0 +1,156 @@
+name: Release
+
+# Runs on a v* tag. Two jobs, in order:
+#
+#   verify-source    the same build+test gate as CI, against the tagged commit
+#   verify-artifacts the release's uploaded installer matches SHA256SUMS.txt
+#
+# What this workflow deliberately does NOT do is build the installer.
+#
+# The payload is about 1.2 GB and most of it is not in this repository, by
+# design: models/*.gguf and models/*.onnx (the Qwen weights, the reranker and
+# the punctuation model) and resources/lexical/*.db are gitignored because they
+# are multi-gigabyte build outputs, rebuilt from ai/scripts/. A hosted runner has
+# no way to obtain them, so a workflow that claimed to produce the shipped
+# installer would be producing a different, smaller thing and calling it the
+# release.
+#
+# The installer is therefore built on a machine that has the payload:
+#
+#     pwsh build/build-release.ps1
+#
+# which publishes self-contained, jlinks the bundled Java runtime, refuses to
+# continue unless LanguageTool answers on it, compiles the Inno Setup script and
+# writes dist/SHA256SUMS.txt. This workflow's job is to make sure the tag it came
+# from is green and that what was uploaded is what was measured.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to verify (e.g. v1.0.0)'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify-source:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore WriteLite.sln
+
+      - name: Build (Release)
+        run: dotnet build WriteLite.sln -c Release --no-restore
+
+      - name: Is the language corpus present?
+        id: corpus
+        shell: pwsh
+        run: |
+          $needed = @(
+            'resources/lexical/writelight-lexical.db',
+            'models/writelite-punctuation/model.onnx',
+            'models/writelight-qwen/writelight-qwen-q4_k_m.gguf'
+          )
+          $missing = $needed | Where-Object { -not (Test-Path $_) }
+          "present=$(($missing.Count -eq 0).ToString().ToLower())" >> $env:GITHUB_OUTPUT
+
+      - name: Test (full suite)
+        if: steps.corpus.outputs.present == 'true'
+        run: >
+          dotnet test tests/WriteLite.Tests/WriteLite.Tests.csproj
+          -c Release --no-build
+          --logger "trx;LogFileName=WriteLite.Tests.trx"
+          --results-directory TestResults
+
+      - name: Test (corpus-independent subset)
+        if: steps.corpus.outputs.present != 'true'
+        shell: pwsh
+        run: |
+          # See ci.yml for why a hosted runner cannot run the analyser tests.
+          # The installer this tag points at was built by build/build-release.ps1,
+          # which runs the whole suite first and refuses to package otherwise.
+          Write-Host '::warning::Language corpus is not in this checkout; analyser tests did not run here. The tagged installer was built behind a full-suite gate.'
+          dotnet test tests/WriteLite.Tests/WriteLite.Tests.csproj `
+            -c Release --no-build `
+            --filter 'FullyQualifiedName~StringResourceIntegrity|FullyQualifiedName~AutostartReconciler|FullyQualifiedName~BundledJavaRuntimeContract' `
+            --logger 'trx;LogFileName=WriteLite.Subset.trx' `
+            --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-test-results
+          path: TestResults/*.trx
+          if-no-files-found: warn
+
+      - name: Tag must match the declared version
+        shell: pwsh
+        run: |
+          $tag = '${{ github.event.inputs.tag }}'
+          if (-not $tag) { $tag = '${{ github.ref_name }}' }
+          $declared = (Select-String -Path Directory.Build.props `
+            -Pattern '<WriteLiteVersion>(.+?)</WriteLiteVersion>').Matches[0].Groups[1].Value
+          Write-Host "tag=$tag declared=$declared"
+          if ($tag -ne "v$declared") {
+            throw "Tag $tag does not match WriteLiteVersion $declared in Directory.Build.props"
+          }
+
+  verify-artifacts:
+    # Only after the source gate is green: a release whose tests fail must not be
+    # blessed, even if its files uploaded cleanly.
+    needs: verify-source
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download the release assets and check their checksums
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.event.inputs.tag }}"
+          [ -n "$TAG" ] || TAG="${{ github.ref_name }}"
+          VERSION="${TAG#v}"
+          SETUP="WriteLite-Setup-${VERSION}.exe"
+
+          echo "Release $TAG must carry $SETUP and SHA256SUMS.txt"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --json assets --jq '.assets[].name' > assets.txt
+          cat assets.txt
+
+          grep -Fxq "$SETUP" assets.txt \
+            || { echo "::error::$SETUP is not attached to $TAG"; exit 1; }
+          grep -Fxq 'SHA256SUMS.txt' assets.txt \
+            || { echo "::error::SHA256SUMS.txt is not attached to $TAG"; exit 1; }
+
+          mkdir -p verify && cd verify
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$SETUP" --pattern 'SHA256SUMS.txt'
+
+          # Check only the line for this installer, so an unrelated legacy asset
+          # listed in the file does not fail the run.
+          grep -F "$SETUP" SHA256SUMS.txt > expected.txt
+          test -s expected.txt \
+            || { echo "::error::SHA256SUMS.txt has no entry for $SETUP"; exit 1; }
+          sha256sum -c expected.txt
+
+          SIZE=$(stat -c%s "$SETUP")
+          echo "::notice::$SETUP verified, ${SIZE} bytes"

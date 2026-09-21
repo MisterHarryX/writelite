@@ -8,6 +8,16 @@ public interface IWriteLiteSettingsStore
     WriteLiteAppSettings Load();
     void Save(WriteLiteAppSettings settings);
     string StorePath { get; }
+
+    /// <summary>
+    /// True when a settings file is already on disk, i.e. this is not the first launch.
+    /// </summary>
+    /// <remarks>
+    /// Read before <see cref="Load"/>: a fresh install has no file and <see cref="Load"/>
+    /// answers with defaults that are indistinguishable from a user who chose them.
+    /// <see cref="AutostartReconciler"/> needs to tell those two apart.
+    /// </remarks>
+    bool HasPersistedSettings { get; }
 }
 
 public sealed class WriteLiteSettingsStore : IWriteLiteSettingsStore
@@ -55,6 +65,8 @@ public sealed class WriteLiteSettingsStore : IWriteLiteSettingsStore
     }
 
     public string StorePath => _path;
+
+    public bool HasPersistedSettings => File.Exists(_path);
 
     public static string GetDefaultPath()
         => Path.Combine(

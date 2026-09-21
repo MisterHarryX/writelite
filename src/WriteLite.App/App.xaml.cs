@@ -107,6 +107,8 @@ public partial class App : System.Windows.Application
             CompatibilityLogger.Technical(eventName, detail);
 
         _settingsStore = new WriteLiteSettingsStore();
+        // Asked before Load, which cannot distinguish "no file" from "file full of defaults".
+        var hadPersistedSettings = _settingsStore.HasPersistedSettings;
         _settings = _settingsStore.Load();
         CompatibilityLogger.Technical(
             "settings-loaded",
@@ -134,26 +136,33 @@ public partial class App : System.Windows.Application
 
         _autostart = new WriteLiteAutostartService();
 
-        // Keep setting and registry in sync (do not leave stale Run value when setting is off).
+        // Keep setting and registry in sync. On a first launch the installer's Run value
+        // is the only expressed intent and is adopted; afterwards the stored preference
+        // wins. See AutostartReconciler for why the direction is not fixed.
         try
         {
-            if (_settings.StartWithWindows && _autostart.CanEnableForCurrentBinary)
+            var handoff = new WriteLiteSetupHandoff();
+            var installerRequest = handoff.ReadAutostartRequest();
+
+            if (AutostartReconciler.Reconcile(_settings, _autostart, hadPersistedSettings, installerRequest))
             {
-                _autostart.SetEnabled(true);
+                _settingsStore.Save(_settings);
+                CompatibilityLogger.Technical(
+                    "autostart-adopted",
+                    $"startWithWindows={(_settings.StartWithWindows ? 1 : 0)} "
+                    + $"source={(installerRequest.HasValue ? "installer" : "registry")}");
             }
-            else if (!_settings.StartWithWindows)
+
+            if (installerRequest.HasValue)
             {
-                // Do not wipe user registry unless the setting explicitly says disabled.
-                // If binary cannot autostart (dotnet run), leave registry alone.
-                if (_autostart.CanEnableForCurrentBinary)
-                {
-                    _autostart.SetEnabled(false);
-                }
+                // Acted on; the note must not survive to a second launch.
+                handoff.Clear();
             }
         }
-        catch
+        catch (Exception exception)
         {
-            // non-fatal
+            // Autostart is a convenience; a registry or disk refusal must not stop startup.
+            CompatibilityLogger.Technical("autostart-sync-failed", $"type={exception.GetType().Name}");
         }
 
         // Hunspell parse (ru_RU.dic is 3.5 MB) belongs on a worker. Inline it

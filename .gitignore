@@ -95,8 +95,12 @@ models/writelight-reranker/*.onnx.data
 ai/models/rubert-tiny2/
 ai/.wheels/
 
-# Locally cached NuGet packages and wheels (restore normally comes from nuget.org / PyPI)
-ai/.nupkgs/
+# Locally cached NuGet packages and wheels (restore normally comes from nuget.org / PyPI).
+# The directory itself is tracked via .gitkeep: nuget.config declares it as a package
+# source, and NuGet fails the whole restore with NU1301 when a local source does not
+# exist — which is what broke CI on a fresh clone.
+ai/.nupkgs/*
+!ai/.nupkgs/.gitkeep
 
 # Generated lexical intermediates: rebuilt by ai/scripts/extract_opencorpora_forms.py
 ai/data/lexical/opencorpora-forms.tsv

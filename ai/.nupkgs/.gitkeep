@@ -1,0 +1,8 @@
+This directory is a NuGet package source declared in ../../nuget.config.
+
+It is normally empty: restore comes from nuget.org. It is kept in the repository
+because NuGet fails an entire restore with NU1301 when a configured local source
+does not exist, so a fresh clone could not build without it.
+
+Locally it caches microsoft.ml.onnxruntime packages; those .nupkg files are
+ignored by .gitignore.

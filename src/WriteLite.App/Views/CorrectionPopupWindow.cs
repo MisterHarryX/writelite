@@ -191,7 +191,10 @@ public sealed class CorrectionPopupWindow : Window
         _primary.Click += (_, _) => RequestApply();
         _primaryHost.Children.Add(_primary);
 
-        _copy = CreateGhostButton(Strings.EditorAi_Copy, double.NaN, 26, 12);
+        // The card's own label, not the editor AI panel's «Копировать»: this button
+        // copies the correction so the user can paste it into a field WriteLite could
+        // not write to, and the documented wording for that action is «Скопировать».
+        _copy = CreateGhostButton(Strings.Corr_Copy, double.NaN, 26, 12);
         _copy.Click += (_, _) => { if (_state.Issue is { } issue) CopyRequested?.Invoke(this, issue); };
         _retry = CreateGhostButton(Strings.Corr_Retry, double.NaN, 26, 12);
         _retry.Click += (_, _) => RequestApply();
