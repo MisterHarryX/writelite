@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
 using WriteLite.Documents.Model;
@@ -52,7 +52,59 @@ public static class FlowDocumentBridge
 
     // ── Model → FlowDocument ─────────────────────────────────────────────────
 
+    /// <summary>The document being converted, so a paragraph can resolve its pictures.</summary>
+    [ThreadStatic] private static DocumentResources? _readingResources;
+
+    /// <summary>The model being built, so a picture in the editor can be stored as a resource.</summary>
+    [ThreadStatic] private static DocumentResources? _writingResources;
+
     public static FlowDocument ToFlowDocument(WlDocument document, EditorTypography typography)
+    {
+        _readingResources = document.Resources;
+        try
+        {
+            return BuildFlow(document, typography);
+        }
+        finally
+        {
+            _readingResources = null;
+        }
+    }
+
+    /// <summary>
+    /// A picture as the editor holds it: an <see cref="InlineUIContainer"/> whose image carries the
+    /// original bytes in <c>Tag</c>, so saving writes exactly what was imported or inserted.
+    /// </summary>
+    public static InlineUIContainer CreateImageInline(DocumentImage image)
+    {
+        var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+        bitmap.BeginInit();
+        bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+        bitmap.StreamSource = new System.IO.MemoryStream(image.Data);
+        bitmap.EndInit();
+        bitmap.Freeze();
+        var widthPx = image.WidthPt > 0 ? ToPixels(image.WidthPt) : bitmap.PixelWidth;
+        var heightPx = image.HeightPt > 0 ? ToPixels(image.HeightPt) : bitmap.PixelHeight;
+        // Wider than the text column: scale down, keeping the proportions.
+        const double maxWidth = 640;
+        if (widthPx > maxWidth)
+        {
+            heightPx = heightPx * maxWidth / widthPx;
+            widthPx = maxWidth;
+        }
+
+        var element = new System.Windows.Controls.Image
+        {
+            Source = bitmap,
+            Width = widthPx,
+            Height = heightPx,
+            Stretch = Stretch.Uniform,
+            Tag = image,
+        };
+        return new InlineUIContainer(element) { BaselineAlignment = BaselineAlignment.Bottom };
+    }
+
+    private static FlowDocument BuildFlow(WlDocument document, EditorTypography typography)
     {
         var flow = new FlowDocument
         {
@@ -162,7 +214,7 @@ public static class FlowDocumentBridge
         return list;
     }
 
-    private static WpfParagraph BuildPageBreak(EditorTypography typography)
+    internal static WpfParagraph BuildPageBreak(EditorTypography typography)
     {
         return new WpfParagraph
         {
@@ -222,6 +274,23 @@ public static class FlowDocumentBridge
 
                 case HyperlinkRun link:
                     paragraph.Inlines.Add(BuildHyperlink(link, typography));
+                    break;
+
+                case ImageRun image when _readingResources?.Get(image.ResourceId) is { } picture:
+                    try
+                    {
+                        paragraph.Inlines.Add(CreateImageInline(picture with
+                        {
+                            WidthPt = image.WidthPt > 0 ? image.WidthPt : picture.WidthPt,
+                            HeightPt = image.HeightPt > 0 ? image.HeightPt : picture.HeightPt,
+                        }));
+                    }
+                    catch (Exception)
+                    {
+                        // An undecodable picture keeps its place as its description.
+                        paragraph.Inlines.Add(BuildRun($"[{image.Description ?? "изображение"}]", new RunFormatting(Italic: true), typography));
+                    }
+
                     break;
 
                 case ImageRun image when !string.IsNullOrWhiteSpace(image.Description):
@@ -387,9 +456,17 @@ public static class FlowDocumentBridge
         document.Metadata = metadata ?? new DocumentMetadata();
 
         var section = document.CurrentSection();
-        foreach (var block in ReadBlocks(flow.Blocks, listLevel: 0, listKind: null))
+        _writingResources = document.Resources;
+        try
         {
-            section.Blocks.Add(block);
+            foreach (var block in ReadBlocks(flow.Blocks, listLevel: 0, listKind: null))
+            {
+                section.Blocks.Add(block);
+            }
+        }
+        finally
+        {
+            _writingResources = null;
         }
 
         if (section.Blocks.Count == 0)
@@ -520,6 +597,14 @@ public static class FlowDocumentBridge
 
                 case Span span:
                     ReadInlines(span.Inlines, target, owner);
+                    break;
+
+                case InlineUIContainer { Child: System.Windows.Controls.Image { Tag: DocumentImage picture } shown }
+                    when _writingResources is { } resources:
+                    var widthPt = ToPoints(double.IsNaN(shown.Width) ? shown.ActualWidth : shown.Width);
+                    var heightPt = ToPoints(double.IsNaN(shown.Height) ? shown.ActualHeight : shown.Height);
+                    var id = resources.Add(picture with { WidthPt = widthPt, HeightPt = heightPt });
+                    target.Inlines.Add(new ImageRun(id) { WidthPt = widthPt, HeightPt = heightPt });
                     break;
             }
         }

@@ -50,6 +50,8 @@ namespace WriteLite.Views.Pages;
 /// </remarks>
 public partial class EditorPage : UserControl, IDisposable
 {
+    private bool _pageViewInitialized;
+
     /// <summary>
     /// The analyzer a page uses when the shell has not given it one.
     /// </summary>
@@ -168,6 +170,7 @@ public partial class EditorPage : UserControl, IDisposable
         InitialiseDocumentState();
 
         PreviewKeyDown += OnPreviewKeyDown;
+        Loaded += (_, _) => { if (!_pageViewInitialized) { _pageViewInitialized = true; InitializePageView(); } };
         Loaded += OnLoaded;
     }
 
@@ -251,7 +254,7 @@ public partial class EditorPage : UserControl, IDisposable
     private EditorTypography Typography => new(
         TryFindResource("WlFont") as FontFamily ?? new FontFamily("Segoe UI"),
         12,
-        TryFindResource("WlText") as Brush,
+        CurrentInk,
         TryFindResource("WlLine") as Brush ?? Brushes.Gray,
         TryFindResource("WlBrand") as Brush ?? Brushes.OrangeRed);
 

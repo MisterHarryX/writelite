@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -63,6 +63,24 @@ public sealed class DesignSnapshotTests
         notes.Update(n4);
         notes.SetPinned(n1.Id, true);
         return notes;
+    }
+
+    [TestMethod]
+    public void Editor_page_snapshot()
+    {
+        if (string.IsNullOrEmpty(Dir)) Assert.Inconclusive("WRITELITE_SNAPSHOT_DIR not set");
+        WpfTestHost.Run(() =>
+        {
+            WpfTestHost.EnsureThemeApplied();
+            var page = new EditorPage();
+            var editor = (System.Windows.Controls.RichTextBox)page.FindName("Editor")!;
+            editor.Document.Blocks.Clear();
+            editor.Document.Blocks.Add(new System.Windows.Documents.Paragraph(new System.Windows.Documents.Run("Отчёт о работе за ноябрь")) { FontSize = 28, FontWeight = FontWeights.SemiBold });
+            editor.Document.Blocks.Add(new System.Windows.Documents.Paragraph(new System.Windows.Documents.Run(
+                "В этом месяце команда закончила новую версию редактора: страница теперь выглядит как лист бумаги, появились таблицы, картинки и выделение маркером.")));
+            page.SetPageView(true, persist: false);
+            Save(page, "editor-page", 1200, 760);
+        });
     }
 
     [TestMethod]

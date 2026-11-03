@@ -161,26 +161,23 @@
                                        Foreground="{DynamicResource WlTextMuted}"
                                        Margin="12,10,0,8" />
 
+
                             <controls:NavItem x:Name="NavHome" GroupName="MainNav" IsChecked="True"
                                               Index="01" Label="{x:Static res:Strings.Nav_Home}" Icon="{DynamicResource WlIconHome}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavPanel" GroupName="MainNav"
                                               Index="02" Label="{x:Static res:Strings.Nav_Editor}" Icon="{DynamicResource WlIconEditor}"
                                               Checked="Nav_Checked" />
-                            <controls:NavItem x:Name="NavReading" GroupName="MainNav"
-                                              Index="03" Label="{x:Static res:Strings.Nav_Reading}" Icon="{DynamicResource WlIconReading}"
-                                              ToolTip="{x:Static res:Strings.Nav_Reading_Tooltip}"
-                                              Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavNotes" GroupName="MainNav"
-                                              Index="04" Label="{x:Static res:Strings.Nav_Notes}" Icon="{DynamicResource WlIconNotes}"
+                                              Index="03" Label="{x:Static res:Strings.Nav_Notes}" Icon="{DynamicResource WlIconNotes}"
                                               ToolTip="{x:Static res:Strings.Nav_Notes_Tooltip}"
                                               Checked="Nav_Checked" />
-                            <controls:NavItem x:Name="NavMusic" GroupName="MainNav"
-                                              Index="♪" Label="Музыка" Icon="{DynamicResource WlIconMusic}"
+                            <controls:NavItem x:Name="NavReading" GroupName="MainNav"
+                                              Index="04" Label="{x:Static res:Strings.Nav_Reading}" Icon="{DynamicResource WlIconReading}"
+                                              ToolTip="{x:Static res:Strings.Nav_Reading_Tooltip}"
                                               Checked="Nav_Checked" />
-                            <controls:NavItem x:Name="NavConverter" GroupName="MainNav"
-                                              Index="05" Label="{x:Static res:Strings.Nav_Converter}" Icon="{DynamicResource WlIconConvert}"
-                                              ToolTip="{x:Static res:Strings.Nav_Converter_Tooltip}"
+                            <controls:NavItem x:Name="NavMusic" GroupName="MainNav"
+                                              Index="05" Label="Музыка" Icon="{DynamicResource WlIconMusic}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavDictionary" GroupName="MainNav"
                                               Index="06" Label="{x:Static res:Strings.Nav_Dictionary}" Icon="{DynamicResource WlIconDictionary}"
@@ -189,12 +186,23 @@
                                               Index="07" Label="{x:Static res:Strings.Nav_Rules}" Icon="{DynamicResource WlIconBookmark}"
                                               ToolTip="{x:Static res:Strings.Nav_Rules_Tooltip}"
                                               Checked="Nav_Checked" />
-                            <controls:NavItem x:Name="NavWords" GroupName="MainNav"
-                                              Index="08" Label="{x:Static res:Strings.Nav_WordsManager}" Icon="{DynamicResource WlIconWords}"
-                                              Checked="Nav_Checked" />
+
+                            <TextBlock x:Name="GroupTools"
+                                       Style="{DynamicResource WlMonoLabel}"
+                                       controls:Type.Tracked="ИНСТРУМЕНТЫ"
+                                       Foreground="{DynamicResource WlTextMuted}"
+                                       Margin="12,22,0,8" />
+
                             <controls:NavItem x:Name="NavStyle" GroupName="MainNav"
-                                              Index="09" Label="{x:Static res:Strings.Nav_Style}" Icon="{DynamicResource WlIconAnnotation}"
+                                              Index="08" Label="{x:Static res:Strings.Nav_Style}" Icon="{DynamicResource WlIconAnnotation}"
                                               ToolTip="{x:Static res:Strings.Nav_Style_Tooltip}"
+                                              Checked="Nav_Checked" />
+                            <controls:NavItem x:Name="NavWords" GroupName="MainNav"
+                                              Index="09" Label="{x:Static res:Strings.Nav_WordsManager}" Icon="{DynamicResource WlIconWords}"
+                                              Checked="Nav_Checked" />
+                            <controls:NavItem x:Name="NavConverter" GroupName="MainNav"
+                                              Index="10" Label="{x:Static res:Strings.Nav_Converter}" Icon="{DynamicResource WlIconConvert}"
+                                              ToolTip="{x:Static res:Strings.Nav_Converter_Tooltip}"
                                               Checked="Nav_Checked" />
 
                             <TextBlock x:Name="GroupSystem"
@@ -204,20 +212,20 @@
                                        Margin="12,22,0,8" />
 
                             <controls:NavItem x:Name="NavLocalAi" GroupName="MainNav"
-                                              Index="10" Label="{x:Static res:Strings.Nav_LocalAi}" Icon="{DynamicResource WlIconEngine}"
+                                              Index="11" Label="{x:Static res:Strings.Nav_LocalAi}" Icon="{DynamicResource WlIconEngine}"
                                               ToolTip="{x:Static res:Strings.Nav_LocalAi_Tooltip}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavApps" GroupName="MainNav"
-                                              Index="11" Label="{x:Static res:Strings.Nav_Compatibility}" Icon="{DynamicResource WlIconApps}"
+                                              Index="12" Label="{x:Static res:Strings.Nav_Compatibility}" Icon="{DynamicResource WlIconApps}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavSettings" GroupName="MainNav"
-                                              Index="12" Label="{x:Static res:Strings.Common_Settings}" Icon="{DynamicResource WlIconSettings}"
+                                              Index="13" Label="{x:Static res:Strings.Common_Settings}" Icon="{DynamicResource WlIconSettings}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavDiagnostics" GroupName="MainNav"
-                                              Index="13" Label="{x:Static res:Strings.Nav_Diagnostics}" Icon="{DynamicResource WlIconDiagnostics}"
+                                              Index="14" Label="{x:Static res:Strings.Nav_Diagnostics}" Icon="{DynamicResource WlIconDiagnostics}"
                                               Checked="Nav_Checked" />
                             <controls:NavItem x:Name="NavAbout" GroupName="MainNav"
-                                              Index="14" Label="{x:Static res:Strings.Nav_About}" Icon="{DynamicResource WlIconAbout}"
+                                              Index="15" Label="{x:Static res:Strings.Nav_About}" Icon="{DynamicResource WlIconAbout}"
                                               Checked="Nav_Checked" />
                         </StackPanel>
                       </Grid>

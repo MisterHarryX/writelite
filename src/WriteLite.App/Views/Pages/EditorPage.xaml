@@ -1,4 +1,4 @@
-<UserControl x:Class="WriteLite.Views.Pages.EditorPage"
+﻿<UserControl x:Class="WriteLite.Views.Pages.EditorPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:res="clr-namespace:WriteLite.Resources"
@@ -179,6 +179,29 @@
                               Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
                     </ToggleButton>
 
+                    <Button x:Name="HighlightButton" Style="{DynamicResource WlIconButton}" Width="28" Height="26"
+                            Click="Highlight_Click" ToolTip="Выделение цветом (маркер)"
+                            AutomationProperties.Name="Выделение цветом">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconHighlight}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </Button>
+                    <ToggleButton x:Name="SuperscriptToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Superscript_Click" ToolTip="Надстрочный"
+                                  AutomationProperties.Name="Надстрочный">
+                        <TextBlock Text="x²" FontSize="13" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="SubscriptToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Subscript_Click" ToolTip="Подстрочный"
+                                  AutomationProperties.Name="Подстрочный">
+                        <TextBlock Text="x₂" FontSize="13" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                    <Button Style="{DynamicResource WlIconButton}" Width="28" Height="26"
+                            Click="ClearFormatting_Click" ToolTip="Очистить форматирование"
+                            AutomationProperties.Name="Очистить форматирование">
+                        <TextBlock Text="Tx" FontSize="13" TextDecorations="Strikethrough"
+                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </Button>
+
                     <Button x:Name="TextColorButton" Style="{DynamicResource WlIconButton}"
                             Width="28" Height="26"
                             Click="TextColor_Click" ToolTip="{x:Static res:Strings.Editor_TextColor}"
@@ -317,6 +340,18 @@
 
                     <Border Style="{DynamicResource WlToolbarRule}" />
 
+                    <Button x:Name="InsertMenuButton" Style="{DynamicResource WlToolbarButton}" Click="InsertMenu_Click"
+                            ToolTip="Вставить таблицу, изображение, ссылку, разрыв страницы, символ"
+                            AutomationProperties.Name="Вставка">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconPlus}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" VerticalAlignment="Center" />
+                            <TextBlock Text="Вставка" Margin="6,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Border Style="{DynamicResource WlToolbarRule}" />
+
                     <!-- The corrector: the same actions as in notes, on the selection or the whole document. -->
                     <Button x:Name="AiMenuButton"
                             Style="{DynamicResource WlToolbarButton}"
@@ -423,6 +458,8 @@
                     <ScaleTransform x:Name="ZoomTransform" ScaleX="1" ScaleY="1" />
                 </Grid.LayoutTransform>
 
+                <Border x:Name="PageSheet" Padding="0" SnapsToDevicePixels="True">
+                <Grid>
                 <RichTextBox x:Name="Editor"
                              Style="{DynamicResource WlDocumentSurface}"
                              TextChanged="Editor_TextChanged"
@@ -441,6 +478,8 @@
                            LineHeight="26"
                            Foreground="{DynamicResource WlTextMuted}"
                            Text="{x:Static res:Strings.Editor_CanvasPlaceholder}" />
+                </Grid>
+                </Border>
             </Grid>
         </ScrollViewer>
 
@@ -792,6 +831,12 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <ToggleButton x:Name="PageViewToggle" Style="{DynamicResource WlFormatToggle}" Margin="0,0,10,0" Width="Auto" MinWidth="48"
+                                  Click="PageView_Click" ToolTip="Вид «Лист»: страница как в Word"
+                                  AutomationProperties.Name="Вид «Лист»">
+                        <TextBlock Text="Лист" FontSize="12" Margin="6,0"
+                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
                     <Button x:Name="TogglePanelButton"
                             Content="{x:Static res:Strings.Editor_TogglePanel}"
                             Style="{DynamicResource WlToolbarButton}"

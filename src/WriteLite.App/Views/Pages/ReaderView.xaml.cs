@@ -230,6 +230,7 @@ public partial class ReaderView : UserControl
         ApplyMarks();
         RenderPanel();
         RenderSummary();
+        ApplyComfort();
 
         // Layout has to finish before a character rectangle exists, so restoring the
         // position waits a beat rather than scrolling to zero and looking like the
@@ -1528,6 +1529,7 @@ public partial class ReaderView : UserControl
 
         document.ApplyTypography(_project.Typography);
         Canvas.MaxWidth = _project.Typography.ContentWidth;
+        ApplyComfort();
 
         // One restore per run of changes, queued behind the layout the last of them
         // causes. The document is re-checked rather than trusted: the reader can close

@@ -149,13 +149,21 @@ public sealed class ReaderTypography
     /// <summary>Content measure in device-independent pixels. Around 34 em is the readable band.</summary>
     public double ContentWidth { get; set; } = 720;
 
+    /// <summary>Page theme: dark (default), sepia, light or night.</summary>
+    public string Theme { get; set; } = "dark";
+
+    /// <summary>Read in a serif face (Georgia) rather than the interface font.</summary>
+    public bool Serif { get; set; }
+
     public static ReaderTypography Default => new();
 
     public ReaderTypography Clamped() => new()
     {
         FontSize = Math.Clamp(FontSize, 12, 32),
         LineSpacing = Math.Clamp(LineSpacing, 1.2, 2.6),
-        ContentWidth = Math.Clamp(ContentWidth, 480, 1400)
+        ContentWidth = Math.Clamp(ContentWidth, 480, 1400),
+        Theme = Theme,
+        Serif = Serif,
     };
 }
 

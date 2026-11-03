@@ -773,6 +773,7 @@ public partial class MainWindow : Window
         var railVisibility = compact ? Visibility.Collapsed : Visibility.Visible;
         GroupWorkspace.Visibility = railVisibility;
         GroupSystem.Visibility = railVisibility;
+        GroupTools.Visibility = railVisibility;
         ExitButton.Visibility = railVisibility;
         RailFootnote.Visibility = railVisibility;
 

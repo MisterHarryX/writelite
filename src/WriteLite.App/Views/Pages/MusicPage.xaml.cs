@@ -109,6 +109,7 @@ public partial class MusicPage : UserControl
         NowArtist.Text = current?.Artist ?? (current is null ? "Добавьте музыку ниже" : "Неизвестный исполнитель");
         PlayIcon.Data = (Geometry)FindResource(_player.IsPlaying ? "WlIconPause" : "WlIconPlay");
         PlayButton.ToolTip = _player.IsPlaying ? "Пауза" : "Воспроизвести";
+        System.Windows.Automation.AutomationProperties.SetName(PlayButton, (string)PlayButton.ToolTip);
         ShuffleButton.IsChecked = _player.IsShuffle;
         RepeatButton.IsChecked = _player.IsLooping;
         VolumeSlider.Value = _player.Volume;
