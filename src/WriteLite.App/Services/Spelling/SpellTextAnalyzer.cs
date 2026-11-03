@@ -23,6 +23,12 @@ public sealed partial class SpellTextAnalyzer(ISpellChecker spellChecker) : ITex
     private ContextualCorrectionRefiner? _refiner = SharedRefiner.Value;
 
     /// <summary>
+    /// The user's personal style library, or null. When set and «Мой стиль» is on, candidates
+    /// are reordered by what this user has meant before.
+    /// </summary>
+    public Personal.PersonalStyleService? PersonalStyle { get; set; }
+
+    /// <summary>
     /// When false (default), unknown words without strong suggestions are not underlined.
     /// </summary>
     public bool FlagUnknownWordsWithoutSuggestions { get; set; }
@@ -58,6 +64,7 @@ public sealed partial class SpellTextAnalyzer(ISpellChecker spellChecker) : ITex
 
         var protectedSpans = ProtectedTextSpans.Find(text);
         var issues = new List<TextIssue>();
+        IReadOnlyList<Translation.LanguageSegment>? segments = null;
 
         foreach (Match match in WordRegex().Matches(text))
         {
@@ -72,6 +79,20 @@ public sealed partial class SpellTextAnalyzer(ISpellChecker spellChecker) : ITex
 
             var language = DetectLanguage(match.Value);
             if (language is null) continue;
+
+            // An English word in an English sentence is checked against English. Before this,
+            // Latin was "ignored as a language" and English text got no spelling help at all.
+            if (EnglishSpelling.Enabled && IsLatinOnly(match.Value)
+                && (segments ??= Translation.LanguageSegmenter.Split(text)) is { } segs
+                && IsEnglishAt(segs, match.Index))
+            {
+                if (EnglishSpelling.TryCreateIssue(text, match.Index, match.Value, checkWord, cancellationToken) is { } english)
+                {
+                    issues.Add(english);
+                }
+
+                continue;
+            }
             if (DefaultUserDictionary.Contains(match.Value)
                 || DefaultUserDictionary.Contains(CorrectionCandidateValidityPolicy.FoldSpelling(match.Value)))
             {
@@ -100,10 +121,22 @@ public sealed partial class SpellTextAnalyzer(ISpellChecker spellChecker) : ITex
             // over any English word — which silently undid Latin-target layout recovery on
             // every sentence. Where the scripts differ the question is which language was
             // meant, and that is the layout evidence's to answer, not this model's.
-            if (_refiner is not null && suggestions.Count > 1 && !MixesScripts(suggestions))
+            // «Мой стиль»: what this user has meant before outranks what users in general mean.
+            // A correction they have already made to this exact typo is the strongest evidence
+            // there is, so the contextual model is not asked to second-guess it.
+            var personal = PersonalStyle?.RankSuggestions(match.Value, suggestions)
+                           ?? Personal.SuggestionRanking.Unchanged(suggestions);
+            suggestions = personal.Suggestions;
+
+            if (_refiner is not null && suggestions.Count > 1 && !MixesScripts(suggestions)
+                && personal.Reason != Personal.PersonalRankReason.LearnedCorrection)
             {
                 suggestions = _refiner.Rerank(text, match.Index, match.Length, suggestions, cancellationToken);
             }
+
+            var personalTop = personal.Reason != Personal.PersonalRankReason.None
+                              && suggestions.Count > 0
+                              && string.Equals(suggestions[0], personal.Suggestions[0], StringComparison.Ordinal);
 
             if (suggestions.Count == 0)
             {
@@ -144,23 +177,39 @@ public sealed partial class SpellTextAnalyzer(ISpellChecker spellChecker) : ITex
                 continue;
             }
 
+            var explanation = latinTyped
+                ? "Латинские клавиши образуют известное русское слово. Проверьте вариант перед применением."
+                : russianTyped
+                    ? "Русские клавиши образуют известное английское слово. Проверьте вариант перед применением."
+                    : "Слово не найдено в русском орфографическом словаре. Проверьте предложенный вариант.";
+            var confidence = isKeyboardLayout ? 0.8 : 0.75;
+
+            if (personalTop && !isKeyboardLayout)
+            {
+                if (personal.Reason == Personal.PersonalRankReason.LearnedCorrection)
+                {
+                    explanation = $"Раньше вы исправляли «{match.Value}» на «{best}» — WriteLite запомнил это в вашем стиле.";
+                    confidence = 0.85;
+                }
+                else
+                {
+                    explanation += $" Вариант «{best}» первый, потому что вы часто его пишете.";
+                }
+            }
+
             issues.Add(new TextIssue(
                 match.Index,
                 match.Length,
                 match.Value,
                 best,
                 isKeyboardLayout ? "Возможно, выбрана не та раскладка" : "Возможная орфографическая ошибка",
-                latinTyped
-                    ? "Латинские клавиши образуют известное русское слово. Проверьте вариант перед применением."
-                    : russianTyped
-                        ? "Русские клавиши образуют известное английское слово. Проверьте вариант перед применением."
-                        : "Слово не найдено в русском орфографическом словаре. Проверьте предложенный вариант.",
+                explanation,
                 IssueCategory.Orthography,
                 IssueSeverity.Warning,
                 CanApplyAutomatically: false,
                 RuleId: isKeyboardLayout ? "ru.spelling.keyboard-layout" : "ru.spelling.typo",
                 LinguisticCategory: LinguisticIssueCategory.Typo,
-                Confidence: isKeyboardLayout ? 0.8 : 0.75));
+                Confidence: confidence));
         }
 
         AddRealWordFindings(text, issues, protectedSpans, cancellationToken);
@@ -267,6 +316,18 @@ public sealed partial class SpellTextAnalyzer(ISpellChecker spellChecker) : ITex
         }
 
         return russian && latin;
+    }
+
+    private static bool IsLatinOnly(string word) => word.All(c => IsEnglishLetter(c) || c is '\'' or '’' or '-');
+
+    private static bool IsEnglishAt(IReadOnlyList<Translation.LanguageSegment> segments, int index)
+    {
+        foreach (var segment in segments)
+        {
+            if (index >= segment.Start && index < segment.Start + segment.Length) return segment.Language == "en";
+        }
+
+        return false;
     }
 
     public static bool IsRussianLetter(char value)

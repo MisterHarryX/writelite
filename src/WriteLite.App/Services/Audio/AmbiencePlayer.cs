@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -30,7 +30,15 @@ public sealed record AmbienceTrack(string Path, string Title, string? Artist);
 /// </remarks>
 public sealed class AmbiencePlayer : IDisposable
 {
-    private static readonly string[] SupportedExtensions = [".mp3", ".wav", ".m4a", ".wma", ".flac"];
+    public static readonly string[] SupportedExtensions = [".mp3", ".wav", ".m4a", ".wma", ".flac", ".aac", ".ogg", ".opus"];
+
+    private const int MaxLibraryTracks = 5000;
+    private readonly Random _random = new();
+    private readonly List<int> _history = [];
+    private bool _shuffle;
+
+    /// <summary>The user's library (folders, files, favourites, where playback stopped).</summary>
+    public MusicLibrary Library { get; private set; } = new();
 
     private readonly MediaPlayer _player = new();
     private readonly DispatcherTimer _ticker;
@@ -126,34 +134,198 @@ public sealed class AmbiencePlayer : IDisposable
     /// to call when neither location exists, which simply leaves the player empty and
     /// the bar hidden.
     /// </remarks>
-    public void LoadTracks(string? bundledDirectory = null, string? userDirectory = null)
+    public void LoadTracks(string? bundledDirectory = null, string? userDirectory = null, MusicLibrary? library = null)
     {
         bundledDirectory ??= Path.Combine(AppContext.BaseDirectory, "resources", "audio");
         userDirectory ??= Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "WriteLite", "audio");
+        Library = library ?? Library;
 
         var found = new List<AmbienceTrack>();
         Collect(bundledDirectory, found);
         Collect(userDirectory, found);
+        foreach (var folder in Library.Folders)
+        {
+            Collect(folder, found, recursive: true);
+        }
 
+        foreach (var file in Library.Files)
+        {
+            if (File.Exists(file) && IsSupported(file)) found.Add(Describe(file));
+        }
+
+        var unique = found
+            .GroupBy(t => t.Path, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .Take(MaxLibraryTracks)
+            .ToList();
+
+        var currentPath = Current?.Path ?? Library.LastTrack;
         _tracks.Clear();
-        _tracks.AddRange(found);
-
-        if (_index >= _tracks.Count)
-        {
-            _index = _tracks.Count > 0 ? 0 : -1;
-        }
-        else if (_index < 0 && _tracks.Count > 0)
-        {
-            _index = 0;
-        }
+        _tracks.AddRange(unique);
+        _index = currentPath is null ? -1 : _tracks.FindIndex(t => string.Equals(t.Path, currentPath, StringComparison.OrdinalIgnoreCase));
+        if (_index < 0 && _tracks.Count > 0) _index = 0;
+        _shuffle = Library.Shuffle;
 
         CompatibilityLogger.Technical("ambience-tracks", $"count={_tracks.Count}");
         StateChanged?.Invoke();
     }
 
-    private static void Collect(string directory, List<AmbienceTrack> into)
+    public static bool IsSupported(string path) =>
+        SupportedExtensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase);
+
+    // ── Library editing ────────────────────────────────────────────────────────
+
+    /// <summary>Adds files (and folders dropped among them); returns how many tracks were new.</summary>
+    public int AddFiles(IEnumerable<string> paths)
+    {
+        var added = 0;
+        foreach (var path in paths)
+        {
+            if (Directory.Exists(path))
+            {
+                added += AddFolder(path);
+                continue;
+            }
+
+            if (!File.Exists(path) || !IsSupported(path)) continue;
+            if (_tracks.Any(t => string.Equals(t.Path, path, StringComparison.OrdinalIgnoreCase))) continue;
+            Library.Files.Add(path);
+            _tracks.Add(Describe(path));
+            added++;
+        }
+
+        if (_index < 0 && _tracks.Count > 0) _index = 0;
+        if (added > 0) SaveLibrary();
+        return added;
+    }
+
+    /// <summary>Adds a folder (with its subfolders); returns how many tracks it brought.</summary>
+    public int AddFolder(string folder)
+    {
+        if (!Directory.Exists(folder)) return 0;
+        if (!Library.Folders.Contains(folder, StringComparer.OrdinalIgnoreCase)) Library.Folders.Add(folder);
+        var found = new List<AmbienceTrack>();
+        Collect(folder, found, recursive: true);
+        var added = 0;
+        foreach (var track in found)
+        {
+            if (_tracks.Count >= MaxLibraryTracks) break;
+            if (_tracks.Any(t => string.Equals(t.Path, track.Path, StringComparison.OrdinalIgnoreCase))) continue;
+            _tracks.Add(track);
+            added++;
+        }
+
+        if (_index < 0 && _tracks.Count > 0) _index = 0;
+        SaveLibrary();
+        return added;
+    }
+
+    /// <summary>Takes a track off the list (the file itself is not touched).</summary>
+    public void Remove(AmbienceTrack track)
+    {
+        var at = _tracks.IndexOf(track);
+        if (at < 0) return;
+        Library.Files.RemoveAll(f => string.Equals(f, track.Path, StringComparison.OrdinalIgnoreCase));
+        Library.Favorites.RemoveAll(f => string.Equals(f, track.Path, StringComparison.OrdinalIgnoreCase));
+        var wasCurrent = at == _index;
+        _tracks.RemoveAt(at);
+        if (at < _index) _index--;
+        if (wasCurrent)
+        {
+            _index = Math.Min(_index, _tracks.Count - 1);
+            if (_index >= 0) SwitchToCurrent();
+            else Stop();
+        }
+
+        SaveLibrary();
+    }
+
+    public bool IsFavorite(AmbienceTrack track) =>
+        Library.Favorites.Contains(track.Path, StringComparer.OrdinalIgnoreCase);
+
+    public void ToggleFavorite(AmbienceTrack track)
+    {
+        if (IsFavorite(track)) Library.Favorites.RemoveAll(f => string.Equals(f, track.Path, StringComparison.OrdinalIgnoreCase));
+        else Library.Favorites.Add(track.Path);
+        SaveLibrary();
+    }
+
+    /// <summary>Remembers the library and where playback is, so the next start continues from there.</summary>
+    public void SaveLibrary()
+    {
+        Library.LastTrack = Current?.Path;
+        Library.LastPositionSeconds = _player.Source is null ? Library.LastPositionSeconds : Position.TotalSeconds;
+        Library.Shuffle = _shuffle;
+        Library.Save();
+        StateChanged?.Invoke();
+    }
+
+    // ── Playback control ───────────────────────────────────────────────────────
+
+    public bool IsShuffle
+    {
+        get => _shuffle;
+        set
+        {
+            if (_shuffle == value) return;
+            _shuffle = value;
+            Library.Shuffle = value;
+            StateChanged?.Invoke();
+        }
+    }
+
+    /// <summary>Plays a particular track from the list.</summary>
+    public void PlayTrack(AmbienceTrack track)
+    {
+        var at = _tracks.IndexOf(track);
+        if (at < 0) return;
+        if (at == _index && _player.Source is not null)
+        {
+            if (!_isPlaying) Play();
+            return;
+        }
+
+        _history.Add(_index);
+        _index = at;
+        _isPlaying = true;
+        SwitchToCurrent();
+        _ticker.Start();
+    }
+
+    /// <summary>Jumps to a fraction (0–1) of the current track.</summary>
+    public void Seek(double fraction)
+    {
+        var duration = Duration;
+        if (duration <= TimeSpan.Zero) return;
+        _player.Position = TimeSpan.FromSeconds(duration.TotalSeconds * Math.Clamp(fraction, 0, 1));
+        ProgressChanged?.Invoke();
+    }
+
+    /// <summary>Puts the remembered track at the remembered second, without starting it.</summary>
+    public void RestoreLastPosition()
+    {
+        if (Current is null || Library.LastTrack is null
+            || !string.Equals(Current.Path, Library.LastTrack, StringComparison.OrdinalIgnoreCase)
+            || Library.LastPositionSeconds < 1)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_player.Source is null) _player.Open(new Uri(Current.Path, UriKind.Absolute));
+            _player.Position = TimeSpan.FromSeconds(Library.LastPositionSeconds);
+            ProgressChanged?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            CompatibilityLogger.Technical("ambience-restore-failed", ex);
+        }
+    }
+
+    private static void Collect(string directory, List<AmbienceTrack> into, bool recursive = false)
     {
         try
         {
@@ -163,9 +335,15 @@ public sealed class AmbiencePlayer : IDisposable
             }
 
             var files = Directory
-                .EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly)
-                .Where(path => SupportedExtensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase))
-                .OrderBy(Path.GetFileName, StringComparer.CurrentCultureIgnoreCase);
+                .EnumerateFiles(directory, "*", new EnumerationOptions
+                {
+                    RecurseSubdirectories = recursive,
+                    IgnoreInaccessible = true,
+                    MaxRecursionDepth = 6,
+                })
+                .Where(IsSupported)
+                .Take(MaxLibraryTracks)
+                .OrderBy(path => path, StringComparer.CurrentCultureIgnoreCase);
 
             foreach (var file in files)
             {
@@ -178,15 +356,6 @@ public sealed class AmbiencePlayer : IDisposable
         }
     }
 
-    /// <summary>
-    /// Turns a file name into a title and, where the name says so, an artist.
-    /// </summary>
-    /// <remarks>
-    /// File names, not embedded tags. Reading ID3 would mean a media library
-    /// dependency, and the convention below — "Artist - Title" — is the one people
-    /// already name music files with. A name that does not follow it is shown whole
-    /// rather than being guessed at.
-    /// </remarks>
     private static AmbienceTrack Describe(string path)
     {
         var name = Path.GetFileNameWithoutExtension(path);
@@ -285,7 +454,31 @@ public sealed class AmbiencePlayer : IDisposable
             return;
         }
 
-        _index = ((_index + delta) % _tracks.Count + _tracks.Count) % _tracks.Count;
+        if (_shuffle && _tracks.Count > 2)
+        {
+            if (delta < 0 && _history.Count > 0)
+            {
+                _index = Math.Clamp(_history[^1], 0, _tracks.Count - 1);
+                _history.RemoveAt(_history.Count - 1);
+            }
+            else
+            {
+                _history.Add(_index);
+                if (_history.Count > 50) _history.RemoveAt(0);
+                int next;
+                do
+                {
+                    next = _random.Next(_tracks.Count);
+                }
+                while (next == _index);
+                _index = next;
+            }
+        }
+        else
+        {
+            _index = ((_index + delta) % _tracks.Count + _tracks.Count) % _tracks.Count;
+        }
+
         SwitchToCurrent();
     }
 

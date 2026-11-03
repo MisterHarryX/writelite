@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -8,6 +8,7 @@ using WriteLite.Language.Core;
 using WriteLite.Models;
 using WriteLite.Resources;
 using WriteLite.Services;
+using WriteLite.Services.Rules;
 using static WriteLite.Services.PopupChrome;
 using Button = System.Windows.Controls.Button;
 using ProgressBar = System.Windows.Controls.ProgressBar;
@@ -103,6 +104,28 @@ public sealed class CorrectionPopupWindow : Window
         Margin = new Thickness(0, 8, 0, 0)
     };
 
+    /// <summary>
+    /// The rule behind the finding: its name, the rule in one sentence, an example, and the
+    /// way into the reference.
+    /// </summary>
+    /// <remarks>
+    /// The explanation above says what is wrong with this sentence. This says what the rule
+    /// is, so the next sentence can be written right without the card. It sits on a raised
+    /// surface to read as a margin note rather than as part of the correction.
+    /// </remarks>
+    private readonly Border _ruleNote = new()
+    {
+        CornerRadius = new CornerRadius(8),
+        Background = ThemeResource.Brush("WlRaised", Brushes.DarkSlateGray),
+        Padding = new Thickness(11, 9, 11, 6),
+        Margin = new Thickness(0, 12, 0, 0)
+    };
+    private readonly TextBlock _ruleTitle = new() { FontSize = 12, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap };
+    private readonly TextBlock _ruleSummary = new() { FontSize = 12, Foreground = MutedBrush, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 3, 0, 0), LineHeight = 17 };
+    private readonly TextBlock _ruleExample = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 6, 0, 0), LineHeight = 17 };
+    private readonly Button _ruleLink;
+    private string? _ruleId;
+
     private readonly Button _primary;
     private readonly StackPanel _primaryHost = new() { Margin = new Thickness(0, 13, 0, 0) };
 
@@ -117,6 +140,7 @@ public sealed class CorrectionPopupWindow : Window
     private readonly Button _retry;
     private readonly Button _dictionary;
     private readonly Button _ignore;
+    private readonly Button _muteKind;
     private readonly DockPanel _footer = new() { LastChildFill = false, Margin = new Thickness(0, 12, 0, 0) };
 
     private CorrectionCardState _state = CorrectionCardState.Hidden;
@@ -135,7 +159,9 @@ public sealed class CorrectionPopupWindow : Window
         Topmost = true;
         Width = 360;
         MinHeight = 120;
-        MaxHeight = 360;
+        // Room for the rule note under the explanation; the card has no scroller, so a
+        // ceiling below its content would cut off the actions rather than scroll to them.
+        MaxHeight = 480;
         SizeToContent = SizeToContent.Height;
         FontFamily = ThemeResource.Font("WlFont", "Segoe UI Variable Text, Segoe UI");
 
@@ -187,6 +213,23 @@ public sealed class CorrectionPopupWindow : Window
         });
         _progress.Children.Add(_progressLabel);
 
+        _ruleLink = CreateGhostButton(Strings.Corr_RuleOpenReference, double.NaN, 24, 12);
+        _ruleLink.Foreground = AccentBrush;
+        _ruleLink.Padding = new Thickness(0);
+        _ruleLink.HorizontalAlignment = HorizontalAlignment.Left;
+        _ruleLink.Margin = new Thickness(0, 2, 0, 0);
+        _ruleLink.ToolTip = Strings.Corr_RuleOpenReferenceTooltip;
+        _ruleLink.Click += (_, _) =>
+        {
+            if (_ruleId is { } id) RuleReferenceRequested?.Invoke(this, id);
+        };
+        var ruleBody = new StackPanel();
+        ruleBody.Children.Add(_ruleTitle);
+        ruleBody.Children.Add(_ruleSummary);
+        ruleBody.Children.Add(_ruleExample);
+        ruleBody.Children.Add(_ruleLink);
+        _ruleNote.Child = ruleBody;
+
         _primary = CreatePrimaryAction();
         _primary.Click += (_, _) => RequestApply();
         _primaryHost.Children.Add(_primary);
@@ -207,6 +250,18 @@ public sealed class CorrectionPopupWindow : Window
         _dictionary.Click += (_, _) => { if (_state.Issue is { } issue) AddToDictionaryRequested?.Invoke(this, issue); };
         DockPanel.SetDock(_ignore, Dock.Right);
         _footer.Children.Add(_ignore);
+        // «Не показывать такие»: switches the whole kind off (Настройки → Что считать ошибкой),
+        // for remarks the user never wants — a missing final period in a chat, for instance.
+        _muteKind = CreateGhostButton("Не показывать такие", double.NaN, 26, 12);
+        _muteKind.Click += (_, _) =>
+        {
+            if (_state.Issue is { } issue && WriteLite.Services.Rules.IssueKindCatalog.KindOf(issue) is { } kind)
+            {
+                DisableKindRequested?.Invoke(this, kind.Id);
+            }
+        };
+        DockPanel.SetDock(_muteKind, Dock.Right);
+        _footer.Children.Add(_muteKind);
         DockPanel.SetDock(_dictionary, Dock.Left);
         _footer.Children.Add(_dictionary);
 
@@ -214,6 +269,7 @@ public sealed class CorrectionPopupWindow : Window
         root.Children.Add(_changeRow);
         root.Children.Add(_headline);
         root.Children.Add(_explanation);
+        root.Children.Add(_ruleNote);
         root.Children.Add(_progress);
         root.Children.Add(_status);
         root.Children.Add(_recovery);
@@ -227,10 +283,16 @@ public sealed class CorrectionPopupWindow : Window
 
     public event EventHandler<TextIssue>? ApplyRequested;
     public event EventHandler<TextIssue>? IgnoreRequested;
+
+    /// <summary>Raised with an <c>IssueKindCatalog</c> id when the user switches a kind of remark off.</summary>
+    public event EventHandler<string>? DisableKindRequested;
     public event EventHandler<TextIssue>? AddToDictionaryRequested;
 
     /// <summary>Raised when the user asks for the replacement on the clipboard instead.</summary>
     public event EventHandler<TextIssue>? CopyRequested;
+
+    /// <summary>Raised with a rule id when the user asks to read the rule in the reference.</summary>
+    public event EventHandler<string>? RuleReferenceRequested;
 
     /// <summary>The finding the card currently belongs to, or null when it shows nothing.</summary>
     public TextIssue? CurrentIssue => _state.Issue;
@@ -417,6 +479,7 @@ public sealed class CorrectionPopupWindow : Window
         _headline.Visibility = Show(state.ShowHeadline);
         _explanation.Text = state.Explanation;
         _explanation.Visibility = Show(state.ShowExplanation);
+        RenderRuleNote(state.ShowRuleNote ? RuleReference.Default.Find(state.Issue?.RuleId) : null, state.Explanation);
         _progressLabel.Text = state.ProgressLabel;
         _progress.Visibility = Show(state.ShowProgress);
         _status.Text = state.StatusMessage;
@@ -428,6 +491,9 @@ public sealed class CorrectionPopupWindow : Window
         _primaryHost.Visibility = Show(state.ShowPrimaryAction);
         _dictionary.Visibility = Show(state.ShowDictionary);
         _ignore.Visibility = Show(state.ShowIgnore);
+        var kind = state.Issue is { } current ? WriteLite.Services.Rules.IssueKindCatalog.KindOf(current) : null;
+        _muteKind.Visibility = Show(state.ShowIgnore && kind is not null);
+        _muteKind.ToolTip = kind is null ? null : $"Отключить «{kind.Title}». Включить снова — в Настройках → Проверка.";
         _footer.Visibility = Show(state.ShowDictionary || state.ShowIgnore);
 
         // Use a conservative provisional size before the first WPF measure.  The final
@@ -446,6 +512,48 @@ public sealed class CorrectionPopupWindow : Window
     }
 
     private static Visibility Show(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>Fills the rule note, or hides it when the finding has no reference entry.</summary>
+    /// <remarks>
+    /// The summary is left out when it says what the explanation already says: several rules
+    /// use their one-line summary as the finding's explanation, and printing it twice in a row
+    /// is noise, not teaching.
+    /// </remarks>
+    private void RenderRuleNote(RuleReferenceEntry? rule, string explanation)
+    {
+        _ruleId = rule?.RuleId;
+        _ruleNote.Visibility = Show(rule is not null);
+        if (rule is null) return;
+
+        _ruleTitle.Inlines.Clear();
+        _ruleTitle.Inlines.Add(new Run(Strings.Corr_RuleLabel.ToUpperInvariant() + "  ")
+        {
+            FontFamily = MonoFont,
+            FontSize = 9.5,
+            FontWeight = FontWeights.Normal,
+            Foreground = FaintBrush
+        });
+        _ruleTitle.Inlines.Add(new Run(rule.Title) { Foreground = ThemeResource.Brush("WlText", Brushes.White) });
+
+        var summary = rule.Summary;
+        var repeats = summary.Length == 0
+                      || explanation.Contains(summary.TrimEnd('.'), StringComparison.CurrentCultureIgnoreCase);
+        _ruleSummary.Text = repeats ? string.Empty : summary;
+        _ruleSummary.Visibility = Show(!repeats);
+
+        _ruleExample.Inlines.Clear();
+        if (rule.BadExample is { } bad && rule.GoodExample is { } good)
+        {
+            _ruleExample.Inlines.Add(new Run(bad) { Foreground = FaintBrush, TextDecorations = TextDecorations.Strikethrough });
+            _ruleExample.Inlines.Add(new Run("  →  ") { Foreground = FaintBrush });
+            _ruleExample.Inlines.Add(new Run(good) { Foreground = ThemeResource.Brush("WlText", Brushes.White) });
+            _ruleExample.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            _ruleExample.Visibility = Visibility.Collapsed;
+        }
+    }
 
     /// <summary>
     /// Hands the correction to the apply path and puts the card into its write-in-flight

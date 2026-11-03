@@ -42,6 +42,7 @@ public partial class EditorPage
     private readonly List<WordVisit> _wordHistory = [];
 
     private IEditorAiService? _editorAi;
+    private TextActionService? _textActions;
     private LexicalLookupService? _lexical;
     private CancellationTokenSource? _lookupCancellation;
 
@@ -51,6 +52,18 @@ public partial class EditorPage
         _editorAi = editorAi;
         _lexical = lexical;
     }
+
+    /// <summary>
+    /// Wires the AI corrector shared with notes: «Узнать главное», «Объясни простыми
+    /// словами», «Сократить», «Удлинить», «Переписать», «Исправить ошибки».
+    /// </summary>
+    /// <remarks>
+    /// These work on the selection or, with nothing selected, on the whole document, and
+    /// write back paragraph by paragraph so a heading stays a heading. The remaining
+    /// rewrites — formal, casual, translate, a custom instruction — keep their
+    /// selection-only path.
+    /// </remarks>
+    public void BindTextActions(TextActionService? textActions) => _textActions = textActions;
 
     /// <summary>
     /// Wires the application's checking stack into the editor's own analysis loop.
@@ -133,10 +146,11 @@ public partial class EditorPage
         var selection = Editor.Selection.Text;
         var hasSelection = !string.IsNullOrWhiteSpace(selection);
 
+        // Enabled without a selection too: the corrector's actions then apply to the
+        // whole document, and the selection-only rewrites below are disabled individually.
         var ai = new MenuItem
         {
             Header = "WriteLite AI",
-            IsEnabled = hasSelection,
             Style = TryFindResource("WlMenuItem") as Style
         };
 
@@ -151,19 +165,32 @@ public partial class EditorPage
             ai.Items.Add(Separator());
         }
 
-        ai.Items.Add(MenuAction(Strings.EditorAi_Explain, () => RunRewriteAsync(RewriteOperation.Explain)));
-        ai.Items.Add(MenuAction(Strings.EditorAi_TranslateToEnglish, () => RunRewriteAsync(RewriteOperation.Translate)));
+        ai.Items.Add(new MenuItem
+        {
+            Header = hasSelection ? Strings.AiAction_ScopeSelection : Strings.AiAction_ScopeDocument,
+            IsEnabled = false,
+            Style = TryFindResource("WlMenuItem") as Style
+        });
+
+        foreach (var operation in AiActionRunner.CoreActions)
+        {
+            if (operation is RewriteOperation.Shorten or RewriteOperation.Grammar)
+            {
+                ai.Items.Add(Separator());
+            }
+
+            var captured = operation;
+            ai.Items.Add(MenuAction(AiActionRunner.Label(operation), () => RunRewriteAsync(captured)));
+        }
+
         ai.Items.Add(Separator());
-        ai.Items.Add(MenuAction(Strings.EditorAi_Rewrite, () => RunRewriteAsync(RewriteOperation.Rewrite)));
-        ai.Items.Add(MenuAction(Strings.EditorAi_ImproveStyle, () => RunRewriteAsync(RewriteOperation.ImproveStyle)));
-        ai.Items.Add(MenuAction(Strings.EditorAi_MakeFormal, () => RunRewriteAsync(RewriteOperation.Formal)));
-        ai.Items.Add(MenuAction(Strings.EditorAi_MakeCasual, () => RunRewriteAsync(RewriteOperation.Casual)));
-        ai.Items.Add(MenuAction(Strings.EditorAi_Simplify, () => RunRewriteAsync(RewriteOperation.Simplify)));
-        ai.Items.Add(MenuAction(Strings.EditorAi_Shorten, () => RunRewriteAsync(RewriteOperation.Shorten)));
-        ai.Items.Add(MenuAction(Strings.EditorAi_Expand, () => RunRewriteAsync(RewriteOperation.Expand)));
-        ai.Items.Add(MenuAction(Strings.EditorAi_FixGrammar, () => RunRewriteAsync(RewriteOperation.Grammar)));
+        ai.Items.Add(SelectionAction(Strings.EditorAi_ImproveStyle, RewriteOperation.ImproveStyle, hasSelection));
+        ai.Items.Add(SelectionAction(Strings.EditorAi_MakeFormal, RewriteOperation.Formal, hasSelection));
+        ai.Items.Add(SelectionAction(Strings.EditorAi_MakeCasual, RewriteOperation.Casual, hasSelection));
+        ai.Items.Add(SelectionAction(Strings.EditorAi_Simplify, RewriteOperation.Simplify, hasSelection));
+        ai.Items.Add(SelectionAction(Strings.EditorAi_TranslateToEnglish, RewriteOperation.Translate, hasSelection));
         ai.Items.Add(Separator());
-        ai.Items.Add(MenuAction(Strings.EditorAi_CustomInstructionEllipsis, () => RunRewriteAsync(RewriteOperation.Custom)));
+        ai.Items.Add(SelectionAction(Strings.EditorAi_CustomInstructionEllipsis, RewriteOperation.Custom, hasSelection));
 
         menu.Items.Add(ai);
         menu.Items.Add(Separator());
@@ -189,6 +216,27 @@ public partial class EditorPage
         menu.Items.Add(CommandItem(Strings.EditorAi_SelectAll, ApplicationCommands.SelectAll));
 
         return menu;
+    }
+
+    private MenuItem SelectionAction(string header, RewriteOperation operation, bool hasSelection)
+    {
+        var item = MenuAction(header, () => RunRewriteAsync(operation));
+        item.IsEnabled = hasSelection;
+        return item;
+    }
+
+    /// <summary>The toolbar's AI button: the corrector's actions, on the selection or the whole document.</summary>
+    private void AiMenu_Click(object sender, RoutedEventArgs e)
+    {
+        var hasSelection = !string.IsNullOrWhiteSpace(Editor.Selection.Text);
+        var menu = AiActionRunner.BuildMenu(
+            this,
+            hasSelection ? Strings.AiAction_ScopeSelection : Strings.AiAction_ScopeDocument,
+            operation => _ = RunRewriteAsync(operation));
+
+        menu.PlacementTarget = sender as UIElement;
+        menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+        menu.IsOpen = true;
     }
 
     private MenuItem MenuAction(string header, Func<Task> action)
@@ -256,6 +304,12 @@ public partial class EditorPage
     /// </summary>
     private async Task RunRewriteAsync(RewriteOperation operation)
     {
+        if (_textActions is not null && AiActionRunner.CoreActions.Contains(operation))
+        {
+            RunTextAction(operation);
+            return;
+        }
+
         if (_editorAi is null)
         {
             ShowError(Strings.EditorAi_Unavailable, Strings.EditorAi_UnavailableHint);
@@ -309,6 +363,137 @@ public partial class EditorPage
         }
 
         ApplyRewrite(start, end, replacement, preview.Outcome);
+    }
+
+    /// <summary>
+    /// Runs one of the corrector's actions on the selection, or on the whole document when
+    /// nothing is selected, and writes back only what the user accepted.
+    /// </summary>
+    private void RunTextAction(RewriteOperation operation)
+    {
+        var document = Editor.Document;
+        var selected = !string.IsNullOrWhiteSpace(Editor.Selection.Text);
+        var pieces = (selected
+                ? WriteLite.Views.Notes.RichTextPieces.FromSelection(document, Editor.Selection.Start, Editor.Selection.End)
+                : WriteLite.Views.Notes.RichTextPieces.WholeDocument(document))
+            .Where(piece => piece.Text.Trim().Length > 0)
+            .ToList();
+
+        if (pieces.Count == 0)
+        {
+            ShowError(Strings.EditorAi_NothingToProcess, Strings.EditorAi_SelectSomething);
+            return;
+        }
+
+        var outcome = AiActionRunner.Run(
+            Window.GetWindow(this),
+            _textActions!,
+            new TextActionRequest(operation, pieces.Select(piece => piece.Text).ToList()));
+
+        if (outcome is null)
+        {
+            return;
+        }
+
+        _internalEdit = true;
+        BeginUndoBatch();
+        var stale = 0;
+
+        try
+        {
+            if (outcome.Outcome == AiPreviewOutcome.Replace && !outcome.Result.IsAdvisory)
+            {
+                for (var index = 0; index < pieces.Count && index < outcome.Result.Suggestions.Count; index++)
+                {
+                    if (!WriteLite.Views.Notes.RichTextPieces.Apply(pieces[index], outcome.Result.Suggestions[index]))
+                    {
+                        stale++;
+                    }
+                }
+            }
+            else
+            {
+                InsertAnswerBelow(pieces[^1].Paragraph, outcome.Result);
+            }
+        }
+        finally
+        {
+            EndUndoBatch();
+            _internalEdit = false;
+        }
+
+        if (stale > 0)
+        {
+            ShowError(Strings.EditorAi_TextChanged, Strings.AiAction_TextChanged);
+        }
+
+        _documentGeneration++;
+        MarkDirty();
+        _ = ScheduleAnalysisAsync(WriteLiteDefaults.Debounce.EditorPostRewriteRescanDelay);
+    }
+
+    /// <summary>Puts an answer after the paragraph it is about: key points as a list, anything else as paragraphs.</summary>
+    private void InsertAnswerBelow(System.Windows.Documents.Paragraph after, TextActionResult result)
+    {
+        Block anchor = after;
+        while (anchor.Parent is not FlowDocument)
+        {
+            if (anchor.Parent is ListItem { List: { } list })
+            {
+                anchor = list;
+            }
+            else if (anchor.Parent is Block parent)
+            {
+                anchor = parent;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        var host = anchor.SiblingBlocks ?? Editor.Document.Blocks;
+        var lines = result.Suggestion.Replace("\r", string.Empty, StringComparison.Ordinal)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.Trim())
+            .Where(line => line.Length > 0)
+            .ToList();
+
+        var blocks = new List<Block>();
+        var heading = result.Operation switch
+        {
+            RewriteOperation.KeyPoints => Strings.AiAction_KeyPointsHeading,
+            RewriteOperation.Explain => Strings.AiAction_ExplainHeading,
+            _ => null
+        };
+
+        if (heading is not null)
+        {
+            blocks.Add(new System.Windows.Documents.Paragraph(new Run(heading)) { FontWeight = FontWeights.SemiBold });
+        }
+
+        if (result.Operation == RewriteOperation.KeyPoints)
+        {
+            var list = new List { MarkerStyle = TextMarkerStyle.Disc };
+            foreach (var line in lines)
+            {
+                list.ListItems.Add(new ListItem(new System.Windows.Documents.Paragraph(new Run(line.TrimStart('—', '–', '-', '•', ' ')))));
+            }
+
+            blocks.Add(list);
+        }
+        else
+        {
+            blocks.AddRange(lines.Select(line => (Block)new System.Windows.Documents.Paragraph(new Run(line))));
+        }
+
+        foreach (var block in blocks)
+        {
+            host.InsertAfter(anchor, block);
+            anchor = block;
+        }
+
+        Editor.CaretPosition = anchor.ContentEnd;
     }
 
     /// <summary>

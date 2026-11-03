@@ -47,6 +47,152 @@ public sealed class RussianClauseCommaAnalyzer : GrammarAnalyzerBase
         CollectGerundPhrases(text, tokens, protectedSpans, issues);
         CollectClauseCoordination(text, tokens, protectedSpans, issues);
         CollectHomogeneousMembers(text, tokens, protectedSpans, issues);
+        CollectIndirectQuestions(text, tokens, protectedSpans, issues);
+        CollectDanglingGerunds(text, tokens, protectedSpans, issues);
+    }
+
+    // ================= dangling gerund phrases =================================
+
+    /// <summary>
+    /// «Приехав в университет, меня встретил одногруппник» — the gerund's action belongs to
+    /// someone who is not the subject.
+    /// </summary>
+    /// <remarks>
+    /// <para>A gerund names a second action of the sentence's subject. When the main clause
+    /// opens with the doer in an oblique case — «меня встретил», «мне стало грустно» — the
+    /// subject is someone else or nobody, and the sentence says that the friend arrived, or
+    /// says nothing coherent. The oblique personal pronoun right after the phrase is the
+    /// whole signal, and it is unambiguous: a personal pronoun in the genitive, dative or
+    /// accusative is never the subject.</para>
+    ///
+    /// <para>No replacement is offered. The repair is a rewrite — «Когда я приехал в
+    /// университет, меня встретил…» — and it needs the doer's gender, which the sentence does
+    /// not state; the card explains the error and shows the shape of the fix instead.</para>
+    /// </remarks>
+    private void CollectDanglingGerunds(
+        string text,
+        List<RussianToken> tokens,
+        IReadOnlyList<(int Start, int End)> protectedSpans,
+        ICollection<TextIssue> issues)
+    {
+        for (var i = 0; i < tokens.Count - 2; i++)
+        {
+            var gerund = tokens[i];
+            var negated = gerund.Value.Equals("не", StringComparison.OrdinalIgnoreCase) && i + 1 < tokens.Count;
+            var g = negated ? i + 1 : i;
+            if (!RussianTokens.IsSentenceStart(text, tokens[i].Start)) continue;
+            if (!IsGerund(tokens[g].Value) || PrepositionalGerunds.Contains(tokens[g].Value.ToLowerInvariant())) continue;
+            if (ProtectedTextSpans.Overlaps(tokens[g].Start, tokens[g].Length, protectedSpans)) continue;
+
+            // The first comma after the gerund closes the phrase.
+            var j = g + 1;
+            while (j < tokens.Count && !CommaBetween(text, tokens[j - 1], tokens[j]))
+            {
+                if (TerminatorBetween(text, tokens[j - 1], tokens[j])) { j = tokens.Count; break; }
+                j++;
+            }
+
+            if (j >= tokens.Count) continue;
+            var doer = tokens[j].Value.ToLowerInvariant();
+            if (!ObliquePersonalPronouns.TryGetValue(doer, out var nominative)) continue;
+
+            var phraseEnd = tokens[j - 1].Start + tokens[j - 1].Length;
+            var start = tokens[i].Start;
+            var original = text[start..phraseEnd];
+            issues.Add(new TextIssue(
+                start,
+                original.Length,
+                original,
+                null,
+                "Деепричастный оборот не относится к подлежащему",
+                $"Деепричастие «{tokens[g].Value.ToLowerInvariant()}» называет действие подлежащего, а здесь его "
+                + $"совершает «{nominative}» («{doer}»), который подлежащим не является. Перестройте "
+                + $"предложение: «Когда {nominative} …, {doer} …» или сделайте «{nominative}» подлежащим.",
+                IssueCategory.Grammar,
+                IssueSeverity.Warning,
+                CanApplyAutomatically: false,
+                RuleId: "ru.grammar.dangling-gerund",
+                LinguisticCategory: LinguisticIssueCategory.AgreementError,
+                Confidence: 0.8));
+        }
+    }
+
+    private static bool CommaBetween(string text, RussianToken left, RussianToken right)
+        => text.AsSpan(left.Start + left.Length, right.Start - left.Start - left.Length).IndexOf(',') >= 0;
+
+    private static bool TerminatorBetween(string text, RussianToken left, RussianToken right)
+        => text.AsSpan(left.Start + left.Length, right.Start - left.Start - left.Length).IndexOfAny(".!?;…") >= 0;
+
+    /// <summary>Oblique personal pronouns and the nominative a rewrite would use.</summary>
+    private static readonly Dictionary<string, string> ObliquePersonalPronouns = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["меня"] = "я", ["мне"] = "я", ["мной"] = "я",
+        ["тебя"] = "ты", ["тебе"] = "ты", ["тобой"] = "ты",
+        ["нас"] = "мы", ["нам"] = "мы", ["нами"] = "мы",
+        ["вас"] = "вы", ["вам"] = "вы", ["вами"] = "вы",
+    };
+
+    // ================= indirect questions =====================================
+
+    /// <summary>
+    /// «указывать почему это ошибка» → «указывать, почему это ошибка»;
+    /// «не понимаю зачем это нужно» → «не понимаю, зачем это нужно».
+    /// </summary>
+    /// <remarks>
+    /// <para>An interrogative word after a verb of saying, knowing or perceiving opens an
+    /// indirect question, which is a subordinate clause and is separated by a comma. The rule
+    /// is keyed on the verb's lemma rather than on the interrogative alone: «где», «когда»,
+    /// «кто» also stand in clauses that take no comma, and the governing verb is what makes the
+    /// clause a dependent question. The lemma list is the same kind of data as the verb
+    /// government table — a property of the verb, covering every form of it.</para>
+    ///
+    /// <para><b>Where the comma is not used.</b> A clause of the interrogative alone — «Не знаю
+    /// почему.» — takes none, so a word must follow it in the same clause. Indefinite uses —
+    /// «где-то», «кто-нибудь», «где угодно», «когда попало» — are not questions. Idioms of the
+    /// «бог знает где» shape are pronoun-like and unpunctuated. A gerund — «смотря где» — is a
+    /// preposition-like word, not a verb of saying, and the morphology does not offer it as a
+    /// predicate.</para>
+    /// </remarks>
+    private void CollectIndirectQuestions(
+        string text,
+        List<RussianToken> tokens,
+        IReadOnlyList<(int Start, int End)> protectedSpans,
+        ICollection<TextIssue> issues)
+    {
+        for (var i = 1; i < tokens.Count - 1; i++)
+        {
+            var interrogative = tokens[i].Value.ToLowerInvariant();
+            if (!Interrogatives.Contains(interrogative)) continue;
+
+            var verb = tokens[i - 1];
+            if (!RussianTokens.OnlySpacesBetween(text, verb, tokens[i])) continue;
+            if (!RussianTokens.OnlySpacesBetween(text, tokens[i], tokens[i + 1])) continue;
+            if (IndefiniteFollowers.Contains(tokens[i + 1].Value)) continue;
+            if (ProtectedTextSpans.Overlaps(verb.Start, verb.Length, protectedSpans)) continue;
+
+            // Finite, infinitive or imperative — «скажи, где» counts, and Verb() deliberately
+            // does not return imperatives because they have no subject to agree with.
+            if (_morphology.PartOfSpeech(verb.Value) is not (RussianPartOfSpeech.Verb or RussianPartOfSpeech.Infinitive)) continue;
+            if (!QuestionTakingVerbs.Contains(_morphology.Lemma(verb.Value))) continue;
+
+            // «бог знает где», «чёрт знает когда»: a pronoun-like idiom, not a question.
+            if (i >= 2 && OathSubjects.Contains(tokens[i - 2].Value)) continue;
+
+            issues.Add(new TextIssue(
+                verb.Start,
+                verb.Length,
+                text.Substring(verb.Start, verb.Length),
+                text.Substring(verb.Start, verb.Length) + ",",
+                "Запятая перед косвенным вопросом",
+                $"«{interrogative}» после «{verb.Value.ToLowerInvariant()}» начинает придаточную часть "
+                + "с косвенным вопросом, и она отделяется запятой.",
+                IssueCategory.Punctuation,
+                IssueSeverity.Error,
+                CanApplyAutomatically: true,
+                RuleId: "ru.punctuation.indirect-question",
+                LinguisticCategory: LinguisticIssueCategory.PunctuationRecommendation,
+                Confidence: 0.88));
+        }
     }
 
     // ================= gerund phrases ========================================
@@ -81,16 +227,71 @@ public sealed class RussianClauseCommaAnalyzer : GrammarAnalyzerBase
             if (PrepositionalGerunds.Contains(word.ToLowerInvariant())) continue;
             if (ProtectedTextSpans.Overlaps(tokens[i].Start, tokens[i].Length, protectedSpans)) continue;
 
-            // A gerund with nothing depending on it is an adverbial, not a phrase.
-            if (i + 1 >= tokens.Count) continue;
-            if (!RussianTokens.OnlySpacesBetween(text, tokens[i], tokens[i + 1])) continue;
+            // A negated gerund is set off even when it stands alone — «вышел из дома, не
+            // позавтракав», «ушёл, не попрощавшись» — because «не» is what makes it a
+            // circumstance rather than a manner. The phrase starts at «не», so that is where
+            // the comma goes. Fixed expressions of the «не спеша», «не глядя» kind are adverbs
+            // and take none.
+            var negated = i > 0
+                          && tokens[i - 1].Value.Equals("не", StringComparison.OrdinalIgnoreCase)
+                          && RussianTokens.OnlySpacesBetween(text, tokens[i - 1], tokens[i]);
+            if (negated && AdverbialNegatedGerunds.Contains(word.ToLowerInvariant())) continue;
+            var head = negated ? i - 1 : i;
 
-            // The dependent must be a dependent. «Он зря пришёл» has a word after the adverb
-            // too, and it is the predicate — an adverbialised form followed by a finite verb is
-            // modifying that verb, not heading a phrase of its own.
-            if (_morphology.Verb(tokens[i + 1].Value) is { IsInfinitive: false }) continue;
+            if (!negated)
+            {
+                // A gerund with nothing depending on it is an adverbial, not a phrase.
+                if (i + 1 >= tokens.Count) continue;
+                if (!RussianTokens.OnlySpacesBetween(text, tokens[i], tokens[i + 1])) continue;
 
-            if (RussianTokens.IsSentenceStart(text, tokens[i].Start))
+                // The dependent must be a dependent. «Он зря пришёл» has a word after the adverb
+                // too, and it is the predicate — an adverbialised form followed by a finite verb is
+                // modifying that verb, not heading a phrase of its own.
+                if (_morphology.Verb(tokens[i + 1].Value) is { IsInfinitive: false }) continue;
+            }
+
+            if (negated && RussianTokens.IsSentenceStart(text, tokens[head].Start))
+            {
+                // «Не дождавшись ответа он ушёл»: handled like any fronted phrase below, from «не».
+                // FrontedPhraseEnd answers -1 both for a writer's comma inside the stretch and for
+                // a bare «не дождавшись» followed straight by the main clause. Only the second
+                // is ours: the next word has to open the main clause.
+                var fronted = FrontedPhraseEnd(text, tokens, i);
+                int last;
+                if (fronted >= 0)
+                {
+                    last = fronted;
+                }
+                else
+                {
+                    if (i + 1 >= tokens.Count || !RussianTokens.OnlySpacesBetween(text, tokens[i], tokens[i + 1])) continue;
+                    var next = tokens[i + 1].Value;
+                    var opensClause = _morphology.Verb(next) is { IsInfinitive: false }
+                                      || RussianTokens.NominativePronouns.Contains(next.ToLowerInvariant());
+                    if (!opensClause) continue;
+                    last = i;
+                }
+
+                var lastToken = tokens[last];
+                if (ProtectedTextSpans.Overlaps(lastToken.Start, lastToken.Length, protectedSpans)) continue;
+                issues.Add(new TextIssue(
+                    lastToken.Start,
+                    lastToken.Length,
+                    text.Substring(lastToken.Start, lastToken.Length),
+                    text.Substring(lastToken.Start, lastToken.Length) + ",",
+                    "Деепричастный оборот выделяется запятой",
+                    $"Оборот «не {word.ToLowerInvariant()}…» заканчивается здесь; перед главной частью "
+                    + "предложения ставится запятая.",
+                    IssueCategory.Punctuation,
+                    IssueSeverity.Error,
+                    CanApplyAutomatically: true,
+                    RuleId: "ru.punctuation.gerund-phrase",
+                    LinguisticCategory: LinguisticIssueCategory.PunctuationRecommendation,
+                    Confidence: 0.88));
+                continue;
+            }
+
+            if (!negated && RussianTokens.IsSentenceStart(text, tokens[i].Start))
             {
                 var end = FrontedPhraseEnd(text, tokens, i);
                 if (end < 0) continue;
@@ -115,18 +316,19 @@ public sealed class RussianClauseCommaAnalyzer : GrammarAnalyzerBase
                 continue;
             }
 
-            if (i == 0) continue;
+            if (head == 0) continue;
 
-            var previous = tokens[i - 1];
-            if (!RussianTokens.OnlySpacesBetween(text, previous, tokens[i])) continue;
+            // A negated gerund carries its particle: in «вышел, не сказав ни слова» the comma
+            // belongs before «не», so the word before the phrase is the one before «не».
+            var previous = tokens[head - 1];
+            if (!RussianTokens.OnlySpacesBetween(text, previous, tokens[head])) continue;
 
             // «и работая», «а посмотрев» — the conjunction takes the comma, not the gerund.
             if (Conjunctions.Contains(previous.Value.ToLowerInvariant())) continue;
 
-            // A negated gerund carries its particle: in «вышел, не сказав ни слова» the comma
-            // belongs before «не», where the writer already put it, and adding a second one
-            // after it splits the phrase from its own negation.
-            if (previous.Value.Equals("не", StringComparison.OrdinalIgnoreCase)) continue;
+            // «ничего не поняв» — the negation already doubled inside the phrase; the comma goes
+            // before «ничего», which is a dependent, not before «не». Not decidable here.
+            if (negated && NegativePronoun(previous.Value)) continue;
 
             issues.Add(new TextIssue(
                 previous.Start,
@@ -313,6 +515,32 @@ public sealed class RussianClauseCommaAnalyzer : GrammarAnalyzerBase
                     Confidence: 0.84));
             }
         }
+    }
+
+    /// <summary>
+    /// True when a comma at <paramref name="boundary"/> would split two predicates of one
+    /// subject: «станет гораздо лучше | и сможет помогать».
+    /// </summary>
+    /// <remarks>
+    /// The same test <see cref="CollectClauseCoordination"/> uses to remove such a comma,
+    /// offered to layers that only propose commas. The punctuation model scores boundaries
+    /// one at a time and has no notion of who the subject of the right half is, so it put a
+    /// comma before every «и» that looked like a clause boundary.
+    /// </remarks>
+    public bool SplitsHomogeneousPredicates(string sentence, int boundary)
+    {
+        var tokens = RussianTokens.Split(sentence);
+        var i = tokens.FindIndex(t => t.Start >= boundary);
+        if (i <= 0 || i >= tokens.Count - 1) return false;
+
+        var conjunction = tokens[i].Value.ToLowerInvariant();
+        if (conjunction is not ("и" or "или" or "да")) return false;
+
+        var (leftVerb, _) = ScanLeft(sentence, tokens, i);
+        if (!leftVerb) return false;
+
+        var (rightVerb, rightSubject) = ScanRight(sentence, tokens, i);
+        return rightVerb && !rightSubject;
     }
 
     /// <summary>Whether a finite verb precedes the conjunction inside the same clause.</summary>
@@ -515,11 +743,63 @@ public sealed class RussianClauseCommaAnalyzer : GrammarAnalyzerBase
 
     // ---- closed lexical data -------------------------------------------------
 
+    /// <summary>
+    /// «не» + gerund combinations that have become adverbs of manner: «шёл не спеша», «сказал
+    /// не глядя», «работал не покладая рук». They take no comma.
+    /// </summary>
+    private static readonly HashSet<string> AdverbialNegatedGerunds = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "спеша", "торопясь", "глядя", "шутя", "переставая", "умолкая", "покладая", "разгибая",
+        "мигая", "моргнув", "задумываясь", "раздумывая", "сморгнув", "отрываясь", "жалея",
+    };
+
+    private static bool NegativePronoun(string word)
+        => word.StartsWith("ни", StringComparison.OrdinalIgnoreCase) && word.Length > 3;
+
     /// <summary>Gerunds that have become prepositions and take no comma.</summary>
     private static readonly HashSet<string> PrepositionalGerunds = new(StringComparer.OrdinalIgnoreCase)
     {
         "начиная", "исходя", "несмотря", "невзирая", "судя", "включая", "спустя",
         "смотря", "считая", "не",
+    };
+
+    /// <summary>
+    /// Interrogatives that open an indirect question. «что» and «как» are left out: «что» is
+    /// handled by the subordinate-comma rule, and «как» is as often a comparison («сделал как
+    /// надо») as a question.
+    /// </summary>
+    private static readonly HashSet<string> Interrogatives = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "почему", "зачем", "отчего", "где", "куда", "откуда", "когда", "сколько",
+        "кто", "кого", "кому", "кем",
+        "какой", "какая", "какое", "какие", "какого", "какую", "каком", "какому", "каким",
+        "каких", "какими", "каков", "какова", "каково", "каковы",
+    };
+
+    /// <summary>Words after which an interrogative is indefinite: «где угодно», «когда попало».</summary>
+    private static readonly HashSet<string> IndefiniteFollowers = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "угодно", "попало", "либо", "нибудь", "то",
+    };
+
+    private static readonly HashSet<string> OathSubjects = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "бог", "чёрт", "черт", "господь", "леший", "аллах",
+    };
+
+    /// <summary>Verbs of saying, knowing and perceiving that take an indirect question, by lemma.</summary>
+    private static readonly HashSet<string> QuestionTakingVerbs = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "знать", "узнать", "узнавать", "понимать", "понять", "догадаться", "догадываться",
+        "спросить", "спрашивать", "уточнить", "уточнять", "выяснить", "выяснять",
+        "сказать", "говорить", "рассказать", "рассказывать", "объяснить", "объяснять",
+        "указать", "указывать", "показать", "показывать", "сообщить", "сообщать",
+        "написать", "писать", "ответить", "отвечать", "обсудить", "обсуждать",
+        "думать", "подумать", "решить", "решать", "помнить", "вспомнить", "вспоминать",
+        "забыть", "забывать", "представлять", "представить", "определить", "определять",
+        "видеть", "увидеть", "слышать", "услышать", "смотреть", "посмотреть",
+        "проверить", "проверять", "интересоваться", "поинтересоваться", "гадать",
+        "напомнить", "напоминать", "подсказать", "подсказывать", "разобраться", "разбираться",
     };
 
     private static readonly HashSet<string> Conjunctions = new(StringComparer.OrdinalIgnoreCase)

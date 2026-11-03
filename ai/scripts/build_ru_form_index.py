@@ -73,6 +73,9 @@ POS_CODE = {p: i for i, p in enumerate(POS_ORDER)}
 JSON_POS = {
     "noun": "NOUN", "verb": "INFN", "adjective": "ADJF", "adverb": "ADVB",
     "interjection": "INTJ", "particle": "PRCL", "abbreviation": "NOUN",
+    # The pack itself writes the short forms. Without them every adjective, adverb and
+    # interjection in it fell through to the NOUN default.
+    "adj": "ADJF", "adv": "ADVB", "interj": "INTJ",
     "proper_name": "NOUN", "phrase": "UNKN",
 }
 
@@ -289,14 +292,153 @@ def load_modern_vocab(path: str, inflect: bool):
         if register in ("slang", "informal") and "is_slang" not in flags:
             flags.append("is_slang")
 
-        surfaces = {lemma.lower()}
-        if morph is not None and entry.get("inflect"):
-            parsed = morph.parse(lemma.lower())
-            if parsed:
-                for form in parsed[0].lexeme:
-                    surfaces.add(form.word)
-        for surface in surfaces:
-            yield surface, lemma.lower(), pos, flags, ""
+        # Each form carries its own part of speech and tag. This used to emit every form of
+        # a lexeme with the entry's pos and an empty tag, so «задеплоил» was indexed as an
+        # infinitive and «кринж» had no gender: the agreement and comma rules then reasoned
+        # about curated words from a part of speech that was wrong for every form but one.
+        # Forms the entry spells out itself: irregular paradigms the guesser gets wrong
+        # («ебать» → «ебу», «еби», not «ебаю»). They carry no tag.
+        for extra in entry.get("forms") or []:
+            extra = extra.strip().lower()
+            if extra:
+                yield extra, lemma.lower(), pos, flags, ""
+
+        reflexive = (
+            _reflexive_forms(morph, lemma.lower())
+            if morph is not None and entry.get("inflect") and pos == "INFN"
+            else None
+        )
+        if reflexive:
+            for word, form_pos, tag in reflexive:
+                yield word, lemma.lower(), form_pos, flags, tag
+            continue
+
+        parses = _pick_parses(morph, lemma.lower(), pos) if morph is not None and entry.get("inflect") else []
+        if not parses:
+            # No reading agrees with the entry. Keep the spellings the old expansion produced,
+            # so coverage never shrinks, but claim nothing about their grammar.
+            surfaces = {lemma.lower()}
+            if morph is not None and entry.get("inflect"):
+                parsed = morph.parse(lemma.lower())
+                # A first reading of another part of speech inflects a different word:
+                # «американо» read as a verb produced «америкал». Its forms are not this
+                # entry's, so only the headword is kept.
+                if parsed and parsed[0].tag.POS in _ACCEPTED_POS.get(pos, {parsed[0].tag.POS}):
+                    surfaces.update(form.word for form in parsed[0].lexeme)
+            for surface in sorted(surfaces):
+                yield surface, lemma.lower(), pos, flags, ""
+            continue
+
+        # Every agreeing reading contributes its forms. pymorphy3 often splits one guessed
+        # noun into an inanimate singular-only reading and an animate one with a plural, and
+        # taking either alone loses «бэклоги» or «ржаках». The first reading's tag wins for a
+        # spelling two readings share.
+        seen = set()
+        for parse in parses:
+            for form in parse.lexeme:
+                if form.word in seen:
+                    continue
+                seen.add(form.word)
+                form_pos = form.tag.POS or pos
+                yield form.word, lemma.lower(), form_pos, flags, str(form.tag)
+        if lemma.lower() not in seen:
+            yield lemma.lower(), lemma.lower(), pos, flags, ""
+
+
+# The pymorphy3 parts of speech that can stand for each curated `pos`. A verb entry is
+# stored by its infinitive, and the parse to inflect from is the one that reads it as one.
+_ACCEPTED_POS = {
+    "NOUN": {"NOUN"},
+    "INFN": {"INFN"},
+    "ADJF": {"ADJF"},
+    "ADVB": {"ADVB"},
+    "INTJ": {"INTJ"},
+    "PRCL": {"PRCL"},
+}
+
+
+def _reflexive_forms(morph, lemma: str):
+    """The paradigm of a reflexive verb, built from its non-reflexive base, or None.
+
+    pymorphy3 inflects an unfamiliar «-ться» verb by analogy with the wrong class —
+    «инвалидироваться» → «инвалидироваюсь», «инвалидировается» — while it inflects the
+    base «инвалидировать» correctly. Russian forms the reflexive by suffix alone, so the
+    base paradigm plus «-ся»/«-сь» is the right answer: «-сь» after a vowel, «-ся» after a
+    consonant, and «-ся» on every participle form («инвалидирующаяся»). Passive participles
+    have no reflexive counterpart and are dropped.
+    """
+    if not (lemma.endswith("ться") or lemma.endswith("тись") or lemma.endswith("чься")):
+        return None
+    base = lemma[:-2]
+    parses = [p for p in morph.parse(base) if p.tag.POS == "INFN" and p.normal_form == base]
+    if not parses:
+        return None
+
+    out = []
+    seen = set()
+    for form in parses[0].lexeme:
+        tag = form.tag
+        if tag.POS in ("PRTF", "PRTS") and "pssv" in tag.grammemes:
+            continue
+        if tag.POS == "PRTS":
+            continue
+        # «инвалидировав» has no reflexive of its own; «инвалидировавши» → «-шись» covers it.
+        if tag.POS == "GRND" and form.word.endswith("в"):
+            continue
+        word = form.word
+        if tag.POS == "PRTF":
+            word += "ся"
+        else:
+            word += "сь" if word[-1] in "аеёиоуыэюя" else "ся"
+        if word in seen:
+            continue
+        seen.add(word)
+        out.append((word, tag.POS, str(tag).replace("tran", "intr")))
+    return out
+
+
+# Readings that never describe a curated common word: an indeclinable abbreviation, a
+# personal or geographical name. pymorphy3 offers them for unfamiliar spellings — «лексер»
+# as an indeclinable feminine abbreviation — and inflecting from one yields a single form.
+_UNSUITABLE = frozenset({"Fixd", "Abbr", "Name", "Surn", "Patr", "Geox", "Orgn"})
+
+
+def _pick_parses(morph, lemma: str, pos: str):
+    """The analyses of `lemma` as the part of speech the curated entry declares, possibly none.
+
+    pymorphy3 offers several readings of an unfamiliar word, ordered by its own guess of
+    likelihood; the first is often a different part of speech («рофл» as a verb stem) or a
+    different word whose form happens to match («бэклог» as the genitive plural of a
+    feminine «бэклога»). The entry says what the word is, so the reading is chosen to agree
+    with it: its normal form is the lemma, or — for a headword given in the plural, «спаны» —
+    the lemma is one of its forms.
+    """
+    accepted = _ACCEPTED_POS.get(pos)
+    if not accepted:
+        return None
+    parses = [
+        p for p in morph.parse(lemma)
+        if p.tag.POS in accepted and not (_UNSUITABLE & p.tag.grammemes)
+    ]
+    exact = [p for p in parses if p.normal_form == lemma]
+    if exact:
+        return exact
+    contained = [p for p in parses if any(form.word == lemma for form in p.lexeme)][:1]
+    if contained:
+        return contained
+
+    # Only a name reading agrees — «Америка» is a geographical name and is right to decline as
+    # one. Without this the old first-reading expansion took over and indexed «америкал» from
+    # «америкать», a verb pymorphy3 guessed into existence.
+    return [
+        p for p in morph.parse(lemma)
+        if p.tag.POS in accepted and p.normal_form == lemma and "Fixd" not in p.tag.grammemes
+    ][:1]
+    parses = [p for p in morph.parse(lemma) if p.tag.POS in accepted]
+    for p in parses:
+        if p.normal_form == lemma:
+            return p
+    return None
 
 
 def main() -> int:

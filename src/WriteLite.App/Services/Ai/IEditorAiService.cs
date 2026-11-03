@@ -13,7 +13,10 @@ public enum RewriteOperation
     Grammar,
     Explain,
     Translate,
-    Custom
+    Custom,
+
+    /// <summary>«Узнать главное»: the key points of the text, as a short list. Advisory.</summary>
+    KeyPoints
 }
 
 /// <summary>
@@ -35,6 +38,10 @@ public sealed record RewriteRequest(
 /// <summary>
 /// A proposed replacement, which the user has not accepted yet.
 /// </summary>
+/// <param name="Notice">
+/// Something the reader should know before accepting — that part of the text was left as it
+/// was, or that the model may have added detail of its own. Shown above the buttons.
+/// </param>
 /// <param name="Backend">
 /// Which local path produced this — the neural model or the offline rule fallback.
 /// Shown to the user so an answer is never presented as more than it is.
@@ -44,7 +51,8 @@ public sealed record RewriteResult(
     string Suggestion,
     RewriteOperation Operation,
     string Backend,
-    bool IsAdvisory = false)
+    bool IsAdvisory = false,
+    string? Notice = null)
 {
     /// <summary>True when the model returned nothing usable and the text is unchanged.</summary>
     public bool IsNoOp => string.Equals(Original.Trim(), Suggestion.Trim(), StringComparison.Ordinal);

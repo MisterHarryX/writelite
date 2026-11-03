@@ -121,6 +121,50 @@
                                 ]
                   },
                   {
+                      "ruleId":  "ru.punctuation.space-after-period",
+                      "language":  "ru",
+                      "category":  "MissingSpace",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Нет пробела после точки",
+                      "shortMessage":  "Между предложениями после точки нужен пробел.",
+                      "detailedExplanation":  "Точка закончила предложение, а следующее начинается с заглавной буквы — между ними ставится пробел. Сокращения и инициалы («А.С. Пушкин», «т.е.») правило не трогает: оно срабатывает только после слова из трёх и более строчных букв.",
+                      "badExamples":  [
+                                          "добавить информацию.Главное"
+                                      ],
+                      "goodExamples":  [
+                                           "добавить информацию. Главное"
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Добавить пробел после точки."
+                                      ],
+                      "safeToApply":  true,
+                      "source":  "Авторское правило WriteLite.",
+                      "implementation":  {
+                                             "engine":  "regex",
+                                             "pattern":  "(?<=[а-яё]{3})\\.(?=[А-ЯЁ][а-яё])",
+                                             "replacement":  ". "
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "sentence",
+                                        "input":  "добавить информацию.Главное",
+                                        "shouldMatch":  true,
+                                        "expectedSuggestion":  ". "
+                                    },
+                                    {
+                                        "name":  "initials",
+                                        "input":  "А.С.Пушкин",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "normal",
+                                        "input":  "информацию. Главное",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
                       "ruleId":  "ru.punctuation.repeated-mark",
                       "language":  "ru",
                       "category":  "PunctuationRecommendation",
@@ -1163,6 +1207,49 @@
                                     {
                                         "name":  "prepositional-gerund",
                                         "input":  "Несмотря на дождь мы пошли гулять.",
+                                        "shouldMatch":  false
+                                    }
+                                ]
+                  },
+                  {
+                      "ruleId":  "ru.punctuation.indirect-question",
+                      "language":  "ru",
+                      "category":  "PunctuationRecommendation",
+                      "issueCategory":  "Punctuation",
+                      "title":  "Запятая перед косвенным вопросом",
+                      "shortMessage":  "Косвенный вопрос отделяется запятой.",
+                      "detailedExplanation":  "Вопросительное слово (почему, зачем, где, куда, когда, кто, какой, сколько) после глагола речи, мысли или восприятия — знать, понимать, спросить, сказать, указывать, решить — начинает придаточную часть с косвенным вопросом. Она отделяется запятой. Запятая не ставится, если придаточное состоит из одного вопросительного слова («Не знаю почему.»), в неопределённых сочетаниях («где угодно», «когда-нибудь») и во фразеологизмах вроде «бог знает где».",
+                      "badExamples":  [
+                                          "Нужно указывать почему это ошибка.",
+                                          "Я не понимаю зачем это нужно."
+                                      ],
+                      "goodExamples":  [
+                                           "Нужно указывать, почему это ошибка.",
+                                           "Я не понимаю, зачем это нужно."
+                                       ],
+                      "severity":  "Error",
+                      "suggestions":  [
+                                          "Поставьте запятую перед вопросительным словом."
+                                      ],
+                      "source":  "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 114: знаки препинания в сложноподчинённом предложении; косвенный вопрос.",
+                      "safeToApply":  true,
+                      "implementation":  {
+                                             "engine":  "builtin"
+                                         },
+                      "tests":  [
+                                    {
+                                        "name":  "after-verb-of-saying",
+                                        "input":  "Нужно указывать почему это ошибка.",
+                                        "shouldMatch":  true
+                                    },
+                                    {
+                                        "name":  "single-word-clause",
+                                        "input":  "Не знаю почему.",
+                                        "shouldMatch":  false
+                                    },
+                                    {
+                                        "name":  "indefinite",
+                                        "input":  "Положи где угодно.",
                                         "shouldMatch":  false
                                     }
                                 ]

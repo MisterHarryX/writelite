@@ -771,7 +771,11 @@ public partial class EditorPage
 
     // ── Selection state ──────────────────────────────────────────────────────
 
-    private void Editor_SelectionChanged(object sender, RoutedEventArgs e) => UpdateFormattingState();
+    private void Editor_SelectionChanged(object sender, RoutedEventArgs e)
+    {
+        UpdateFormattingState();
+        InvalidatePredictionOnCaretMove();
+    }
 
     /// <summary>
     /// Reflects the caret's formatting in the toolbar.

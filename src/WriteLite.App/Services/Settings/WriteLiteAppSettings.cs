@@ -23,7 +23,16 @@ public sealed class WriteLiteAppSettings
     public bool EnableTypography { get; set; } = true;
     public bool EnableRepeats { get; set; } = true;
     public bool SafeApplyAll { get; set; } = true;
+
+    /// <summary>
+    /// Kinds of findings switched off one by one (ids from <c>IssueKindCatalog</c>):
+    /// «точка в конце предложения», «повторы слов» and so on.
+    /// </summary>
+    public List<string> DisabledIssueKinds { get; set; } = [];
     public string Language { get; set; } = "ru-RU";
+
+    /// <summary>Check English sentences with English spelling and grammar rules.</summary>
+    public bool EnableEnglish { get; set; } = true;
 
     // Behaviour
     public int AnalysisDelayMs { get; set; } = WriteLiteDefaults.Debounce.AnalysisDelayMsDefault;
@@ -74,6 +83,36 @@ public sealed class WriteLiteAppSettings
     /// which suggestions appear, never whether the text is treated as erroneous.
     /// </remarks>
     public string StyleProfile { get; set; } = "General";
+
+    // «Мой стиль письма» — the personal style library (Services/Personal).
+    //
+    // Learning and the mode are separate switches: learning is whether WriteLite watches what
+    // the user writes, the mode is whether what it learned changes what it suggests. All of it
+    // stays in %LOCALAPPDATA%\WriteLite\personal-style.json as word counts, never as text.
+
+    /// <summary>Suggestions follow the learned style: word prediction, correction ranking, «ё».</summary>
+    public bool PersonalStyleEnabled { get; set; } = true;
+
+    /// <summary>Learn from what the user writes.</summary>
+    public bool PersonalStyleLearning { get; set; } = true;
+
+    /// <summary>Also learn from text typed in other applications (password fields are never read).</summary>
+    public bool PersonalStyleLearnInOtherApps { get; set; } = true;
+
+    /// <summary>Predict the word being typed in the editor; Tab accepts.</summary>
+    public bool PersonalWordPrediction { get; set; } = true;
+
+    /// <summary>The same prediction in other applications: a chip at the caret, Tab accepts.</summary>
+    public bool FieldPredictionEnabled { get; set; } = true;
+
+    /// <summary>The user finished the first-run calibration.</summary>
+    public bool StyleCalibrationCompleted { get; set; }
+
+    /// <summary>The user asked not to be offered the calibration again.</summary>
+    public bool StyleCalibrationDismissed { get; set; }
+
+    /// <summary>The calibration was offered once on startup; afterwards only the home page offers it.</summary>
+    public bool StyleCalibrationOffered { get; set; }
 
     // WriteAI — the local offline generative subsystem (Lite engine always available; the
     // local model server is optional). Default ON so Smart Actions work without a network.

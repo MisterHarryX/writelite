@@ -161,7 +161,7 @@ internal sealed class Harness : IAsyncDisposable
         var hybrid = new HybridTextAnalysisService(orchestrator, aiService, routing);
         hybrid.ApplySettings(settings);
 
-        var punctuation = options.UsePunctuationModel ? PunctuationModelAnalyzer.TryLoad() : null;
+        var punctuation = options.UsePunctuationModel ? PunctuationModelAnalyzer.TryLoad(formIndex: spellChecker.RussianFormIndex) : null;
         if (options.UsePunctuationModel && punctuation is null)
         {
             // Loudly, rather than scoring a run as "the model did not help". An absent

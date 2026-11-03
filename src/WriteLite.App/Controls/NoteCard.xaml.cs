@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -58,9 +58,16 @@ public partial class NoteCard : UserControl
 
     public event Action<Note>? DeleteRequested;
 
-    public void Bind(Note note)
+    /// <summary>Raised when the user wants to put the card into a project; the page owns the list.</summary>
+    public event Action<Note, FrameworkElement>? MoveRequested;
+
+    /// <summary>The project shown on the card, when the board is showing more than one project.</summary>
+    public string? ProjectName { get; private set; }
+
+    public void Bind(Note note, string? projectName = null)
     {
         Note = note ?? throw new ArgumentNullException(nameof(note));
+        ProjectName = projectName;
 
         _suppressEvents = true;
         try
@@ -232,6 +239,19 @@ public partial class NoteCard : UserControl
             Controls.Type.SetTracked(CategoryText, note.Category!.ToUpperInvariant());
         }
 
+        var hasProject = !string.IsNullOrWhiteSpace(ProjectName);
+        ProjectBadge.Visibility = hasProject ? Visibility.Visible : Visibility.Collapsed;
+        if (hasProject)
+        {
+            Controls.Type.SetTracked(ProjectText, ProjectName!.ToUpperInvariant());
+        }
+
+        // What the body holds beyond text: a card that only says "Схема" should still say
+        // there is a drawing behind it.
+        var attachments = AttachmentSummary(note);
+        AttachmentBadge.Visibility = attachments.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        Controls.Type.SetTracked(AttachmentText, attachments);
+
         Controls.Type.SetTracked(
             ModifiedText,
             note.IsCompleted && note.CompletedAt is { } completed
@@ -239,11 +259,37 @@ public partial class NoteCard : UserControl
                 : string.Format(Strings.NoteCard_ModifiedAt, FormatWhen(note.ModifiedAt)));
     }
 
+    private static string AttachmentSummary(Note note)
+    {
+        var parts = new List<string>();
+        var images = NoteContent.CountOf(note, NoteBlockKind.Image);
+        var sketches = NoteContent.CountOf(note, NoteBlockKind.Sketch);
+        var marks = note.Content?.Count(block => !string.IsNullOrEmpty(block.BookmarkId)) ?? 0;
+
+        if (images > 0)
+        {
+            parts.Add($"{images} {RussianPlural.Form(images, Strings.NoteCard_ImageOne, Strings.NoteCard_ImageFew, Strings.NoteCard_ImageMany)}");
+        }
+
+        if (sketches > 0)
+        {
+            parts.Add($"{sketches} {RussianPlural.Form(sketches, Strings.NoteCard_SketchOne, Strings.NoteCard_SketchFew, Strings.NoteCard_SketchMany)}");
+        }
+
+        if (marks > 0)
+        {
+            parts.Add($"{marks} {RussianPlural.Form(marks, Strings.NoteCard_BookmarkOne, Strings.NoteCard_BookmarkFew, Strings.NoteCard_BookmarkMany)}");
+        }
+
+        return string.Join(" · ", parts).ToUpperInvariant();
+    }
+
     internal static string KindName(NoteKind kind) => kind switch
     {
         NoteKind.Task => Strings.Notes_KindTask,
         NoteKind.Checklist => Strings.Notes_KindChecklist,
         NoteKind.Goal => Strings.Notes_KindGoal,
+        NoteKind.Event => "Событие",
         _ => Strings.Notes_KindNote
     };
 
@@ -414,6 +460,7 @@ public partial class NoteCard : UserControl
         }
 
         menu.Items.Add(Item(Strings.NoteCard_Duplicate, () => DuplicateRequested?.Invoke(Note)));
+        menu.Items.Add(Item(Strings.Projects_MoveToEllipsis, () => MoveRequested?.Invoke(Note, MenuButton)));
         menu.Items.Add(new Separator { Style = TryFindResource("WlMenuSeparator") as Style });
         menu.Items.Add(Item(Strings.NoteCard_Delete, () => DeleteRequested?.Invoke(Note)));
 

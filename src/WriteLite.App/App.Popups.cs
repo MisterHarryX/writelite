@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Threading;
 using System.Windows.Automation;
@@ -52,6 +52,7 @@ public partial class App : System.Windows.Application
         _bubble?.ClearUserHide();
         _monitor?.SetSuggestionsWindowOpen(true);
         _monitor?.SetPopupInteractionOpen(true);
+        _suggestions.AvoidBounds = _bubble?.IndicatorBounds;
         _suggestions.ShowSnapshot(snapshot);
     }
 

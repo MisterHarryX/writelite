@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace WriteLite.Services.LanguageEngine;
 
@@ -91,6 +91,10 @@ public sealed class WriteLiteLanguageMatchDto
 
     [JsonPropertyName("contextForSureMatch")]
     public int? ContextForSureMatch { get; set; }
+
+    /// <summary>"en" when the match came from an English segment (set by WriteLite, not the engine).</summary>
+    [JsonIgnore]
+    public string? CheckedLanguage { get; set; }
 }
 
 public sealed class WriteLiteLanguageReplacementDto

@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 
 namespace WriteLite.Services.Storage;
@@ -81,7 +81,18 @@ public static class AtomicJsonFile
     }
 
     /// <summary>Writes a document so that an interrupted save cannot destroy the previous one.</summary>
-    public static void Write<T>(string path, T value)
+    public static void Write<T>(string path, T value) =>
+        WriteSerialized(path, JsonSerializer.SerializeToUtf8Bytes(value, Options));
+
+    /// <summary>
+    /// Writes JSON that was already serialized, with the same interrupted-save guarantee.
+    /// </summary>
+    /// <remarks>
+    /// For stores whose objects the UI keeps mutating: they serialize under their own lock
+    /// and hand the bytes over, so the slow part — the disk — runs outside it without the
+    /// serializer ever walking a list that the dispatcher is changing at the same moment.
+    /// </remarks>
+    public static void WriteSerialized(string path, byte[] json)
     {
         var directory = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(directory))
@@ -94,7 +105,7 @@ public static class AtomicJsonFile
 
         using (var stream = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
         {
-            JsonSerializer.Serialize(stream, value, Options);
+            stream.Write(json);
             stream.Flush(flushToDisk: true);
         }
 

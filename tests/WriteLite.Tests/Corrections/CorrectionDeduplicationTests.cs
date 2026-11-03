@@ -1,4 +1,4 @@
-using WriteLite.Models;
+﻿using WriteLite.Models;
 using WriteLite.Services;
 using WriteLite.Services.LanguageEngine;
 using WriteLite.Services.Rules;
@@ -22,8 +22,10 @@ public sealed class CorrectionDeduplicationTests
             new RuleBasedAnalyzer(RuleCatalog.LoadDefault(), spellChecker.RussianFormIndex),
             new SpellTextAnalyzer(spellChecker) { ContextualRefinementEnabled = false });
 
+        // Since Nov 2026 the fast lane itself keeps one spelling card per word, so the
+        // duplicate is already gone here; the merger must still keep exactly one.
         var raw = analyzer.Analyze("вообщем всё понятно");
-        Assert.IsGreaterThan(1, raw.Count(IsAboutTheFirstWord), "expected the duplicate this test is about");
+        Assert.AreEqual(1, raw.Count(IsAboutTheFirstWord), "the fast lane must show one card per word");
 
         var merged = new WriteLiteIssueMerger().Merge(raw).Issues;
 

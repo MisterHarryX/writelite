@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 using WriteLite.Views.Pages;
@@ -35,11 +35,11 @@ public sealed class ResponsiveLayoutTests
 
     [TestMethod]
     public void The_notes_status_bar_is_always_on_screen() =>
-        AssertAlwaysVisible(() => new NotesPage(), "StatusText", "StorageText");
+        AssertAlwaysVisible(() => new NotesPage(), "StatusText", "FolderTitle");
 
     [TestMethod]
     public void The_notes_filters_and_search_are_always_on_screen() =>
-        AssertAlwaysVisible(() => new NotesPage(), "TabAll", "TabCompleted", "SearchBox", "NewNoteButton");
+        AssertAlwaysVisible(() => new NotesPage(), "SearchBox", "NewNoteButton");
 
     [TestMethod]
     public void The_reading_library_status_bar_is_always_on_screen() =>

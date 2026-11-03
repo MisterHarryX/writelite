@@ -153,7 +153,11 @@ public sealed class LexicalPopupWindow : Window
             BorderThickness = new Thickness(0),
             Padding = new Thickness(0),
             // Falls back to the default template when the theme is not loaded.
-            Style = ThemeResource.Style("WlTabControl")
+            Style = ThemeResource.Style("WlTabControl"),
+            // Section labels wrap onto a second line instead of being cut short. The page-level
+            // tab strip lays its items out in one row, which in a 350-pixel card turned six
+            // labels into «Сло», «Синони», «Определен», «Пример», «Рс».
+            Template = SectionStripTemplate.Value
         };
         _wordTab = CreateTab(Strings.Suggestions_WordTitle, _morphologyPanel);
         _synonymsTab = CreateTab(Strings.LexPop_WordSynonyms, _synonymsPanel);
@@ -324,10 +328,7 @@ public sealed class LexicalPopupWindow : Window
         // It was hard-coded to "RU", which meant an English word double-clicked in a chat
         // was presented as a Russian entry — with an English headword, English definitions
         // and Russian abbreviations for its part of speech.
-        var lang = LanguageLabel(result.Language, range.Word);
-        _subtitle.Text = string.IsNullOrEmpty(pos)
-            ? $"{lang} · {result.Lemma}"
-            : $"{lang} · {pos} · {result.Lemma}";
+        _subtitle.Text = BuildSubtitle(result, pos, LanguageLabel(result.Language, range.Word));
 
         _status.Text = result.StatusMessage ?? "";
         var glosses = translations ?? [];
@@ -373,35 +374,131 @@ public sealed class LexicalPopupWindow : Window
         ClosedByUser?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// The word section: what the word means, then what it is grammatically.
+    /// </summary>
+    /// <remarks>
+    /// The headword and its dictionary form are already in the card's title and subtitle, so
+    /// this section does not repeat them; it used to open with «Слово: заняться» and
+    /// «Словарная форма: заняться» under a title that said «заняться». The first meaning comes
+    /// first because it is what someone double-clicking a word most often wants, and the rest
+    /// of the article is one tab away.
+    /// </remarks>
     private void PopulateMorphology(LexicalLookupResult result)
     {
         _morphologyPanel.Children.Clear();
-        _morphologyPanel.Children.Add(new TextBlock
-        {
-            Text = string.Format(Strings.LexPop_WordLabel, result.Word),
-            FontSize = 14,
-            FontWeight = FontWeights.SemiBold,
-            Foreground = TextBrush
-        });
-        _morphologyPanel.Children.Add(new TextBlock
-        {
-            Text = string.Format(Strings.LexPop_LemmaLabel, result.Lemma),
-            FontSize = 13,
-            Foreground = TextBrush,
-            Margin = new Thickness(0, 4, 0, 0)
-        });
-        if (!string.IsNullOrEmpty(result.SurfaceFormNote))
-            _morphologyPanel.Children.Add(Muted(result.SurfaceFormNote));
 
-        var pos = PosLabel(result.PartOfSpeech);
-        if (!string.IsNullOrEmpty(pos))
-            _morphologyPanel.Children.Add(new TextBlock { Text = string.Format(Strings.LexPop_PartOfSpeechLabel, pos), FontSize = 12, Foreground = MutedBrush, Margin = new Thickness(0, 6, 0, 0) });
-
-        if (result.Morphology is { } m)
+        var first = result.Definitions.FirstOrDefault(d => !string.IsNullOrWhiteSpace(d.Definition));
+        if (first is not null)
         {
-            foreach (var line in m.ToDisplayList())
-                _morphologyPanel.Children.Add(new TextBlock { Text = line, FontSize = 12, Foreground = TextBrush, Margin = new Thickness(0, 2, 0, 0) });
+            _morphologyPanel.Children.Add(SectionHeading(Strings.LexPop_MeaningHeading));
+            _morphologyPanel.Children.Add(new TextBlock
+            {
+                Text = first.Definition,
+                FontSize = 13,
+                Foreground = TextBrush,
+                TextWrapping = TextWrapping.Wrap,
+                MaxHeight = 58,
+                TextTrimming = TextTrimming.WordEllipsis
+            });
+            if (result.Definitions.Count > 1)
+            {
+                var more = Muted(string.Format(Strings.LexPop_MoreMeanings, result.Definitions.Count - 1));
+                more.Margin = new Thickness(0, 3, 0, 0);
+                _morphologyPanel.Children.Add(more);
+            }
         }
+
+        var facts = result.Morphology?.ToDisplayList() ?? [];
+        var grammar = new Grid { Margin = new Thickness(0, 2, 0, 0) };
+        grammar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        grammar.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        foreach (var fact in facts)
+        {
+            var colon = fact.IndexOf(':');
+            if (colon <= 0) continue;
+
+            // Already stated in the subtitle; see BuildSubtitle.
+            var name = fact[..colon];
+            if (name == "вид" || name == "помета"
+                || (name == "род" && result.PartOfSpeech == LexicalPartOfSpeech.Noun))
+            {
+                continue;
+            }
+
+            var row = grammar.RowDefinitions.Count;
+            grammar.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            var label = new TextBlock
+            {
+                Text = fact[..colon],
+                FontSize = 12,
+                Foreground = MutedBrush,
+                Margin = new Thickness(0, 2, 14, 2)
+            };
+            var value = new TextBlock
+            {
+                Text = fact[(colon + 1)..].Trim(),
+                FontSize = 12,
+                Foreground = TextBrush,
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 2, 0, 2)
+            };
+            Grid.SetRow(label, row);
+            Grid.SetRow(value, row);
+            Grid.SetColumn(value, 1);
+            grammar.Children.Add(label);
+            grammar.Children.Add(value);
+        }
+
+        if (grammar.Children.Count > 0)
+        {
+            var heading = SectionHeading(Strings.LexPop_GrammarHeading);
+            if (first is not null) heading.Margin = new Thickness(0, 12, 0, 4);
+            _morphologyPanel.Children.Add(heading);
+            _morphologyPanel.Children.Add(grammar);
+        }
+        else if (result.Language != LexicalLanguage.English && first is null)
+        {
+            _morphologyPanel.Children.Add(Muted(Strings.LexPop_NoGrammar));
+        }
+    }
+
+    private static TextBlock SectionHeading(string text) => new()
+    {
+        Text = text.ToUpperInvariant(),
+        FontSize = 10,
+        FontFamily = ThemeResource.Font("WlFontMono", "Cascadia Mono, Consolas"),
+        Foreground = ThemeResource.Brush("WlTextSubtle", Brushes.Gray),
+        Margin = new Thickness(0, 0, 0, 4)
+    };
+
+    /// <summary>
+    /// «глагол · совершенный вид», «существительное · форма слова «книга»».
+    /// </summary>
+    /// <remarks>
+    /// Names the part of speech in full and the one fact that most often decides how a word is
+    /// used — aspect for a verb, gender for a noun. The language tag is shown only for English:
+    /// the card serves both packs, and a Russian word needs no label saying it is Russian.
+    /// </remarks>
+    private static string BuildSubtitle(LexicalLookupResult result, string pos, string lang)
+    {
+        var parts = new List<string>(4);
+        if (lang == "EN") parts.Add(lang);
+        if (!string.IsNullOrEmpty(pos)) parts.Add(pos);
+
+        var m = result.Morphology;
+        if (!string.IsNullOrEmpty(m?.Aspect)) parts.Add($"{m.Aspect} вид");
+        else if (result.PartOfSpeech == LexicalPartOfSpeech.Noun && !string.IsNullOrEmpty(m?.Gender)) parts.Add($"{m.Gender} род");
+        if (!string.IsNullOrEmpty(m?.Register)) parts.Add(m.Register);
+
+        if (!string.IsNullOrWhiteSpace(result.Lemma)
+            && !string.Equals(result.Lemma, result.Word, StringComparison.OrdinalIgnoreCase))
+        {
+            parts.Add(string.Format(Strings.LexPop_FormOf, result.Lemma));
+        }
+
+        return parts.Count == 0 ? result.Lemma : string.Join(" · ", parts);
     }
 
     private void PopulateRole(LexicalLookupResult result)
@@ -750,9 +847,63 @@ var copy = CreateGhostButton(Strings.EditorAi_Copy, double.NaN, 28);
         {
             Header = header,
             Content = scroll,
-            Style = ThemeResource.Style("WlTabItem")
+            Style = SectionChipStyle.Value
         };
     }
+
+    /// <summary>The card's section strip: a wrapping row of chips over the selected section.</summary>
+    private static readonly Lazy<ControlTemplate> SectionStripTemplate = new(() =>
+        (ControlTemplate)System.Windows.Markup.XamlReader.Parse("""
+            <ControlTemplate TargetType="TabControl"
+                             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                <DockPanel>
+                    <WrapPanel DockPanel.Dock="Top" IsItemsHost="True" Margin="0,0,0,4" />
+                    <ContentPresenter ContentSource="SelectedContent" />
+                </DockPanel>
+            </ControlTemplate>
+            """));
+
+    /// <summary>A section label as a chip that keeps its full width and wraps with its neighbours.</summary>
+    private static readonly Lazy<Style> SectionChipStyle = new(() =>
+        (Style)System.Windows.Markup.XamlReader.Parse("""
+            <Style TargetType="TabItem"
+                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <Setter Property="Foreground" Value="{DynamicResource WlTextSubtle}" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Margin" Value="0,0,5,5" />
+                <Setter Property="Padding" Value="10,3,10,4" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TabItem">
+                            <Border x:Name="Chip"
+                                    CornerRadius="11"
+                                    Background="Transparent"
+                                    BorderThickness="1"
+                                    BorderBrush="{DynamicResource WlLine}"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter ContentSource="Header" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource WlText}" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="Chip" Property="Background" Value="{DynamicResource WlBrandSoft}" />
+                                    <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource WlBrand}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource WlText}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            """));
 
     /// <summary>
     /// Puts a word on the clipboard, and does nothing visible when the clipboard refuses.

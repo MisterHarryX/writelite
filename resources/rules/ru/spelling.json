@@ -1,1221 +1,1599 @@
 {
-    "schemaVersion":  1,
-    "packVersion":  "ru-1.6.0",
-    "language":  "ru",
-    "rules":  [
-                  {
-                      "ruleId":  "ru.spelling.potomu-chto",
-                      "language":  "ru",
-                      "category":  "JoinedOrSeparateSpelling",
-                      "issueCategory":  "Orthography",
-                      "title":  "Нормативно: «потому что»",
-                      "shortMessage":  "Союз пишется раздельно.",
-                      "detailedExplanation":  "Составной союз «потому что» состоит из двух слов.",
-                      "badExamples":  [
-                                          "потомучто устал"
-                                      ],
-                      "goodExamples":  [
-                                           "потому что устал"
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "потому что"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite; нормативная русская орфография.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\b(?:потомучто|потому-что)\\b",
-                                             "replacement":  "потому что",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "wrong",
-                                        "input":  "потомучто устал",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "потому что"
-                                    },
-                                    {
-                                        "name":  "wrong-hyphen",
-                                        "input":  "потому-что устал",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "потому что"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "потому что устал",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.ne-byl",
-                      "language":  "ru",
-                      "category":  "NeWithPartsOfSpeech",
-                      "issueCategory":  "Orthography",
-                      "title":  "«Не» с глаголом пишется раздельно",
-                      "shortMessage":  "Формы «не был/была/было/были» пишутся раздельно.",
-                      "detailedExplanation":  "Отрицательная частица «не» с формами глагола «быть» пишется раздельно.",
-                      "badExamples":  [
-                                          "Он небыл дома."
-                                      ],
-                      "goodExamples":  [
-                                           "Он не был дома."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "не был",
-                                          "не была",
-                                          "не было",
-                                          "не были"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite; нормативная русская орфография.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\b([Нн])е(был(?:а|о|и)?)\\b",
-                                             "replacement":  "$1е $2"
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "masculine",
-                                        "input":  "Он небыл дома.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "не был"
-                                    },
-                                    {
-                                        "name":  "separate",
-                                        "input":  "Он не был дома.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.typo",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "Возможная орфографическая ошибка",
-                      "shortMessage":  "Слово не найдено в русском словаре.",
-                      "detailedExplanation":  "Локальный русский словарь предложил похожее написание. Словарная близость не доказывает ошибку, поэтому замена требует подтверждения.",
-                      "badExamples":  [
-                                          "пливет"
-                                      ],
-                      "goodExamples":  [
-                                           "привет"
-                                       ],
-                      "severity":  "Warning",
-                      "suggestions":  [
-                                          "Проверить предложенные словарём варианты."
-                                      ],
-                      "safeToApply":  false,
-                      "source":  "Русский Hunspell и авторский список высокоточных опечаток WriteLite.",
-                      "implementation":  {
-                                             "engine":  "spelling"
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "known-typo",
-                                        "input":  "пливет",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "привет"
-                                    },
-                                    {
-                                        "name":  "known-word",
-                                        "input":  "привет",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.unknown-soft",
-                      "language":  "ru",
-                      "category":  "UnknownWord",
-                      "issueCategory":  "Orthography",
-                      "title":  "Возможно, неизвестное слово",
-                      "shortMessage":  "Слово отсутствует в локальном словаре.",
-                      "detailedExplanation":  "Отсутствие слова в словаре не доказывает ошибку. Можно оставить слово без изменений или добавить его в пользовательский словарь.",
-                      "badExamples":  [
-                                          "неизвестноеслово"
-                                      ],
-                      "goodExamples":  [
-                                           "привет"
-                                       ],
-                      "severity":  "Suggestion",
-                      "suggestions":  [
-                                          "Проверить слово вручную или добавить его в пользовательский словарь."
-                                      ],
-                      "safeToApply":  false,
-                      "source":  "Локальная диагностическая политика WriteLite.",
-                      "implementation":  {
-                                             "engine":  "spelling"
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "unknown",
-                                        "input":  "неизвестноеслово",
-                                        "shouldMatch":  true
-                                    },
-                                    {
-                                        "name":  "known",
-                                        "input":  "привет",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.keyboard-layout",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "Возможно, выбрана латинская раскладка",
-                      "shortMessage":  "Латинские клавиши образуют известное русское слово.",
-                      "detailedExplanation":  "WriteLite преобразовал латинские клавиши в русскую раскладку и получил известное русское слово. Обычные латинские слова не проверяются.",
-                      "badExamples":  [
-                                          "ghbdtn"
-                                      ],
-                      "goodExamples":  [
-                                           "привет",
-                                           "hello"
-                                       ],
-                      "severity":  "Warning",
-                      "suggestions":  [
-                                          "привет"
-                                      ],
-                      "safeToApply":  false,
-                      "source":  "Авторская эвристика раскладки WriteLite.",
-                      "implementation":  {
-                                             "engine":  "spelling"
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "wrong-layout",
-                                        "input":  "ghbdtn",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "привет"
-                                    },
-                                    {
-                                        "name":  "ordinary-latin",
-                                        "input":  "hello",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.vsledstvie",
-                      "language":  "ru",
-                      "category":  "JoinedOrSeparateSpelling",
-                      "issueCategory":  "Orthography",
-                      "title":  "«вследствии» пишется раздельно: «вследствие»",
-                      "shortMessage":  "Правильно: «вследствие».",
-                      "detailedExplanation":  "Сочетание «вследствие» пишется раздельно; слитного слова «вследствии» в русском языке нет.",
-                      "badExamples":  [
-                                          "Вследствии дождя матч отменили."
-                                      ],
-                      "goodExamples":  [
-                                           "Вследствие дождя матч отменили."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "вследствие"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bвследствии\\b",
-                                             "replacement":  "вследствие",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "joined",
-                                        "input":  "Вследствии дождя матч отменили.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "вследствие"
-                                    },
-                                    {
-                                        "name":  "separate",
-                                        "input":  "Вследствие дождя матч отменили.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.napodobie",
-                      "language":  "ru",
-                      "category":  "JoinedOrSeparateSpelling",
-                      "issueCategory":  "Orthography",
-                      "title":  "«наподобии» пишется раздельно: «наподобие»",
-                      "shortMessage":  "Правильно: «наподобие».",
-                      "detailedExplanation":  "Сочетание «наподобие» пишется раздельно; слитного слова «наподобии» в русском языке нет.",
-                      "badExamples":  [
-                                          "Прибор наподобии часов."
-                                      ],
-                      "goodExamples":  [
-                                           "Прибор наподобие часов."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "наподобие"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bнаподобии\\b",
-                                             "replacement":  "наподобие",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "joined",
-                                        "input":  "Прибор наподобии часов.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "наподобие"
-                                    },
-                                    {
-                                        "name":  "separate",
-                                        "input":  "Прибор наподобие часов.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.v-to-zhe",
-                      "language":  "ru",
-                      "category":  "JoinedOrSeparateSpelling",
-                      "issueCategory":  "Orthography",
-                      "title":  "«втоже» пишется раздельно: «в то же»",
-                      "shortMessage":  "Правильно: «в то же».",
-                      "detailedExplanation":  "Сочетание «в то же» пишется раздельно; слитного слова «втоже» в русском языке нет.",
-                      "badExamples":  [
-                                          "Втоже время это верно."
-                                      ],
-                      "goodExamples":  [
-                                           "В то же время это верно."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "в то же"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bвтоже\\b",
-                                             "replacement":  "в то же",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "joined",
-                                        "input":  "Втоже время это верно.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "в то же"
-                                    },
-                                    {
-                                        "name":  "separate",
-                                        "input":  "В то же время это верно.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.nesmotrya-na",
-                      "language":  "ru",
-                      "category":  "JoinedOrSeparateSpelling",
-                      "issueCategory":  "Orthography",
-                      "title":  "«несмотряна» пишется раздельно: «несмотря на»",
-                      "shortMessage":  "Правильно: «несмотря на».",
-                      "detailedExplanation":  "Сочетание «несмотря на» пишется раздельно; слитного слова «несмотряна» в русском языке нет.",
-                      "badExamples":  [
-                                          "Несмотряна дождь мы вышли."
-                                      ],
-                      "goodExamples":  [
-                                           "Несмотря на дождь мы вышли."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "несмотря на"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bнесмотряна\\b",
-                                             "replacement":  "несмотря на",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "joined",
-                                        "input":  "Несмотряна дождь мы вышли.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "несмотря на"
-                                    },
-                                    {
-                                        "name":  "separate",
-                                        "input":  "Несмотря на дождь мы вышли.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.sdelat",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«зделать» — ошибочное написание слова «сделать»",
-                      "shortMessage":  "Правильно: «сделать».",
-                      "detailedExplanation":  "Нормативная форма — «сделать». Написание «зделать» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Надо зделать это сегодня."
-                                      ],
-                      "goodExamples":  [
-                                           "Надо сделать это сегодня."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "сделать"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bзделать\\b",
-                                             "replacement":  "сделать",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Надо зделать это сегодня.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "сделать"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Надо сделать это сегодня.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.zdes",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«сдесь» — ошибочное написание слова «здесь»",
-                      "shortMessage":  "Правильно: «здесь».",
-                      "detailedExplanation":  "Нормативная форма — «здесь». Написание «сдесь» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Сдесь очень тихо."
-                                      ],
-                      "goodExamples":  [
-                                           "Здесь очень тихо."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "здесь"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bсдесь\\b",
-                                             "replacement":  "здесь",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Сдесь очень тихо.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "здесь"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Здесь очень тихо.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.izvinite",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«извените» — ошибочное написание слова «извините»",
-                      "shortMessage":  "Правильно: «извините».",
-                      "detailedExplanation":  "Нормативная форма — «извините». Написание «извените» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Извените за опоздание."
-                                      ],
-                      "goodExamples":  [
-                                           "Извините за опоздание."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "извините"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bизвените\\b",
-                                             "replacement":  "извините",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Извените за опоздание.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "извините"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Извините за опоздание.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.agentstvo",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«агенство» — ошибочное написание слова «агентство»",
-                      "shortMessage":  "Правильно: «агентство».",
-                      "detailedExplanation":  "Нормативная форма — «агентство». Написание «агенство» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Он работает в агенство."
-                                      ],
-                      "goodExamples":  [
-                                           "Он работает в агентство."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "агентство"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bагенство\\b",
-                                             "replacement":  "агентство",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Он работает в агенство.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "агентство"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Он работает в агентство.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.buduschiy",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«будующий» — ошибочное написание слова «будущий»",
-                      "shortMessage":  "Правильно: «будущий».",
-                      "detailedExplanation":  "Нормативная форма — «будущий». Написание «будующий» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Будующий год будет лучше."
-                                      ],
-                      "goodExamples":  [
-                                           "Будущий год будет лучше."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "будущий"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bбудующий\\b",
-                                             "replacement":  "будущий",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Будующий год будет лучше.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "будущий"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Будущий год будет лучше.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.sleduyuschiy",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«следущий» — ошибочное написание слова «следующий»",
-                      "shortMessage":  "Правильно: «следующий».",
-                      "detailedExplanation":  "Нормативная форма — «следующий». Написание «следущий» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Следущий вопрос, пожалуйста."
-                                      ],
-                      "goodExamples":  [
-                                           "Следующий вопрос, пожалуйста."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "следующий"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bследущий\\b",
-                                             "replacement":  "следующий",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Следущий вопрос, пожалуйста.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "следующий"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Следующий вопрос, пожалуйста.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.chereschur",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«черезчур» — ошибочное написание слова «чересчур»",
-                      "shortMessage":  "Правильно: «чересчур».",
-                      "detailedExplanation":  "Нормативная форма — «чересчур». Написание «черезчур» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Это черезчур дорого."
-                                      ],
-                      "goodExamples":  [
-                                           "Это чересчур дорого."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "чересчур"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bчерезчур\\b",
-                                             "replacement":  "чересчур",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Это черезчур дорого.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "чересчур"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Это чересчур дорого.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.poskolznutsya",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«подскользнуться» — ошибочное написание слова «поскользнуться»",
-                      "shortMessage":  "Правильно: «поскользнуться».",
-                      "detailedExplanation":  "Нормативная форма — «поскользнуться». Написание «подскользнуться» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Можно подскользнуться на льду."
-                                      ],
-                      "goodExamples":  [
-                                           "Можно поскользнуться на льду."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "поскользнуться"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bподскользнуться\\b",
-                                             "replacement":  "поскользнуться",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Можно подскользнуться на льду.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "поскользнуться"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Можно поскользнуться на льду.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.priyti",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«придти» — ошибочное написание слова «прийти»",
-                      "shortMessage":  "Правильно: «прийти».",
-                      "detailedExplanation":  "Нормативная форма — «прийти». Написание «придти» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Он обещал придти вовремя."
-                                      ],
-                      "goodExamples":  [
-                                           "Он обещал прийти вовремя."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "прийти"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bпридти\\b",
-                                             "replacement":  "прийти",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Он обещал придти вовремя.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "прийти"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Он обещал прийти вовремя.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.intsident",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«инциндент» — ошибочное написание слова «инцидент»",
-                      "shortMessage":  "Правильно: «инцидент».",
-                      "detailedExplanation":  "Нормативная форма — «инцидент». Написание «инциндент» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Инциндент исчерпан."
-                                      ],
-                      "goodExamples":  [
-                                           "Инцидент исчерпан."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "инцидент"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bинциндент\\b",
-                                             "replacement":  "инцидент",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Инциндент исчерпан.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "инцидент"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Инцидент исчерпан.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.pretsedent",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«прецендент» — ошибочное написание слова «прецедент»",
-                      "shortMessage":  "Правильно: «прецедент».",
-                      "detailedExplanation":  "Нормативная форма — «прецедент». Написание «прецендент» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Это опасный прецендент."
-                                      ],
-                      "goodExamples":  [
-                                           "Это опасный прецедент."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "прецедент"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bпрецендент\\b",
-                                             "replacement":  "прецедент",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Это опасный прецендент.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "прецедент"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Это опасный прецедент.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.konstatirovat",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«константировать» — ошибочное написание слова «констатировать»",
-                      "shortMessage":  "Правильно: «констатировать».",
-                      "detailedExplanation":  "Нормативная форма — «констатировать». Написание «константировать» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Можно константировать факт."
-                                      ],
-                      "goodExamples":  [
-                                           "Можно констатировать факт."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "констатировать"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bконстантировать\\b",
-                                             "replacement":  "констатировать",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Можно константировать факт.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "констатировать"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Можно констатировать факт.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.skrupulyoznyy",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«скурпулёзный» — ошибочное написание слова «скрупулёзный»",
-                      "shortMessage":  "Правильно: «скрупулёзный».",
-                      "detailedExplanation":  "Нормативная форма — «скрупулёзный». Написание «скурпулёзный» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Скурпулёзный подход к делу."
-                                      ],
-                      "goodExamples":  [
-                                           "Скрупулёзный подход к делу."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "скрупулёзный"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bскурпулёзный\\b",
-                                             "replacement":  "скрупулёзный",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Скурпулёзный подход к делу.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "скрупулёзный"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Скрупулёзный подход к делу.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.komprometirovat",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«компроментировать» — ошибочное написание слова «компрометировать»",
-                      "shortMessage":  "Правильно: «компрометировать».",
-                      "detailedExplanation":  "Нормативная форма — «компрометировать». Написание «компроментировать» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Не стоит компроментировать себя."
-                                      ],
-                      "goodExamples":  [
-                                           "Не стоит компрометировать себя."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "компрометировать"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bкомпроментировать\\b",
-                                             "replacement":  "компрометировать",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Не стоит компроментировать себя.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "компрометировать"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Не стоит компрометировать себя.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.kardinalno",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«координально» — ошибочное написание слова «кардинально»",
-                      "shortMessage":  "Правильно: «кардинально».",
-                      "detailedExplanation":  "Нормативная форма — «кардинально». Написание «координально» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Ситуация координально изменилась."
-                                      ],
-                      "goodExamples":  [
-                                           "Ситуация кардинально изменилась."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "кардинально"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bкоординально\\b",
-                                             "replacement":  "кардинально",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Ситуация координально изменилась.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "кардинально"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Ситуация кардинально изменилась.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.espresso",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«эксперсо» — ошибочное написание слова «эспрессо»",
-                      "shortMessage":  "Правильно: «эспрессо».",
-                      "detailedExplanation":  "Нормативная форма — «эспрессо». Написание «эксперсо» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Один эксперсо, пожалуйста."
-                                      ],
-                      "goodExamples":  [
-                                           "Один эспрессо, пожалуйста."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "эспрессо"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bэксперсо\\b",
-                                             "replacement":  "эспрессо",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Один эксперсо, пожалуйста.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "эспрессо"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Один эспрессо, пожалуйста.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.dermatin",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«дермантин» — ошибочное написание слова «дерматин»",
-                      "shortMessage":  "Правильно: «дерматин».",
-                      "detailedExplanation":  "Нормативная форма — «дерматин». Написание «дермантин» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Обивка из дермантин."
-                                      ],
-                      "goodExamples":  [
-                                           "Обивка из дерматин."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "дерматин"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bдермантин\\b",
-                                             "replacement":  "дерматин",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Обивка из дермантин.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "дерматин"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Обивка из дерматин.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.yuriskonsult",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«юристконсульт» — ошибочное написание слова «юрисконсульт»",
-                      "shortMessage":  "Правильно: «юрисконсульт».",
-                      "detailedExplanation":  "Нормативная форма — «юрисконсульт». Написание «юристконсульт» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "С нами работает юристконсульт."
-                                      ],
-                      "goodExamples":  [
-                                           "С нами работает юрисконсульт."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "юрисконсульт"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bюристконсульт\\b",
-                                             "replacement":  "юрисконсульт",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "С нами работает юристконсульт.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "юрисконсульт"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "С нами работает юрисконсульт.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.pocherk",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«подчерк» — ошибочное написание слова «почерк»",
-                      "shortMessage":  "Правильно: «почерк».",
-                      "detailedExplanation":  "Нормативная форма — «почерк». Написание «подчерк» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "У него разборчивый подчерк."
-                                      ],
-                      "goodExamples":  [
-                                           "У него разборчивый почерк."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "почерк"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bподчерк\\b",
-                                             "replacement":  "почерк",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "У него разборчивый подчерк.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "почерк"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "У него разборчивый почерк.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.ihniy",
-                      "language":  "ru",
-                      "category":  "Typo",
-                      "issueCategory":  "Orthography",
-                      "title":  "«ихний» — ошибочное написание слова «их»",
-                      "shortMessage":  "Правильно: «их».",
-                      "detailedExplanation":  "Нормативная форма — «их». Написание «ихний» не является вариантом нормы.",
-                      "badExamples":  [
-                                          "Это ихний дом."
-                                      ],
-                      "goodExamples":  [
-                                           "Это их дом."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "их"
-                                      ],
-                      "safeToApply":  true,
-                      "source":  "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
-                      "implementation":  {
-                                             "engine":  "regex",
-                                             "pattern":  "\\bихний\\b",
-                                             "replacement":  "их",
-                                             "ignoreCase":  true
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "misspelled",
-                                        "input":  "Это ихний дом.",
-                                        "shouldMatch":  true,
-                                        "expectedSuggestion":  "их"
-                                    },
-                                    {
-                                        "name":  "correct",
-                                        "input":  "Это их дом.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  },
-                  {
-                      "ruleId":  "ru.spelling.hyphenated-adverb",
-                      "language":  "ru",
-                      "category":  "JoinedOrSeparateSpelling",
-                      "issueCategory":  "Orthography",
-                      "title":  "Пишется через дефис",
-                      "shortMessage":  "Это наречие пишется через дефис.",
-                      "detailedExplanation":  "Наречия, образованные от местоимений и порядковых числительных с приставками «по-» и «во-»/«в-», пишутся через дефис: «во-первых», «по-моему», «по-прежнему», «всё-таки». Сочетание «по моему» без дефиса возможно только когда «по» — предлог при существительном в дательном падеже: «по моему мнению».",
-                      "badExamples":  [
-                                          "Во первых нужно всё проверить.",
-                                          "По моему это неверно.",
-                                          "Мы всё таки закончили работу."
-                                      ],
-                      "goodExamples":  [
-                                           "Во-первых, нужно всё проверить.",
-                                           "По-моему, это неверно.",
-                                           "Мы всё-таки закончили работу."
-                                       ],
-                      "severity":  "Error",
-                      "suggestions":  [
-                                          "Напишите наречие через дефис."
-                                      ],
-                      "source":  "Правила русской орфографии и пунктуации, §83 (дефисное написание наречий).",
-                      "safeToApply":  true,
-                      "implementation":  {
-                                             "engine":  "builtin"
-                                         },
-                      "tests":  [
-                                    {
-                                        "name":  "vo-pervyh",
-                                        "input":  "Во первых нужно всё проверить.",
-                                        "shouldMatch":  true
-                                    },
-                                    {
-                                        "name":  "vsyo-taki",
-                                        "input":  "Мы всё таки закончили работу.",
-                                        "shouldMatch":  true
-                                    },
-                                    {
-                                        "name":  "po-moemu-adverb",
-                                        "input":  "По моему это неверно.",
-                                        "shouldMatch":  true
-                                    },
-                                    {
-                                        "name":  "po-moemu-preposition",
-                                        "input":  "По моему мнению это неверно.",
-                                        "shouldMatch":  false
-                                    },
-                                    {
-                                        "name":  "already-hyphenated",
-                                        "input":  "Во-первых, нужно всё проверить.",
-                                        "shouldMatch":  false
-                                    }
-                                ]
-                  }
-              ]
+  "schemaVersion": 1,
+  "packVersion": "ru-1.6.0",
+  "language": "ru",
+  "rules": [
+    {
+      "ruleId": "ru.spelling.potomu-chto",
+      "language": "ru",
+      "category": "JoinedOrSeparateSpelling",
+      "issueCategory": "Orthography",
+      "title": "Нормативно: «потому что»",
+      "shortMessage": "Союз пишется раздельно.",
+      "detailedExplanation": "Составной союз «потому что» состоит из двух слов.",
+      "badExamples": [
+        "потомучто устал"
+      ],
+      "goodExamples": [
+        "потому что устал"
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "потому что"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite; нормативная русская орфография.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\b(?:потомучто|потому-что)\\b",
+        "replacement": "потому что",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "wrong",
+          "input": "потомучто устал",
+          "shouldMatch": true,
+          "expectedSuggestion": "потому что"
+        },
+        {
+          "name": "wrong-hyphen",
+          "input": "потому-что устал",
+          "shouldMatch": true,
+          "expectedSuggestion": "потому что"
+        },
+        {
+          "name": "correct",
+          "input": "потому что устал",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.ne-byl",
+      "language": "ru",
+      "category": "NeWithPartsOfSpeech",
+      "issueCategory": "Orthography",
+      "title": "«Не» с глаголом пишется раздельно",
+      "shortMessage": "Формы «не был/была/было/были» пишутся раздельно.",
+      "detailedExplanation": "Отрицательная частица «не» с формами глагола «быть» пишется раздельно.",
+      "badExamples": [
+        "Он небыл дома."
+      ],
+      "goodExamples": [
+        "Он не был дома."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "не был",
+        "не была",
+        "не было",
+        "не были"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite; нормативная русская орфография.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\b([Нн])е(был(?:а|о|и)?)\\b",
+        "replacement": "$1е $2"
+      },
+      "tests": [
+        {
+          "name": "masculine",
+          "input": "Он небыл дома.",
+          "shouldMatch": true,
+          "expectedSuggestion": "не был"
+        },
+        {
+          "name": "separate",
+          "input": "Он не был дома.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.typo",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "Возможная орфографическая ошибка",
+      "shortMessage": "Слово не найдено в русском словаре.",
+      "detailedExplanation": "Локальный русский словарь предложил похожее написание. Словарная близость не доказывает ошибку, поэтому замена требует подтверждения.",
+      "badExamples": [
+        "пливет"
+      ],
+      "goodExamples": [
+        "привет"
+      ],
+      "severity": "Warning",
+      "suggestions": [
+        "Проверить предложенные словарём варианты."
+      ],
+      "safeToApply": false,
+      "source": "Русский Hunspell и авторский список высокоточных опечаток WriteLite.",
+      "implementation": {
+        "engine": "spelling"
+      },
+      "tests": [
+        {
+          "name": "known-typo",
+          "input": "пливет",
+          "shouldMatch": true,
+          "expectedSuggestion": "привет"
+        },
+        {
+          "name": "known-word",
+          "input": "привет",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.unknown-soft",
+      "language": "ru",
+      "category": "UnknownWord",
+      "issueCategory": "Orthography",
+      "title": "Возможно, неизвестное слово",
+      "shortMessage": "Слово отсутствует в локальном словаре.",
+      "detailedExplanation": "Отсутствие слова в словаре не доказывает ошибку. Можно оставить слово без изменений или добавить его в пользовательский словарь.",
+      "badExamples": [
+        "неизвестноеслово"
+      ],
+      "goodExamples": [
+        "привет"
+      ],
+      "severity": "Suggestion",
+      "suggestions": [
+        "Проверить слово вручную или добавить его в пользовательский словарь."
+      ],
+      "safeToApply": false,
+      "source": "Локальная диагностическая политика WriteLite.",
+      "implementation": {
+        "engine": "spelling"
+      },
+      "tests": [
+        {
+          "name": "unknown",
+          "input": "неизвестноеслово",
+          "shouldMatch": true
+        },
+        {
+          "name": "known",
+          "input": "привет",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.keyboard-layout",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "Возможно, выбрана латинская раскладка",
+      "shortMessage": "Латинские клавиши образуют известное русское слово.",
+      "detailedExplanation": "WriteLite преобразовал латинские клавиши в русскую раскладку и получил известное русское слово. Обычные латинские слова не проверяются.",
+      "badExamples": [
+        "ghbdtn"
+      ],
+      "goodExamples": [
+        "привет",
+        "hello"
+      ],
+      "severity": "Warning",
+      "suggestions": [
+        "привет"
+      ],
+      "safeToApply": false,
+      "source": "Авторская эвристика раскладки WriteLite.",
+      "implementation": {
+        "engine": "spelling"
+      },
+      "tests": [
+        {
+          "name": "wrong-layout",
+          "input": "ghbdtn",
+          "shouldMatch": true,
+          "expectedSuggestion": "привет"
+        },
+        {
+          "name": "ordinary-latin",
+          "input": "hello",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.vsledstvie",
+      "language": "ru",
+      "category": "JoinedOrSeparateSpelling",
+      "issueCategory": "Orthography",
+      "title": "«вследствии» пишется раздельно: «вследствие»",
+      "shortMessage": "Правильно: «вследствие».",
+      "detailedExplanation": "Сочетание «вследствие» пишется раздельно; слитного слова «вследствии» в русском языке нет.",
+      "badExamples": [
+        "Вследствии дождя матч отменили."
+      ],
+      "goodExamples": [
+        "Вследствие дождя матч отменили."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "вследствие"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bвследствии\\b",
+        "replacement": "вследствие",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "joined",
+          "input": "Вследствии дождя матч отменили.",
+          "shouldMatch": true,
+          "expectedSuggestion": "вследствие"
+        },
+        {
+          "name": "separate",
+          "input": "Вследствие дождя матч отменили.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.napodobie",
+      "language": "ru",
+      "category": "JoinedOrSeparateSpelling",
+      "issueCategory": "Orthography",
+      "title": "«наподобии» пишется раздельно: «наподобие»",
+      "shortMessage": "Правильно: «наподобие».",
+      "detailedExplanation": "Сочетание «наподобие» пишется раздельно; слитного слова «наподобии» в русском языке нет.",
+      "badExamples": [
+        "Прибор наподобии часов."
+      ],
+      "goodExamples": [
+        "Прибор наподобие часов."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "наподобие"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bнаподобии\\b",
+        "replacement": "наподобие",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "joined",
+          "input": "Прибор наподобии часов.",
+          "shouldMatch": true,
+          "expectedSuggestion": "наподобие"
+        },
+        {
+          "name": "separate",
+          "input": "Прибор наподобие часов.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.v-to-zhe",
+      "language": "ru",
+      "category": "JoinedOrSeparateSpelling",
+      "issueCategory": "Orthography",
+      "title": "«втоже» пишется раздельно: «в то же»",
+      "shortMessage": "Правильно: «в то же».",
+      "detailedExplanation": "Сочетание «в то же» пишется раздельно; слитного слова «втоже» в русском языке нет.",
+      "badExamples": [
+        "Втоже время это верно."
+      ],
+      "goodExamples": [
+        "В то же время это верно."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "в то же"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bвтоже\\b",
+        "replacement": "в то же",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "joined",
+          "input": "Втоже время это верно.",
+          "shouldMatch": true,
+          "expectedSuggestion": "в то же"
+        },
+        {
+          "name": "separate",
+          "input": "В то же время это верно.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.nesmotrya-na",
+      "language": "ru",
+      "category": "JoinedOrSeparateSpelling",
+      "issueCategory": "Orthography",
+      "title": "«несмотряна» пишется раздельно: «несмотря на»",
+      "shortMessage": "Правильно: «несмотря на».",
+      "detailedExplanation": "Сочетание «несмотря на» пишется раздельно; слитного слова «несмотряна» в русском языке нет.",
+      "badExamples": [
+        "Несмотряна дождь мы вышли."
+      ],
+      "goodExamples": [
+        "Несмотря на дождь мы вышли."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "несмотря на"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: нормативное написание, регулярное выражение.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bнесмотряна\\b",
+        "replacement": "несмотря на",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "joined",
+          "input": "Несмотряна дождь мы вышли.",
+          "shouldMatch": true,
+          "expectedSuggestion": "несмотря на"
+        },
+        {
+          "name": "separate",
+          "input": "Несмотря на дождь мы вышли.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.sdelat",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«зделать» — ошибочное написание слова «сделать»",
+      "shortMessage": "Правильно: «сделать».",
+      "detailedExplanation": "Нормативная форма — «сделать». Написание «зделать» не является вариантом нормы.",
+      "badExamples": [
+        "Надо зделать это сегодня."
+      ],
+      "goodExamples": [
+        "Надо сделать это сегодня."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "сделать"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bзделать\\b",
+        "replacement": "сделать",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Надо зделать это сегодня.",
+          "shouldMatch": true,
+          "expectedSuggestion": "сделать"
+        },
+        {
+          "name": "correct",
+          "input": "Надо сделать это сегодня.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.zdes",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«сдесь» — ошибочное написание слова «здесь»",
+      "shortMessage": "Правильно: «здесь».",
+      "detailedExplanation": "Нормативная форма — «здесь». Написание «сдесь» не является вариантом нормы.",
+      "badExamples": [
+        "Сдесь очень тихо."
+      ],
+      "goodExamples": [
+        "Здесь очень тихо."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "здесь"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bсдесь\\b",
+        "replacement": "здесь",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Сдесь очень тихо.",
+          "shouldMatch": true,
+          "expectedSuggestion": "здесь"
+        },
+        {
+          "name": "correct",
+          "input": "Здесь очень тихо.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.izvinite",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«извените» — ошибочное написание слова «извините»",
+      "shortMessage": "Правильно: «извините».",
+      "detailedExplanation": "Нормативная форма — «извините». Написание «извените» не является вариантом нормы.",
+      "badExamples": [
+        "Извените за опоздание."
+      ],
+      "goodExamples": [
+        "Извините за опоздание."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "извините"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bизвените\\b",
+        "replacement": "извините",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Извените за опоздание.",
+          "shouldMatch": true,
+          "expectedSuggestion": "извините"
+        },
+        {
+          "name": "correct",
+          "input": "Извините за опоздание.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.agentstvo",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«агенство» — ошибочное написание слова «агентство»",
+      "shortMessage": "Правильно: «агентство».",
+      "detailedExplanation": "Нормативная форма — «агентство». Написание «агенство» не является вариантом нормы.",
+      "badExamples": [
+        "Он работает в агенство."
+      ],
+      "goodExamples": [
+        "Он работает в агентство."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "агентство"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bагенство\\b",
+        "replacement": "агентство",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Он работает в агенство.",
+          "shouldMatch": true,
+          "expectedSuggestion": "агентство"
+        },
+        {
+          "name": "correct",
+          "input": "Он работает в агентство.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.buduschiy",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«будующий» — ошибочное написание слова «будущий»",
+      "shortMessage": "Правильно: «будущий».",
+      "detailedExplanation": "Нормативная форма — «будущий». Написание «будующий» не является вариантом нормы.",
+      "badExamples": [
+        "Будующий год будет лучше."
+      ],
+      "goodExamples": [
+        "Будущий год будет лучше."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "будущий"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bбудующий\\b",
+        "replacement": "будущий",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Будующий год будет лучше.",
+          "shouldMatch": true,
+          "expectedSuggestion": "будущий"
+        },
+        {
+          "name": "correct",
+          "input": "Будущий год будет лучше.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.sleduyuschiy",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«следущий» — ошибочное написание слова «следующий»",
+      "shortMessage": "Правильно: «следующий».",
+      "detailedExplanation": "Нормативная форма — «следующий». Написание «следущий» не является вариантом нормы.",
+      "badExamples": [
+        "Следущий вопрос, пожалуйста."
+      ],
+      "goodExamples": [
+        "Следующий вопрос, пожалуйста."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "следующий"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bследущий\\b",
+        "replacement": "следующий",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Следущий вопрос, пожалуйста.",
+          "shouldMatch": true,
+          "expectedSuggestion": "следующий"
+        },
+        {
+          "name": "correct",
+          "input": "Следующий вопрос, пожалуйста.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.chereschur",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«черезчур» — ошибочное написание слова «чересчур»",
+      "shortMessage": "Правильно: «чересчур».",
+      "detailedExplanation": "Нормативная форма — «чересчур». Написание «черезчур» не является вариантом нормы.",
+      "badExamples": [
+        "Это черезчур дорого."
+      ],
+      "goodExamples": [
+        "Это чересчур дорого."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "чересчур"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bчерезчур\\b",
+        "replacement": "чересчур",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Это черезчур дорого.",
+          "shouldMatch": true,
+          "expectedSuggestion": "чересчур"
+        },
+        {
+          "name": "correct",
+          "input": "Это чересчур дорого.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.poskolznutsya",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«подскользнуться» — ошибочное написание слова «поскользнуться»",
+      "shortMessage": "Правильно: «поскользнуться».",
+      "detailedExplanation": "Нормативная форма — «поскользнуться». Написание «подскользнуться» не является вариантом нормы.",
+      "badExamples": [
+        "Можно подскользнуться на льду."
+      ],
+      "goodExamples": [
+        "Можно поскользнуться на льду."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "поскользнуться"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bподскользнуться\\b",
+        "replacement": "поскользнуться",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Можно подскользнуться на льду.",
+          "shouldMatch": true,
+          "expectedSuggestion": "поскользнуться"
+        },
+        {
+          "name": "correct",
+          "input": "Можно поскользнуться на льду.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.priyti",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«придти» — ошибочное написание слова «прийти»",
+      "shortMessage": "Правильно: «прийти».",
+      "detailedExplanation": "Нормативная форма — «прийти». Написание «придти» не является вариантом нормы.",
+      "badExamples": [
+        "Он обещал придти вовремя."
+      ],
+      "goodExamples": [
+        "Он обещал прийти вовремя."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "прийти"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bпридти\\b",
+        "replacement": "прийти",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Он обещал придти вовремя.",
+          "shouldMatch": true,
+          "expectedSuggestion": "прийти"
+        },
+        {
+          "name": "correct",
+          "input": "Он обещал прийти вовремя.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.intsident",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«инциндент» — ошибочное написание слова «инцидент»",
+      "shortMessage": "Правильно: «инцидент».",
+      "detailedExplanation": "Нормативная форма — «инцидент». Написание «инциндент» не является вариантом нормы.",
+      "badExamples": [
+        "Инциндент исчерпан."
+      ],
+      "goodExamples": [
+        "Инцидент исчерпан."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "инцидент"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bинциндент\\b",
+        "replacement": "инцидент",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Инциндент исчерпан.",
+          "shouldMatch": true,
+          "expectedSuggestion": "инцидент"
+        },
+        {
+          "name": "correct",
+          "input": "Инцидент исчерпан.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.pretsedent",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«прецендент» — ошибочное написание слова «прецедент»",
+      "shortMessage": "Правильно: «прецедент».",
+      "detailedExplanation": "Нормативная форма — «прецедент». Написание «прецендент» не является вариантом нормы.",
+      "badExamples": [
+        "Это опасный прецендент."
+      ],
+      "goodExamples": [
+        "Это опасный прецедент."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "прецедент"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bпрецендент\\b",
+        "replacement": "прецедент",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Это опасный прецендент.",
+          "shouldMatch": true,
+          "expectedSuggestion": "прецедент"
+        },
+        {
+          "name": "correct",
+          "input": "Это опасный прецедент.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.konstatirovat",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«константировать» — ошибочное написание слова «констатировать»",
+      "shortMessage": "Правильно: «констатировать».",
+      "detailedExplanation": "Нормативная форма — «констатировать». Написание «константировать» не является вариантом нормы.",
+      "badExamples": [
+        "Можно константировать факт."
+      ],
+      "goodExamples": [
+        "Можно констатировать факт."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "констатировать"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bконстантировать\\b",
+        "replacement": "констатировать",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Можно константировать факт.",
+          "shouldMatch": true,
+          "expectedSuggestion": "констатировать"
+        },
+        {
+          "name": "correct",
+          "input": "Можно констатировать факт.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.skrupulyoznyy",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«скурпулёзный» — ошибочное написание слова «скрупулёзный»",
+      "shortMessage": "Правильно: «скрупулёзный».",
+      "detailedExplanation": "Нормативная форма — «скрупулёзный». Написание «скурпулёзный» не является вариантом нормы.",
+      "badExamples": [
+        "Скурпулёзный подход к делу."
+      ],
+      "goodExamples": [
+        "Скрупулёзный подход к делу."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "скрупулёзный"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bскурпулёзный\\b",
+        "replacement": "скрупулёзный",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Скурпулёзный подход к делу.",
+          "shouldMatch": true,
+          "expectedSuggestion": "скрупулёзный"
+        },
+        {
+          "name": "correct",
+          "input": "Скрупулёзный подход к делу.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.komprometirovat",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«компроментировать» — ошибочное написание слова «компрометировать»",
+      "shortMessage": "Правильно: «компрометировать».",
+      "detailedExplanation": "Нормативная форма — «компрометировать». Написание «компроментировать» не является вариантом нормы.",
+      "badExamples": [
+        "Не стоит компроментировать себя."
+      ],
+      "goodExamples": [
+        "Не стоит компрометировать себя."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "компрометировать"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bкомпроментировать\\b",
+        "replacement": "компрометировать",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Не стоит компроментировать себя.",
+          "shouldMatch": true,
+          "expectedSuggestion": "компрометировать"
+        },
+        {
+          "name": "correct",
+          "input": "Не стоит компрометировать себя.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.kardinalno",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«координально» — ошибочное написание слова «кардинально»",
+      "shortMessage": "Правильно: «кардинально».",
+      "detailedExplanation": "Нормативная форма — «кардинально». Написание «координально» не является вариантом нормы.",
+      "badExamples": [
+        "Ситуация координально изменилась."
+      ],
+      "goodExamples": [
+        "Ситуация кардинально изменилась."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "кардинально"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bкоординально\\b",
+        "replacement": "кардинально",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Ситуация координально изменилась.",
+          "shouldMatch": true,
+          "expectedSuggestion": "кардинально"
+        },
+        {
+          "name": "correct",
+          "input": "Ситуация кардинально изменилась.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.espresso",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«эксперсо» — ошибочное написание слова «эспрессо»",
+      "shortMessage": "Правильно: «эспрессо».",
+      "detailedExplanation": "Нормативная форма — «эспрессо». Написание «эксперсо» не является вариантом нормы.",
+      "badExamples": [
+        "Один эксперсо, пожалуйста."
+      ],
+      "goodExamples": [
+        "Один эспрессо, пожалуйста."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "эспрессо"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bэксперсо\\b",
+        "replacement": "эспрессо",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Один эксперсо, пожалуйста.",
+          "shouldMatch": true,
+          "expectedSuggestion": "эспрессо"
+        },
+        {
+          "name": "correct",
+          "input": "Один эспрессо, пожалуйста.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.dermatin",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«дермантин» — ошибочное написание слова «дерматин»",
+      "shortMessage": "Правильно: «дерматин».",
+      "detailedExplanation": "Нормативная форма — «дерматин». Написание «дермантин» не является вариантом нормы.",
+      "badExamples": [
+        "Обивка из дермантин."
+      ],
+      "goodExamples": [
+        "Обивка из дерматин."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "дерматин"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bдермантин\\b",
+        "replacement": "дерматин",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Обивка из дермантин.",
+          "shouldMatch": true,
+          "expectedSuggestion": "дерматин"
+        },
+        {
+          "name": "correct",
+          "input": "Обивка из дерматин.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.yuriskonsult",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«юристконсульт» — ошибочное написание слова «юрисконсульт»",
+      "shortMessage": "Правильно: «юрисконсульт».",
+      "detailedExplanation": "Нормативная форма — «юрисконсульт». Написание «юристконсульт» не является вариантом нормы.",
+      "badExamples": [
+        "С нами работает юристконсульт."
+      ],
+      "goodExamples": [
+        "С нами работает юрисконсульт."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "юрисконсульт"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bюристконсульт\\b",
+        "replacement": "юрисконсульт",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "С нами работает юристконсульт.",
+          "shouldMatch": true,
+          "expectedSuggestion": "юрисконсульт"
+        },
+        {
+          "name": "correct",
+          "input": "С нами работает юрисконсульт.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.pocherk",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«подчерк» — ошибочное написание слова «почерк»",
+      "shortMessage": "Правильно: «почерк».",
+      "detailedExplanation": "Нормативная форма — «почерк». Написание «подчерк» не является вариантом нормы.",
+      "badExamples": [
+        "У него разборчивый подчерк."
+      ],
+      "goodExamples": [
+        "У него разборчивый почерк."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "почерк"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bподчерк\\b",
+        "replacement": "почерк",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "У него разборчивый подчерк.",
+          "shouldMatch": true,
+          "expectedSuggestion": "почерк"
+        },
+        {
+          "name": "correct",
+          "input": "У него разборчивый почерк.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.ihniy",
+      "language": "ru",
+      "category": "Typo",
+      "issueCategory": "Orthography",
+      "title": "«ихний» — ошибочное написание слова «их»",
+      "shortMessage": "Правильно: «их».",
+      "detailedExplanation": "Нормативная форма — «их». Написание «ихний» не является вариантом нормы.",
+      "badExamples": [
+        "Это ихний дом."
+      ],
+      "goodExamples": [
+        "Это их дом."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "их"
+      ],
+      "safeToApply": true,
+      "source": "Авторское правило WriteLite: устойчивая опечатка, нормативная форма единственна.",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\bихний\\b",
+        "replacement": "их",
+        "ignoreCase": true
+      },
+      "tests": [
+        {
+          "name": "misspelled",
+          "input": "Это ихний дом.",
+          "shouldMatch": true,
+          "expectedSuggestion": "их"
+        },
+        {
+          "name": "correct",
+          "input": "Это их дом.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.hyphenated-adverb",
+      "language": "ru",
+      "category": "JoinedOrSeparateSpelling",
+      "issueCategory": "Orthography",
+      "title": "Пишется через дефис",
+      "shortMessage": "Это наречие пишется через дефис.",
+      "detailedExplanation": "Наречия, образованные от местоимений и порядковых числительных с приставками «по-» и «во-»/«в-», пишутся через дефис: «во-первых», «по-моему», «по-прежнему», «всё-таки». Сочетание «по моему» без дефиса возможно только когда «по» — предлог при существительном в дательном падеже: «по моему мнению».",
+      "badExamples": [
+        "Во первых нужно всё проверить.",
+        "По моему это неверно.",
+        "Мы всё таки закончили работу."
+      ],
+      "goodExamples": [
+        "Во-первых, нужно всё проверить.",
+        "По-моему, это неверно.",
+        "Мы всё-таки закончили работу."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Напишите наречие через дефис."
+      ],
+      "source": "Правила русской орфографии и пунктуации, §83 (дефисное написание наречий).",
+      "safeToApply": true,
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "vo-pervyh",
+          "input": "Во первых нужно всё проверить.",
+          "shouldMatch": true
+        },
+        {
+          "name": "vsyo-taki",
+          "input": "Мы всё таки закончили работу.",
+          "shouldMatch": true
+        },
+        {
+          "name": "po-moemu-adverb",
+          "input": "По моему это неверно.",
+          "shouldMatch": true
+        },
+        {
+          "name": "po-moemu-preposition",
+          "input": "По моему мнению это неверно.",
+          "shouldMatch": false
+        },
+        {
+          "name": "already-hyphenated",
+          "input": "Во-первых, нужно всё проверить.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.ni-with-negation",
+      "language": "ru",
+      "category": "NeWithPartsOfSpeech",
+      "issueCategory": "Orthography",
+      "title": "«Ни» в местоимении при отрицании",
+      "shortMessage": "Если в предложении уже есть отрицание «не», местоимение пишется с «ни»: «ничего не знал».",
+      "detailedExplanation": "Местоимения с ударной «не» — «нечего», «некого», «негде» — употребляются в безличных предложениях без второго отрицания: «мне нечего сказать». Когда при глаголе уже стоит «не», местоимение лишь усиливает отрицание и пишется с безударной «ни»: «ничего не знал», «никого не встретил», «нигде не был».",
+      "badExamples": [
+        "Я совершенно нечего не знал.",
+        "Мы некого не встретили."
+      ],
+      "goodExamples": [
+        "Я совершенно ничего не знал.",
+        "Мы никого не встретили."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Замените «не» на «ни» в местоимении."
+      ],
+      "safeToApply": true,
+      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 50: отрицательные местоимения и наречия с «не» и «ни».",
+      "implementation": {
+        "engine": "regex",
+        "pattern": "\\b([Нн])е(чего|кого|чем|кому|ком|где|куда|откуда)(\\s+не\\b)",
+        "replacement": "$1и$2$3"
+      },
+      "tests": [
+        {
+          "name": "nichego",
+          "input": "Я совершенно нечего не знал.",
+          "shouldMatch": true,
+          "expectedSuggestion": "ничего не"
+        },
+        {
+          "name": "impersonal",
+          "input": "Мне нечего сказать.",
+          "shouldMatch": false
+        },
+        {
+          "name": "correct",
+          "input": "Я ничего не знал.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.ne-adverb",
+      "language": "ru",
+      "category": "NeWithPartsOfSpeech",
+      "issueCategory": "Orthography",
+      "title": "«Не» с наречием пишется слитно",
+      "shortMessage": "Наречие на «-о» с «не» пишется слитно, если его можно заменить синонимом без «не».",
+      "detailedExplanation": "Наречия на «-о» пишутся с «не» слитно, когда сочетание означает одно понятие и заменяется синонимом без «не»: «недалеко» — «близко», «неправильно» — «ошибочно», «нелегко» — «трудно». Раздельно — при противопоставлении с «а» («не далеко, а близко»), после слов «вовсе», «отнюдь», «ничуть», «далеко», и в безличных предложениях о состоянии («мне не холодно»).",
+      "badExamples": [
+        "Библиотека находилась не далеко от общежития.",
+        "Программа работала не правильно."
+      ],
+      "goodExamples": [
+        "Библиотека находилась недалеко от общежития.",
+        "Программа работала неправильно."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Напишите «не» слитно с наречием."
+      ],
+      "safeToApply": true,
+      "source": "Правила русской орфографии и пунктуации, § 150: «не» с наречиями на -о.",
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "nedaleko",
+          "input": "Библиотека находилась не далеко от общежития.",
+          "shouldMatch": true
+        },
+        {
+          "name": "contrast",
+          "input": "Он живёт не далеко, а близко.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.ne-verb",
+      "language": "ru",
+      "category": "NeWithPartsOfSpeech",
+      "issueCategory": "Orthography",
+      "title": "«Не» с глаголом пишется раздельно",
+      "shortMessage": "С глаголами и деепричастиями «не» пишется раздельно.",
+      "detailedExplanation": "Частица «не» с глаголами, деепричастиями и их формами пишется раздельно: «не знаю», «не был», «не зная». Слитно пишутся только глаголы, которые без «не» не употребляются («ненавидеть», «негодовать», «недоумевать», «нездоровится»), и глаголы с приставкой «недо-», означающей недостаточность действия («недооценить», «недоспать»).",
+      "badExamples": [
+        "Я незнаю, что сказать.",
+        "Незная броду, не суйся в воду."
+      ],
+      "goodExamples": [
+        "Я не знаю, что сказать.",
+        "Не зная броду, не суйся в воду."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Я не знаю, что сказать."
+      ],
+      "safeToApply": true,
+      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 64: «не» с глаголами.",
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "verb",
+          "input": "Я незнаю, что сказать.",
+          "shouldMatch": true,
+          "expectedSuggestion": "не знаю"
+        },
+        {
+          "name": "unbound-verb",
+          "input": "Я ненавижу ложь.",
+          "shouldMatch": false
+        },
+        {
+          "name": "nedo",
+          "input": "Я недооценил его.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.ne-unbound",
+      "language": "ru",
+      "category": "NeWithPartsOfSpeech",
+      "issueCategory": "Orthography",
+      "title": "Слово без «не» не употребляется",
+      "shortMessage": "Слова, которые без «не» не употребляются, пишутся слитно.",
+      "detailedExplanation": "Если слово без «не» не существует, «не» является его частью и пишется слитно: «ненавидеть», «нелепый», «небрежно», «невзначай», «неряха». Проверить просто: попробуйте убрать «не» — если получилось не слово («лепый», «навижу»), писать нужно слитно.",
+      "badExamples": [
+        "Я не навижу ложь.",
+        "Это было не лепое решение."
+      ],
+      "goodExamples": [
+        "Я ненавижу ложь.",
+        "Это было нелепое решение."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Я ненавижу ложь."
+      ],
+      "safeToApply": true,
+      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 66–67: «не» с существительными, прилагательными и глаголами.",
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "unbound",
+          "input": "Я не навижу ложь.",
+          "shouldMatch": true,
+          "expectedSuggestion": "ненавижу"
+        },
+        {
+          "name": "free-word",
+          "input": "Я не вижу ложь.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.particle-hyphen",
+      "language": "ru",
+      "category": "JoinedOrSeparateSpelling",
+      "issueCategory": "Orthography",
+      "title": "Частица пишется через дефис",
+      "shortMessage": "Частицы «-нибудь», «-либо», «-ка», «-таки» присоединяются дефисом.",
+      "detailedExplanation": "Частицы «-то», «-либо», «-нибудь» в неопределённых местоимениях и наречиях («кто-нибудь», «где-либо»), «-ка» после глаголов в повелительном наклонении («смотри-ка», «давай-ка») и «-таки» после наречий и частиц («всё-таки», «опять-таки») пишутся через дефис.",
+      "badExamples": [
+        "Позвони мне когда нибудь.",
+        "Смотри ка, кто пришёл!"
+      ],
+      "goodExamples": [
+        "Позвони мне когда-нибудь.",
+        "Смотри-ка, кто пришёл!"
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Позвони мне когда-нибудь."
+      ],
+      "safeToApply": true,
+      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 61: частицы, пишущиеся через дефис.",
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "nibud",
+          "input": "Позвони мне когда нибудь.",
+          "shouldMatch": true,
+          "expectedSuggestion": "когда-нибудь"
+        },
+        {
+          "name": "ka",
+          "input": "Смотри ка, кто пришёл!",
+          "shouldMatch": true,
+          "expectedSuggestion": "Смотри-ка"
+        },
+        {
+          "name": "already",
+          "input": "Позвони мне когда-нибудь.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.po-adverb",
+      "language": "ru",
+      "category": "JoinedOrSeparateSpelling",
+      "issueCategory": "Orthography",
+      "title": "Наречие с «по-» пишется через дефис",
+      "shortMessage": "Наречия с приставкой «по-» на «-ому», «-ему», «-ски», «-ьи» пишутся через дефис.",
+      "detailedExplanation": "Наречия с приставкой «по-», образованные от прилагательных и местоимений и оканчивающиеся на «-ому», «-ему», «-ски», «-цки», «-ьи», пишутся через дефис: «по-русски», «по-новому», «по-дружески», «по-волчьи». Если после слова стоит существительное в дательном падеже, это предлог с прилагательным, и дефис не нужен: «по новому плану», «по русскому полю».",
+      "badExamples": [
+        "Он говорит по русски без акцента.",
+        "Она говорит поанглийски."
+      ],
+      "goodExamples": [
+        "Он говорит по-русски без акцента.",
+        "Она говорит по-английски."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Он говорит по-русски без акцента."
+      ],
+      "safeToApply": true,
+      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 56: дефисное написание наречий.",
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "separate",
+          "input": "Он говорит по русски без акцента.",
+          "shouldMatch": true,
+          "expectedSuggestion": "по-русски"
+        },
+        {
+          "name": "preposition",
+          "input": "Мы шли по русскому полю.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.pol",
+      "language": "ru",
+      "category": "JoinedOrSeparateSpelling",
+      "issueCategory": "Orthography",
+      "title": "«Пол-» в значении «половина»",
+      "shortMessage": "«Пол» с существительным в родительном падеже пишется слитно или через дефис.",
+      "detailedExplanation": "Сложные слова с «пол-» (половина) пишутся слитно: «полчаса», «полдня», «полкниги». Через дефис — если вторая часть начинается с гласной, с буквы «л» или с заглавной буквы: «пол-яблока», «пол-лимона», «пол-Москвы». Раздельно «пол» пишется только тогда, когда между ним и существительным есть определение: «пол чайной ложки».",
+      "badExamples": [
+        "Я ждал пол часа.",
+        "Мы купили пол лимона."
+      ],
+      "goodExamples": [
+        "Я ждал полчаса.",
+        "Мы купили пол-лимона."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Я ждал полчаса."
+      ],
+      "safeToApply": true,
+      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 25: правописание сложных слов с «пол-».",
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "solid",
+          "input": "Я ждал пол часа.",
+          "shouldMatch": true,
+          "expectedSuggestion": "полчаса"
+        },
+        {
+          "name": "hyphen",
+          "input": "Мы купили пол лимона.",
+          "shouldMatch": true,
+          "expectedSuggestion": "пол-лимона"
+        },
+        {
+          "name": "floor",
+          "input": "Пол в комнате был деревянный.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.hyphen-compound",
+      "language": "ru",
+      "category": "JoinedOrSeparateSpelling",
+      "issueCategory": "Orthography",
+      "title": "Сложное слово пишется через дефис",
+      "shortMessage": "Это сложное слово пишется через дефис.",
+      "detailedExplanation": "Через дефис пишутся сложные прилагательные, обозначающие оттенки цветов и стороны света («светло-синий», «северо-западный»), существительные с иноязычными приставками «вице-», «экс-», «лейб-», «обер-» («вице-президент», «экс-чемпион»), составные существительные («интернет-магазин», «диван-кровать»), сложные предлоги «из-за», «из-под», местоимения с «кое-» («кое-что») и повторы («давным-давно», «чуть-чуть»).",
+      "badExamples": [
+        "Это северо западный ветер.",
+        "Вице президент выступил с речью."
+      ],
+      "goodExamples": [
+        "Это северо-западный ветер.",
+        "Вице-президент выступил с речью."
+      ],
+      "severity": "Error",
+      "suggestions": [
+        "Это северо-западный ветер."
+      ],
+      "safeToApply": true,
+      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке, §§ 29, 40, 56: дефисное написание.",
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "direction",
+          "input": "Это северо западный ветер.",
+          "shouldMatch": true,
+          "expectedSuggestion": "северо-западный"
+        },
+        {
+          "name": "koe",
+          "input": "Кое что я всё же понял.",
+          "shouldMatch": true,
+          "expectedSuggestion": "Кое-что"
+        },
+        {
+          "name": "separate",
+          "input": "Он пришёл домой поздно.",
+          "shouldMatch": false
+        }
+      ]
+    },
+    {
+      "ruleId": "ru.spelling.ne-adjective",
+      "language": "ru",
+      "category": "NeWithPartsOfSpeech",
+      "issueCategory": "Orthography",
+      "title": "«Не» с прилагательным",
+      "shortMessage": "Без противопоставления «не» с прилагательным пишется слитно.",
+      "detailedExplanation": "«Не» с прилагательными пишется слитно, если слово можно заменить синонимом без «не» («небольшой» — «маленький») и нет противопоставления. Раздельно — при противопоставлении с союзом «а» («не большой, а огромный»), при словах «вовсе», «отнюдь», «далеко», «ничуть», усиливающих отрицание, и в относительных прилагательных («не деревянный дом»).",
+      "badExamples": [
+        "Это не большой дом."
+      ],
+      "goodExamples": [
+        "Это небольшой дом.",
+        "Это не большой, а огромный дом."
+      ],
+      "severity": "Warning",
+      "suggestions": [
+        "Пишите слитно, если нет противопоставления."
+      ],
+      "safeToApply": false,
+      "source": "Розенталь Д. Э. Справочник по правописанию и литературной правке, § 65: «не» с прилагательными.",
+      "implementation": {
+        "engine": "builtin"
+      },
+      "tests": [
+        {
+          "name": "attributive",
+          "input": "Это не большой дом.",
+          "shouldMatch": true
+        },
+        {
+          "name": "contrast",
+          "input": "Это не большой, а огромный дом.",
+          "shouldMatch": false
+        }
+      ]
+    }
+  ]
 }

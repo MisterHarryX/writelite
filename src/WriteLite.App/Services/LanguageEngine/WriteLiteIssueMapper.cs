@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using WriteLite.Models;
@@ -84,6 +84,20 @@ public sealed class WriteLiteIssueMapper
         else
         {
             replacement = nonEmpty[0];
+
+            // English grammar rules list alternatives in a fixed order («was» → «are», «were»),
+            // not by fit. The one that keeps the most of what was written is the likelier
+            // intent — «were», the same verb in the same tense — so that one leads.
+            if (match.CheckedLanguage == "en" && nonEmpty.Count > 1 && !original.Contains(' ')
+                && match.Rule?.Category?.Id is "GRAMMAR" or "MISC" or "CONFUSED_WORDS")
+            {
+                replacement = nonEmpty
+                    .Select((value, order) => (value, order))
+                    .OrderByDescending(x => CommonPrefix(original, x.value))
+                    .ThenBy(x => x.order)
+                    .First().value;
+            }
+
             if (!IsAcceptableReplacement(original, replacement, match, out var safeForAuto))
             {
                 if (string.IsNullOrEmpty(replacement))
@@ -153,6 +167,11 @@ public sealed class WriteLiteIssueMapper
         {
             title = fallbackTitle;
             explanation = DefaultExplanation(category);
+        }
+
+        if (match.CheckedLanguage == "en")
+        {
+            (title, explanation) = DescribeEnglish(category, match, original, replacement);
         }
 
         var severity = canApplyAutomatically ? IssueSeverity.Error : IssueSeverity.Suggestion;
@@ -304,6 +323,74 @@ public sealed class WriteLiteIssueMapper
 
     private static bool IsWhitespaceOnly(string value)
         => value.Length > 0 && value.All(char.IsWhiteSpace);
+
+    /// <summary>
+    /// Translates engine messages for English text into Russian. Set by the application to the
+    /// offline translator; null leaves the English message as it is.
+    /// </summary>
+    public static Func<string, string?>? MessageTranslator { get; set; }
+
+    private static int CommonPrefix(string a, string b)
+    {
+        var n = 0;
+        while (n < a.Length && n < b.Length && char.ToLowerInvariant(a[n]) == char.ToLowerInvariant(b[n])) n++;
+        return n;
+    }
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string?> TranslatedMessages = new();
+
+    /// <summary>
+    /// A Russian card for a mistake in English text.
+    /// </summary>
+    /// <remarks>
+    /// The engine explains English mistakes in English. The card is read by a Russian speaker, so
+    /// the message is translated offline and the original is kept beside it — the translation of
+    /// a grammar note can lose the technical term, and the original is what to search for.
+    /// </remarks>
+    private static (string Title, string Explanation) DescribeEnglish(
+        IssueCategory category,
+        WriteLiteLanguageMatchDto match,
+        string original,
+        string? replacement)
+    {
+        if (EnglishRuleExplanations.Describe(match.Rule?.Id, original, replacement) is { } curated)
+        {
+            return curated;
+        }
+
+        var title = category switch
+        {
+            IssueCategory.Orthography => "Опечатка в английском",
+            IssueCategory.Grammar => "Английская грамматика",
+            IssueCategory.Punctuation => "Пунктуация в английском",
+            IssueCategory.Style => "Стиль английского текста",
+            _ => "Английский текст",
+        };
+
+        var message = (match.Message ?? match.ShortMessage ?? string.Empty).Trim();
+        if (message.Length == 0) return (title, DefaultExplanation(category));
+
+        string? translated = null;
+        if (MessageTranslator is { } translate)
+        {
+            translated = TranslatedMessages.GetOrAdd(message, m =>
+            {
+                try
+                {
+                    return translate(m);
+                }
+                catch
+                {
+                    return null;
+                }
+            });
+        }
+
+        var explanation = string.IsNullOrWhiteSpace(translated)
+            ? message
+            : $"{translated.Trim()}\nОригинал: {message}";
+        return (title, explanation);
+    }
 
     private static string DefaultTitle(IssueCategory category) => category switch
     {

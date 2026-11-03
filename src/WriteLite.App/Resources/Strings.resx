@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype" xml:space="preserve"><value>text/microsoft-resx</value></resheader>
   <resheader name="version" xml:space="preserve"><value>2.0</value></resheader>
@@ -28,6 +28,7 @@
   <data name="Suggestions_DictLoadingBanner" xml:space="preserve"><value>Словарь ещё загружается. Точность проверки может быть ниже обычного.</value></data>
   <data name="Suggestions_NoIssues" xml:space="preserve"><value>Замечаний не найдено</value></data>
   <data name="Suggestions_TextLooksGood" xml:space="preserve"><value>Текст выглядит хорошо.</value></data>
+  <data name="Suggestions_Applying" xml:space="preserve"><value>Исправляем…</value></data>
   <data name="Suggestions_Checking" xml:space="preserve"><value>Проверяем текст…</value></data>
   <data name="Suggestions_ApplyAllSafe" xml:space="preserve"><value>Исправить все безопасные</value></data>
   <data name="Suggestions_HeaderAnalyzing" xml:space="preserve"><value>Анализ текста…</value></data>
@@ -397,10 +398,10 @@
   <data name="SETTINGS_SAFE_ALL_DESC" xml:space="preserve"><value>Кнопка «Исправить все» применяет только уверенные правки.</value></data>
   <data name="SETTINGS_SAFE_ALL_AP_NAME" xml:space="preserve"><value>Безопасное исправление всех замечаний</value></data>
   <data name="SETTINGS_SECTION_LANGUAGES" xml:space="preserve"><value>Языки</value></data>
-  <data name="SETTINGS_SECTION_LANGUAGES_DESC" xml:space="preserve"><value>Русская проверка доступна в beta; английская в разработке.</value></data>
+  <data name="SETTINGS_SECTION_LANGUAGES_DESC" xml:space="preserve"><value>Русский и английский проверяются автоматически — по каждому предложению.</value></data>
   <data name="SETTINGS_LANGUAGE" xml:space="preserve"><value>Язык проверки</value></data>
-  <data name="SETTINGS_LANGUAGE_DESC" xml:space="preserve"><value>Смешанный RU/EN текст определяется автоматически.</value></data>
-  <data name="SETTINGS_LANGUAGE_RUSSIAN" xml:space="preserve"><value>Русский</value></data>
+  <data name="SETTINGS_LANGUAGE_DESC" xml:space="preserve"><value>Английские предложения проверяются по английским правилам, объяснения переводятся на русский.</value></data>
+  <data name="SETTINGS_LANGUAGE_RUSSIAN" xml:space="preserve"><value>Русский · English</value></data>
   <data name="SETTINGS_SECTION_UI" xml:space="preserve"><value>Интерфейс</value></data>
   <data name="SETTINGS_SECTION_UI_DESC" xml:space="preserve"><value>Когда WriteLite появляется и как ведут себя подчёркивания.</value></data>
   <data name="SETTINGS_DELAY" xml:space="preserve"><value>Задержка анализа</value></data>
@@ -582,6 +583,17 @@
   <data name="Corr_ClassError" xml:space="preserve"><value>Ошибка</value></data>
   <data name="Corr_ClassStyle" xml:space="preserve"><value>Рекомендация</value></data>
   <data name="Corr_ClassWarning" xml:space="preserve"><value>Возможная ошибка</value></data>
+  <data name="Corr_RuleLabel" xml:space="preserve"><value>Правило</value></data>
+  <data name="Corr_RuleOpenReference" xml:space="preserve"><value>Подробнее в справочнике →</value></data>
+  <data name="Corr_RuleOpenReferenceTooltip" xml:space="preserve"><value>Открыть правило в справочнике WriteLite</value></data>
+  <data name="Nav_Rules" xml:space="preserve"><value>Справочник</value></data>
+  <data name="Nav_Rules_Tooltip" xml:space="preserve"><value>Правила, по которым WriteLite проверяет текст: объяснения, примеры и источники</value></data>
+  <data name="Rules_Description" xml:space="preserve"><value>Каждое исправление WriteLite опирается на одно из этих правил. Здесь — что оно значит, почему так пишут, примеры и источник.</value></data>
+  <data name="Rules_SearchPlaceholder" xml:space="preserve"><value>Найти правило: «запятая», «-тся», «согласование»…</value></data>
+  <data name="Rules_SearchAutomation" xml:space="preserve"><value>Поиск по справочнику правил</value></data>
+  <data name="Rules_NothingFound" xml:space="preserve"><value>Ничего не найдено. Попробуйте другое слово.</value></data>
+  <data name="Rules_ExamplesLabel" xml:space="preserve"><value>Примеры</value></data>
+  <data name="Rules_SourceLabel" xml:space="preserve"><value>Источник</value></data>
   <data name="Corr_Copy" xml:space="preserve"><value>Скопировать</value></data>
   <data name="Corr_IdenticalCorrection" xml:space="preserve"><value>Исправление совпадает с исходным текстом.</value></data>
   <data name="Corr_InsertMark" xml:space="preserve"><value>Вставить «{0}»</value></data>
@@ -664,7 +676,7 @@
   <data name="Home_SectionStatus" xml:space="preserve"><value>Состояние</value></data>
   <data name="Home_StatusActive" xml:space="preserve"><value>Активен</value></data>
   <data name="Home_StatusEngineDesc" xml:space="preserve"><value>Базовая проверка WriteLite</value></data>
-  <data name="Home_StatusLanguagesDesc" xml:space="preserve"><value>Смешанный текст, английский в разработке</value></data>
+  <data name="Home_StatusLanguagesDesc" xml:space="preserve"><value>Русский и английский, смешанный текст</value></data>
   <data name="Home_StatusLocal" xml:space="preserve"><value>Локальная</value></data>
   <data name="Home_StatusLocalDesc" xml:space="preserve"><value>Текст остаётся на этом устройстве</value></data>
   <data name="Home_StatusPaused" xml:space="preserve"><value>На паузе</value></data>
@@ -677,19 +689,24 @@
   <data name="LexPop_Historical" xml:space="preserve"><value>историч.</value></data>
   <data name="LexPop_LemmaLabel" xml:space="preserve"><value>Словарная форма: {0}</value></data>
   <data name="LexPop_Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="LexPop_MeaningHeading" xml:space="preserve"><value>Значение</value></data>
+  <data name="LexPop_GrammarHeading" xml:space="preserve"><value>Грамматика</value></data>
+  <data name="LexPop_FormOf" xml:space="preserve"><value>форма слова «{0}»</value></data>
+  <data name="LexPop_MoreMeanings" xml:space="preserve"><value>Ещё значений: {0} — во вкладке «Значения».</value></data>
+  <data name="LexPop_NoGrammar" xml:space="preserve"><value>Этого слова нет в морфологической базе, поэтому грамматические признаки не показаны.</value></data>
   <data name="LexPop_OpenFullArticleTooltip" xml:space="preserve"><value>Открыть полную статью в словаре</value></data>
   <data name="LexPop_OpenInDictionary" xml:space="preserve"><value>В словаре</value></data>
   <data name="LexPop_PartOfSpeechLabel" xml:space="preserve"><value>Часть речи: {0}</value></data>
-  <data name="LexPop_PosAdjective" xml:space="preserve"><value>прил.</value></data>
-  <data name="LexPop_PosAdverb" xml:space="preserve"><value>нар.</value></data>
+  <data name="LexPop_PosAdjective" xml:space="preserve"><value>прилагательное</value></data>
+  <data name="LexPop_PosAdverb" xml:space="preserve"><value>наречие</value></data>
   <data name="LexPop_PosConjunction" xml:space="preserve"><value>союз</value></data>
-  <data name="LexPop_PosInterjection" xml:space="preserve"><value>межд.</value></data>
-  <data name="LexPop_PosNoun" xml:space="preserve"><value>сущ.</value></data>
-  <data name="LexPop_PosNumeral" xml:space="preserve"><value>числ.</value></data>
-  <data name="LexPop_PosParticle" xml:space="preserve"><value>част.</value></data>
-  <data name="LexPop_PosPreposition" xml:space="preserve"><value>предл.</value></data>
-  <data name="LexPop_PosPronoun" xml:space="preserve"><value>мест.</value></data>
-  <data name="LexPop_PosVerb" xml:space="preserve"><value>гл.</value></data>
+  <data name="LexPop_PosInterjection" xml:space="preserve"><value>междометие</value></data>
+  <data name="LexPop_PosNoun" xml:space="preserve"><value>существительное</value></data>
+  <data name="LexPop_PosNumeral" xml:space="preserve"><value>числительное</value></data>
+  <data name="LexPop_PosParticle" xml:space="preserve"><value>частица</value></data>
+  <data name="LexPop_PosPreposition" xml:space="preserve"><value>предлог</value></data>
+  <data name="LexPop_PosPronoun" xml:space="preserve"><value>местоимение</value></data>
+  <data name="LexPop_PosVerb" xml:space="preserve"><value>глагол</value></data>
   <data name="LexPop_RelatedTo" xml:space="preserve"><value>Связано с: {0}</value></data>
   <data name="LexPop_Relations" xml:space="preserve"><value>Связи</value></data>
   <data name="LexPop_RoleAdverbial" xml:space="preserve"><value>Обстоятельство</value></data>
@@ -705,12 +722,12 @@
   <data name="LexPop_SearchingLocal" xml:space="preserve"><value>Поиск в локальных словарях…</value></data>
   <data name="LexPop_SynonymsNotFound" xml:space="preserve"><value>Синонимы не найдены.</value></data>
   <data name="LexPop_TranslationNotFound" xml:space="preserve"><value>Перевод не найден.</value></data>
-  <data name="LexPop_WordDefinitions" xml:space="preserve"><value>Определения</value></data>
+  <data name="LexPop_WordDefinitions" xml:space="preserve"><value>Значения</value></data>
   <data name="LexPop_WordExamples" xml:space="preserve"><value>Примеры</value></data>
   <data name="LexPop_WordLabel" xml:space="preserve"><value>Слово: {0}</value></data>
   <data name="LexPop_WordRole" xml:space="preserve"><value>Роль</value></data>
   <data name="LexPop_WordSynonyms" xml:space="preserve"><value>Синонимы</value></data>
-  <data name="LexPop_WordTranslations" xml:space="preserve"><value>Переводы</value></data>
+  <data name="LexPop_WordTranslations" xml:space="preserve"><value>Перевод</value></data>
   <data name="LocalAi_AiLayerDescription" xml:space="preserve"><value>Дополнительный слой после быстрых правил.</value></data>
   <data name="LocalAi_BaseCheck" xml:space="preserve"><value>Базовая проверка WriteLite</value></data>
   <data name="LocalAi_ConfigSection" xml:space="preserve"><value>Конфигурация</value></data>
@@ -956,4 +973,219 @@
   <data name="Study_TrackedLocalModel" xml:space="preserve"><value>ЛОКАЛЬНАЯ МОДЕЛЬ · БЕЗ ИНТЕРНЕТА</value></data>
   <data name="Study_WindowAutomation" xml:space="preserve"><value>Карточка из текста</value></data>
   <data name="Study_WindowTitle" xml:space="preserve"><value>Карточка</value></data>
+  <data name="AiPreview_ProgressFormat" xml:space="preserve"><value>Обрабатываю фрагмент {0} из {1}…</value></data>
+  <data name="AiPreview_BackendChecker" xml:space="preserve"><value>Исправлено правилами и словарями WriteLite, без нейросети. Текст никуда не отправлялся.</value></data>
+  <data name="NoteSketch_CanvasAutomation" xml:space="preserve"><value>Поверхность для рисования</value></data>
+  <data name="NoteSketch_Pen" xml:space="preserve"><value>Перо</value></data>
+  <data name="NoteSketch_Marker" xml:space="preserve"><value>Маркер</value></data>
+  <data name="NoteSketch_Eraser" xml:space="preserve"><value>Ластик</value></data>
+  <data name="NoteSketch_Label" xml:space="preserve"><value>РИСУНОК</value></data>
+  <data name="NoteSketch_Clear" xml:space="preserve"><value>Очистить</value></data>
+  <data name="NoteSketch_Remove" xml:space="preserve"><value>Убрать рисунок</value></data>
+  <data name="NoteSketch_ResizeTooltip" xml:space="preserve"><value>Потяните, чтобы изменить высоту</value></data>
+  <data name="NoteSketch_ColorTooltip" xml:space="preserve"><value>Цвет пера</value></data>
+  <data name="AiAction_KeyPoints" xml:space="preserve"><value>Узнать главное</value></data>
+  <data name="AiAction_Explain" xml:space="preserve"><value>Объясни простыми словами</value></data>
+  <data name="AiAction_Shorten" xml:space="preserve"><value>Сократить</value></data>
+  <data name="AiAction_Expand" xml:space="preserve"><value>Удлинить</value></data>
+  <data name="AiAction_Rewrite" xml:space="preserve"><value>Переписать</value></data>
+  <data name="AiAction_FixErrors" xml:space="preserve"><value>Исправить ошибки</value></data>
+  <data name="AiAction_ScopeSelection" xml:space="preserve"><value>Применить к выделенному</value></data>
+  <data name="AiAction_ScopeNote" xml:space="preserve"><value>Применить ко всей заметке</value></data>
+  <data name="AiAction_ScopeDocument" xml:space="preserve"><value>Применить ко всему документу</value></data>
+  <data name="AiAction_Button" xml:space="preserve"><value>AI</value></data>
+  <data name="AiAction_ButtonTooltip" xml:space="preserve"><value>Действия WriteAI: главное, объяснение, сокращение, переписывание, исправление ошибок</value></data>
+  <data name="AiAction_KeyPointsHeading" xml:space="preserve"><value>Главное</value></data>
+  <data name="AiAction_ExplainHeading" xml:space="preserve"><value>Простыми словами</value></data>
+  <data name="AiAction_TextChanged" xml:space="preserve"><value>Текст изменился, пока шла обработка. Часть правок не применена — запустите действие ещё раз.</value></data>
+  <data name="NoteEditor_BackTooltip" xml:space="preserve"><value>Вернуться к списку (заметка уже сохранена)</value></data>
+  <data name="NoteEditor_BackAutomation" xml:space="preserve"><value>Назад к заметкам</value></data>
+  <data name="NoteEditor_MoreTooltip" xml:space="preserve"><value>Ещё действия с заметкой</value></data>
+  <data name="NoteEditor_StyleText" xml:space="preserve"><value>Обычный текст</value></data>
+  <data name="NoteEditor_StyleHeading1" xml:space="preserve"><value>Заголовок 1</value></data>
+  <data name="NoteEditor_StyleHeading2" xml:space="preserve"><value>Заголовок 2</value></data>
+  <data name="NoteEditor_StyleHeading3" xml:space="preserve"><value>Заголовок 3</value></data>
+  <data name="NoteEditor_StyleQuote" xml:space="preserve"><value>Цитата</value></data>
+  <data name="NoteEditor_StrikeTooltip" xml:space="preserve"><value>Зачеркнуть</value></data>
+  <data name="NoteEditor_HighlightTooltip" xml:space="preserve"><value>Выделить маркером</value></data>
+  <data name="NoteEditor_BulletsTooltip" xml:space="preserve"><value>Маркированный список («- » в начале строки)</value></data>
+  <data name="NoteEditor_NumbersTooltip" xml:space="preserve"><value>Нумерованный список («1. » в начале строки)</value></data>
+  <data name="NoteEditor_ChecklistTooltip" xml:space="preserve"><value>Чек-лист («[] » в начале строки)</value></data>
+  <data name="NoteEditor_DividerTooltip" xml:space="preserve"><value>Разделитель</value></data>
+  <data name="NoteEditor_InsertImage" xml:space="preserve"><value>Изображение</value></data>
+  <data name="NoteEditor_InsertImageTooltip" xml:space="preserve"><value>Вставить изображение из файла (или вставьте его из буфера, Ctrl+V)</value></data>
+  <data name="NoteEditor_InsertSketch" xml:space="preserve"><value>Рисунок</value></data>
+  <data name="NoteEditor_InsertSketchTooltip" xml:space="preserve"><value>Добавить поле для рисования от руки</value></data>
+  <data name="NoteEditor_BookmarkTooltip" xml:space="preserve"><value>Закладка на этом абзаце</value></data>
+  <data name="NoteEditor_KindAutomation" xml:space="preserve"><value>Тип записи</value></data>
+  <data name="NoteEditor_ProjectTooltip" xml:space="preserve"><value>Проект, в котором лежит заметка</value></data>
+  <data name="NoteEditor_DuePlaceholder" xml:space="preserve"><value>Срок: дд.мм.гггг</value></data>
+  <data name="NoteEditor_BookmarksLabel" xml:space="preserve"><value>ЗАКЛАДКИ</value></data>
+  <data name="NoteEditor_BookmarksHint" xml:space="preserve"><value>Закладка ставится кнопкой на панели или через меню правой кнопки. Правый клик по закладке — переименовать.</value></data>
+  <data name="NoteEditor_Saved" xml:space="preserve"><value>СОХРАНЕНО</value></data>
+  <data name="NoteEditor_Saving" xml:space="preserve"><value>СОХРАНЯЮ…</value></data>
+  <data name="NoteEditor_SavedAt" xml:space="preserve"><value>СОХРАНЕНО · {0}</value></data>
+  <data name="NoteEditor_Duplicated" xml:space="preserve"><value>КОПИЯ СОЗДАНА</value></data>
+  <data name="NoteEditor_ImageFilter" xml:space="preserve"><value>Изображения</value></data>
+  <data name="NoteEditor_ImageTooLarge" xml:space="preserve"><value>Изображение больше 40 МБ — такое в заметку не вставить.</value></data>
+  <data name="NoteEditor_ImageFailed" xml:space="preserve"><value>Не удалось вставить изображение. Возможно, файл повреждён или занят другой программой.</value></data>
+  <data name="NoteEditor_ImageMissing" xml:space="preserve"><value>Изображение не найдено — файл был удалён вне WriteLite.</value></data>
+  <data name="NoteEditor_ImageTooltip" xml:space="preserve"><value>Двойной щелчок — открыть, правый — размер и другие действия</value></data>
+  <data name="NoteEditor_ImageAutomation" xml:space="preserve"><value>Изображение в заметке</value></data>
+  <data name="NoteEditor_ImageSmall" xml:space="preserve"><value>Маленькое</value></data>
+  <data name="NoteEditor_ImageMedium" xml:space="preserve"><value>Среднее</value></data>
+  <data name="NoteEditor_ImageFull" xml:space="preserve"><value>По ширине заметки</value></data>
+  <data name="NoteEditor_ImageOpen" xml:space="preserve"><value>Открыть в программе просмотра</value></data>
+  <data name="NoteEditor_ImageRemove" xml:space="preserve"><value>Удалить изображение</value></data>
+  <data name="NoteEditor_GoToBookmark" xml:space="preserve"><value>Перейти к закладке «{0}»</value></data>
+  <data name="NoteEditor_RenameBookmark" xml:space="preserve"><value>Переименовать закладку</value></data>
+  <data name="NoteEditor_RemoveBookmark" xml:space="preserve"><value>Убрать закладку</value></data>
+  <data name="NoteEditor_NothingToProcess" xml:space="preserve"><value>Здесь нет текста для обработки. Напишите что-нибудь или выделите фрагмент.</value></data>
+  <data name="NoteEditor_CheckAutomation" xml:space="preserve"><value>Отметить пункт</value></data>
+  <data name="Projects_None" xml:space="preserve"><value>Без проекта</value></data>
+  <data name="Projects_MoveTo" xml:space="preserve"><value>Переместить в проект</value></data>
+  <data name="NoteCard_ImageOne" xml:space="preserve"><value>изображение</value></data>
+  <data name="NoteCard_ImageFew" xml:space="preserve"><value>изображения</value></data>
+  <data name="NoteCard_ImageMany" xml:space="preserve"><value>изображений</value></data>
+  <data name="NoteCard_SketchOne" xml:space="preserve"><value>рисунок</value></data>
+  <data name="NoteCard_SketchFew" xml:space="preserve"><value>рисунка</value></data>
+  <data name="NoteCard_SketchMany" xml:space="preserve"><value>рисунков</value></data>
+  <data name="NoteCard_BookmarkOne" xml:space="preserve"><value>закладка</value></data>
+  <data name="NoteCard_BookmarkFew" xml:space="preserve"><value>закладки</value></data>
+  <data name="NoteCard_BookmarkMany" xml:space="preserve"><value>закладок</value></data>
+  <data name="Projects_MoveToEllipsis" xml:space="preserve"><value>Переместить в проект…</value></data>
+  <data name="Projects_RailLabel" xml:space="preserve"><value>ЗАМЕТКИ</value></data>
+  <data name="Projects_Label" xml:space="preserve"><value>ПРОЕКТЫ</value></data>
+  <data name="Projects_NewTooltip" xml:space="preserve"><value>Новый проект</value></data>
+  <data name="Projects_EmptyHint" xml:space="preserve"><value>Проект собирает заметки, задачи и ссылки по одной теме. Создайте первый кнопкой «+».</value></data>
+  <data name="Projects_MenuTooltip" xml:space="preserve"><value>Действия с проектом</value></data>
+  <data name="Projects_ScopeTooltip" xml:space="preserve"><value>Выбрать проект</value></data>
+  <data name="Projects_DescriptionPlaceholder" xml:space="preserve"><value>Добавьте описание: цель проекта, сроки, что важно помнить…</value></data>
+  <data name="Projects_DescriptionAutomation" xml:space="preserve"><value>Описание проекта</value></data>
+  <data name="Projects_KeyPoints" xml:space="preserve"><value>Главное по проекту</value></data>
+  <data name="Projects_KeyPointsTooltip" xml:space="preserve"><value>WriteAI соберёт ключевые мысли из всех заметок проекта и сохранит их отдельной заметкой</value></data>
+  <data name="Projects_TasksLabel" xml:space="preserve"><value>ЗАДАЧИ</value></data>
+  <data name="Projects_NewTaskPlaceholder" xml:space="preserve"><value>Новая задача — Enter, чтобы добавить</value></data>
+  <data name="Projects_NewTaskAutomation" xml:space="preserve"><value>Новая задача проекта</value></data>
+  <data name="Projects_BookmarksLabel" xml:space="preserve"><value>ЗАКЛАДКИ И ССЫЛКИ</value></data>
+  <data name="Projects_NoBookmarks" xml:space="preserve"><value>Здесь появятся закладки из заметок проекта и ссылки, которые вы добавите ниже.</value></data>
+  <data name="Projects_NewLinkPlaceholder" xml:space="preserve"><value>Ссылка или «Название — ссылка»</value></data>
+  <data name="Projects_NewLinkAutomation" xml:space="preserve"><value>Новая ссылка проекта</value></data>
+  <data name="Projects_NotesLabel" xml:space="preserve"><value>ЗАМЕТКИ ПРОЕКТА</value></data>
+  <data name="Projects_AllNotes" xml:space="preserve"><value>Все записи</value></data>
+  <data name="Projects_NewPrompt" xml:space="preserve"><value>Название проекта</value></data>
+  <data name="Projects_NewPromptHint" xml:space="preserve"><value>Например: «Диплом», «Переезд», «Запуск сайта»</value></data>
+  <data name="Projects_Rename" xml:space="preserve"><value>Переименовать проект</value></data>
+  <data name="Projects_Delete" xml:space="preserve"><value>Удалить проект…</value></data>
+  <data name="Projects_DeleteTitle" xml:space="preserve"><value>Удаление проекта</value></data>
+  <data name="Projects_DeleteEmptyConfirm" xml:space="preserve"><value>Удалить пустой проект «{0}»?</value></data>
+  <data name="Projects_DeleteConfirm" xml:space="preserve"><value>В проекте «{0}» {1} {2}.
+
+Да — удалить только проект, а записи оставить (они перейдут в «Без проекта»).
+Нет — удалить проект вместе со всеми записями.
+Отмена — ничего не менять.</value></data>
+  <data name="Projects_DeleteNotesConfirm" xml:space="preserve"><value>Удалить проект и все его записи ({0})? Изображения и рисунки в них тоже будут удалены. Это нельзя отменить.</value></data>
+  <data name="Projects_NoteOne" xml:space="preserve"><value>запись</value></data>
+  <data name="Projects_NoteFew" xml:space="preserve"><value>записи</value></data>
+  <data name="Projects_NoteMany" xml:space="preserve"><value>записей</value></data>
+  <data name="Projects_NewAndMove" xml:space="preserve"><value>Новый проект…</value></data>
+  <data name="Projects_TrackedLabel" xml:space="preserve"><value>ПРОЕКТ</value></data>
+  <data name="Projects_UnfiledSubtitle" xml:space="preserve"><value>Записи, которые пока не относятся ни к одному проекту.</value></data>
+  <data name="Projects_TasksProgress" xml:space="preserve"><value>{0} ИЗ {1} ЗАДАЧ ВЫПОЛНЕНО</value></data>
+  <data name="Projects_ShowDone" xml:space="preserve"><value>Показать выполненные ({0})</value></data>
+  <data name="Projects_HideDone" xml:space="preserve"><value>Скрыть выполненные ({0})</value></data>
+  <data name="Projects_OpenTaskTooltip" xml:space="preserve"><value>Открыть задачу</value></data>
+  <data name="Projects_RemoveLink" xml:space="preserve"><value>Убрать ссылку</value></data>
+  <data name="Projects_RemoveLinkAutomation" xml:space="preserve"><value>Убрать ссылку «{0}»</value></data>
+  <data name="Projects_BadLink" xml:space="preserve"><value>Это не похоже на ссылку. Подойдёт адрес сайта (https://…), почта (mailto:…) или путь к существующему файлу или папке.</value></data>
+  <data name="Projects_NothingToSummarize" xml:space="preserve"><value>В проекте пока нет текста, из которого можно выделить главное.</value></data>
+  <data name="Projects_KeyPointsNoteTitle" xml:space="preserve"><value>Главное: {0}</value></data>
+  <data name="Projects_EmptyTitle" xml:space="preserve"><value>В проекте пока нет заметок</value></data>
+  <data name="Projects_EmptyBoardHint" xml:space="preserve"><value>Создайте заметку кнопкой «Новая запись» — она сразу попадёт в этот проект. Задачи можно добавлять прямо в списке выше.</value></data>
+  <data name="Projects_ScopeButton" xml:space="preserve"><value>Проекты</value></data>
+  <data name="Nav_Style" xml:space="preserve"><value>Мой стиль</value></data>
+  <data name="Nav_Style_Tooltip" xml:space="preserve"><value>Как вы пишете: ваши слова, подсказка слов и калибровка стиля</value></data>
+  <data name="Home_StyleOfferTitle" xml:space="preserve"><value>Научите WriteLite вашему стилю</value></data>
+  <data name="Home_StyleOfferBody" xml:space="preserve"><value>Напишите от руки несколько коротких текстов — около десяти минут. WriteLite запомнит ваши слова и обороты, начнёт подсказывать слово, которое вы набираете, и предлагать исправления, которые вы обычно выбираете.</value></data>
+  <data name="Home_StyleOfferStart" xml:space="preserve"><value>Начать калибровку</value></data>
+  <data name="Home_StyleOfferDismiss" xml:space="preserve"><value>Не предлагать</value></data>
+  <data name="Style_Title" xml:space="preserve"><value>Мой стиль письма</value></data>
+  <data name="Style_Description" xml:space="preserve"><value>WriteLite учится тому, как пишете именно вы: какие слова выбираете, как строите фразы, какие опечатки исправляете. Этот режим добавляет к обычной проверке подсказку слов и исправления в вашем стиле.</value></data>
+  <data name="Style_CalibrationTitle" xml:space="preserve"><value>Калибровка стиля</value></data>
+  <data name="Style_CalibrationBody" xml:space="preserve"><value>Напишите сами несколько коротких текстов на разные темы. Это даст WriteLite ваш словарь с первого дня, а дальше он будет учиться, пока вы пишете.</value></data>
+  <data name="Style_CalibrationDoneTitle" xml:space="preserve"><value>Калибровка пройдена</value></data>
+  <data name="Style_CalibrationDoneBody" xml:space="preserve"><value>WriteLite продолжает учиться, пока вы пишете. Калибровку можно пройти ещё раз или добавить свои готовые тексты.</value></data>
+  <data name="Style_StartCalibration" xml:space="preserve"><value>Начать калибровку</value></data>
+  <data name="Style_RepeatCalibration" xml:space="preserve"><value>Пройти ещё раз</value></data>
+  <data name="Style_CalibrationEstimate" xml:space="preserve"><value>{0} коротких текстов, около десяти минут</value></data>
+  <data name="Style_CalibrationProgress" xml:space="preserve"><value>Пройдено текстов: {0} из {1}</value></data>
+  <data name="Style_ImportTexts" xml:space="preserve"><value>Добавить мои тексты…</value></data>
+  <data name="Style_ImportTextsTooltip" xml:space="preserve"><value>Документы, которые написали вы сами: WriteLite изучит слова и обороты и не будет хранить сам текст</value></data>
+  <data name="Style_ImportDialogTitle" xml:space="preserve"><value>Тексты, которые вы написали сами</value></data>
+  <data name="Style_ImportRunning" xml:space="preserve"><value>Изучаю тексты…</value></data>
+  <data name="Style_ImportDone" xml:space="preserve"><value>Изучено слов: {0}, файлов: {1}.</value></data>
+  <data name="Style_ImportDonePartial" xml:space="preserve"><value>Изучено слов: {0}, файлов: {1}. Не удалось прочитать: {2}.</value></data>
+  <data name="Style_ImportLearningOff" xml:space="preserve"><value>Обучение выключено. Включите «Учиться, пока я пишу», чтобы добавить тексты.</value></data>
+  <data name="Style_SectionMode" xml:space="preserve"><value>Режим</value></data>
+  <data name="Style_ModeLabel" xml:space="preserve"><value>Режим «Мой стиль письма»</value></data>
+  <data name="Style_ModeDesc" xml:space="preserve"><value>Исправления ранжируются по тому, что вы обычно имеете в виду, и появляются подсказки в вашем стиле — например, «ё» там, где вы всегда её пишете.</value></data>
+  <data name="Style_PredictionLabel" xml:space="preserve"><value>Подсказывать слово</value></data>
+  <data name="Style_PredictionDesc" xml:space="preserve"><value>В редакторе WriteLite дописывает слово, которое вы набираете, серым текстом. Tab — принять, Esc или продолжение набора — отклонить.</value></data>
+  <data name="Style_LearningLabel" xml:space="preserve"><value>Учиться, пока я пишу</value></data>
+  <data name="Style_LearningDesc" xml:space="preserve"><value>WriteLite запоминает слова и обороты из законченных предложений, которые вы набираете, и исправления, которые вы принимаете.</value></data>
+  <data name="Style_OtherAppsLabel" xml:space="preserve"><value>Учиться в других программах</value></data>
+  <data name="Style_OtherAppsDesc" xml:space="preserve"><value>Учитывать текст, который вы набираете в мессенджерах, почте и браузере. Поля паролей WriteLite не читает никогда.</value></data>
+  <data name="Style_SectionProfile" xml:space="preserve"><value>Что WriteLite знает о вашем стиле</value></data>
+  <data name="Style_StatWords" xml:space="preserve"><value>Изучено слов</value></data>
+  <data name="Style_StatWordsDesc" xml:space="preserve"><value>Разных слов: {0}</value></data>
+  <data name="Style_StatSentence" xml:space="preserve"><value>Длина предложения</value></data>
+  <data name="Style_StatSentenceValue" xml:space="preserve"><value>{0} сл.</value></data>
+  <data name="Style_StatSentenceDesc" xml:space="preserve"><value>В среднем; запятых на предложение: {0}</value></data>
+  <data name="Style_StatNotEnough" xml:space="preserve"><value>Пока мало текста</value></data>
+  <data name="Style_StatLevel" xml:space="preserve"><value>Уровень знания</value></data>
+  <data name="Style_LevelStart" xml:space="preserve"><value>Начальный</value></data>
+  <data name="Style_LevelStartDesc" xml:space="preserve"><value>Пройдите калибровку — подсказки появятся, когда WriteLite увидит ваши слова хотя бы дважды.</value></data>
+  <data name="Style_LevelBasic" xml:space="preserve"><value>Базовый</value></data>
+  <data name="Style_LevelBasicDesc" xml:space="preserve"><value>Частые слова уже подсказываются. Чем больше вы пишете, тем точнее подсказки.</value></data>
+  <data name="Style_LevelConfident" xml:space="preserve"><value>Уверенный</value></data>
+  <data name="Style_LevelConfidentDesc" xml:space="preserve"><value>WriteLite хорошо знает ваш словарь и типичные обороты.</value></data>
+  <data name="Style_StatYo" xml:space="preserve"><value>Буква «ё»</value></data>
+  <data name="Style_StatYoAlways" xml:space="preserve"><value>Вы пишете «ё» — WriteLite подскажет её там, где вы её пропустили.</value></data>
+  <data name="Style_StatYoNever" xml:space="preserve"><value>Вы обычно пишете «е» вместо «ё», и WriteLite этого не трогает.</value></data>
+  <data name="Style_StatYoMixed" xml:space="preserve"><value>Вы пишете «ё» в одних словах и «е» в других; подсказка появляется только для первых.</value></data>
+  <data name="Style_StatQuotes" xml:space="preserve"><value>Кавычки</value></data>
+  <data name="Style_StatQuotesDesc" xml:space="preserve"><value>В {0} случаев</value></data>
+  <data name="Style_StatPredictions" xml:space="preserve"><value>Принято подсказок</value></data>
+  <data name="Style_StatPredictionsDesc" xml:space="preserve"><value>Слов, которые вы приняли клавишей Tab</value></data>
+  <data name="Style_SectionWords" xml:space="preserve"><value>Ваши частые слова</value></data>
+  <data name="Style_SectionWordsDesc" xml:space="preserve"><value>Из них WriteLite подсказывает слово, которое вы набираете.</value></data>
+  <data name="Style_WordsEmpty" xml:space="preserve"><value>Здесь появятся слова, которые вы пишете чаще всего.</value></data>
+  <data name="Style_SectionUnknown" xml:space="preserve"><value>Слова, которых нет в словаре</value></data>
+  <data name="Style_SectionUnknownDesc" xml:space="preserve"><value>Вы пишете их часто, но орфографический словарь их не знает. Если это имена, термины или сленг — добавьте их в свой словарь, и WriteLite перестанет их подчёркивать и начнёт подсказывать. Если это опечатки — просто скройте.</value></data>
+  <data name="Style_UnknownAdd" xml:space="preserve"><value>В словарь</value></data>
+  <data name="Style_UnknownDismiss" xml:space="preserve"><value>Скрыть</value></data>
+  <data name="Style_UnknownSummary" xml:space="preserve"><value>встречалось: {0} · дней: {1}</value></data>
+  <data name="Style_UnknownEmpty" xml:space="preserve"><value>Пока таких слов нет.</value></data>
+  <data name="Style_SectionCorrections" xml:space="preserve"><value>Ваши исправления</value></data>
+  <data name="Style_SectionCorrectionsDesc" xml:space="preserve"><value>Опечатки, которые вы уже исправляли. В следующий раз WriteLite предложит именно этот вариант первым.</value></data>
+  <data name="Style_CorrectionSummary" xml:space="preserve"><value>исправлено: {0}</value></data>
+  <data name="Style_CorrectionForget" xml:space="preserve"><value>Забыть это исправление</value></data>
+  <data name="Style_CorrectionsEmpty" xml:space="preserve"><value>Когда вы примете исправление опечатки, оно появится здесь.</value></data>
+  <data name="Style_PrivacyTitle" xml:space="preserve"><value>Всё остаётся на этом компьютере</value></data>
+  <data name="Style_PrivacyBody" xml:space="preserve"><value>WriteLite хранит только счётчики слов и словосочетаний, а не ваши тексты. Ничего не отправляется в сеть. Библиотеку стиля можно стереть в любой момент.</value></data>
+  <data name="Style_Reset" xml:space="preserve"><value>Забыть мой стиль</value></data>
+  <data name="Style_ResetTitle" xml:space="preserve"><value>Забыть мой стиль</value></data>
+  <data name="Style_ResetConfirm" xml:space="preserve"><value>WriteLite забудет все изученные слова, обороты и исправления. Это нельзя отменить. Продолжить?</value></data>
+  <data name="Style_CalibrationStep" xml:space="preserve"><value>Калибровка · текст {0} из {1}</value></data>
+  <data name="Style_CalibrationHandwrittenHint" xml:space="preserve"><value>Наберите текст сами, своими словами — так, как пишете обычно. Вставка из буфера здесь отключена: WriteLite учится именно вашей манере, включая опечатки, которые вы потом исправляете.</value></data>
+  <data name="Style_CalibrationInputAutomation" xml:space="preserve"><value>Текст для калибровки стиля</value></data>
+  <data name="Style_CalibrationCounter" xml:space="preserve"><value>Слов: {0} · нужно не меньше {1}</value></data>
+  <data name="Style_CalibrationPasteBlocked" xml:space="preserve"><value>Вставка отключена — наберите текст сами.</value></data>
+  <data name="Style_CalibrationCancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Style_CalibrationSkip" xml:space="preserve"><value>Пропустить тему</value></data>
+  <data name="Style_CalibrationNext" xml:space="preserve"><value>Дальше</value></data>
+  <data name="Style_CalibrationFinish" xml:space="preserve"><value>Готово</value></data>
+  <data name="Style_CalibrationResult" xml:space="preserve"><value>Калибровка пройдена. Изучено слов: {0}. Дальше WriteLite будет учиться, пока вы пишете.</value></data>
+  <data name="Style_QuotesGuillemets" xml:space="preserve"><value>«ёлочки»</value></data>
+  <data name="Style_QuotesStraight" xml:space="preserve"><value>&quot;лапки&quot;</value></data>
 </root>

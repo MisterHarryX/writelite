@@ -276,6 +276,10 @@ public partial class EditorPage : UserControl, IDisposable
         // behind a much longer pause. Errors are never waiting on this.
         DismissWritingSuggestion();
         QueueWritingSuggestion();
+
+        // The word being typed, from the user's own style. Ready at the next frame, long before
+        // the continuation above is even asked for.
+        QueuePersonalPrediction();
     }
 
     /// <summary>
@@ -332,6 +336,7 @@ public partial class EditorPage : UserControl, IDisposable
             var index = DocumentTextIndex.Build(Editor.Document, generation);
             _index = index;
             var text = index.Text;
+            var caretAtStart = index.OffsetOf(Editor.CaretPosition);
 
             if (trace is not null)
             {
@@ -429,6 +434,14 @@ public partial class EditorPage : UserControl, IDisposable
             }
 
             PublishLane(AnalysisLane.Deep, result.Issues, version, generation, text, stopwatch);
+
+            // A keystroke-triggered check means the user has been typing here, so what they just
+            // finished is theirs to learn from. A full-document check (open, paste, rewrite)
+            // says nothing about who wrote the text.
+            if (!fullDocument)
+            {
+                ObserveTypedText(text, caretAtStart);
+            }
 
             if (trace is not null)
             {
@@ -1035,6 +1048,7 @@ public partial class EditorPage : UserControl, IDisposable
         var replacementLength = issue.Replacement?.Length ?? 0;
 
         _applied.Record(issue, _documentGeneration);
+        LearnFromAppliedCorrection(issue);
 
         _allIssues = IssueSetRebase.AfterReplacement(
             _allIssues.Where(candidate => candidate != issue).ToArray(),

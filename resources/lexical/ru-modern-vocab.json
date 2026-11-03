@@ -4395,6 +4395,14 @@
     "inflect": true
   },
   {
+    "lemma": "автотест",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [],
+    "inflect": true
+  },
+  {
     "lemma": "автоэнкодер",
     "pos": "noun",
     "category": "tech",
@@ -4787,6 +4795,36 @@
     "inflect": true
   },
   {
+    "lemma": "апгрейдить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "апдейтить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "апдейтиться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "АПК",
     "pos": "noun",
     "category": "abbreviation",
@@ -4849,6 +4887,26 @@
     "pos": "noun",
     "category": "tech",
     "register": "informal",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "апрув",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "апрувить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
     "flags": [
       "is_borrowing"
     ],
@@ -5116,6 +5174,16 @@
   },
   {
     "lemma": "багбаунти",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "багфикс",
     "pos": "noun",
     "category": "tech",
     "register": "neutral",
@@ -5538,6 +5606,16 @@
   },
   {
     "lemma": "билдить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "билдиться",
     "pos": "verb",
     "category": "tech",
     "register": "neutral",
@@ -6266,7 +6344,37 @@
     "inflect": true
   },
   {
+    "lemma": "бэкапить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "бэкапиться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "бэкенд",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "бэкендер",
     "pos": "noun",
     "category": "tech",
     "register": "neutral",
@@ -6461,6 +6569,16 @@
   },
   {
     "lemma": "валидировать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "валидироваться",
     "pos": "verb",
     "category": "tech",
     "register": "neutral",
@@ -6730,6 +6848,17 @@
     "inflect": true
   },
   {
+    "lemma": "видос",
+    "pos": "noun",
+    "category": "internet",
+    "register": "informal",
+    "flags": [
+      "is_borrowing",
+      "is_informal"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "видюха",
     "pos": "noun",
     "category": "tech",
@@ -6932,6 +7061,17 @@
     "inflect": true
   },
   {
+    "lemma": "влогер",
+    "pos": "noun",
+    "category": "internet",
+    "register": "informal",
+    "flags": [
+      "is_borrowing",
+      "is_informal"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "вовлечённость",
     "pos": "noun",
     "category": "internet",
@@ -6948,6 +7088,17 @@
     "register": "informal",
     "flags": [
       "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "войс",
+    "pos": "noun",
+    "category": "internet",
+    "register": "informal",
+    "flags": [
+      "is_borrowing",
+      "is_informal"
     ],
     "inflect": true
   },
@@ -7555,6 +7706,17 @@
     "inflect": false
   },
   {
+    "lemma": "геймерский",
+    "pos": "adj",
+    "category": "internet",
+    "register": "informal",
+    "flags": [
+      "is_borrowing",
+      "is_informal"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "геймпад",
     "pos": "noun",
     "category": "tech",
@@ -7798,6 +7960,16 @@
     "inflect": true
   },
   {
+    "lemma": "годнота",
+    "pos": "noun",
+    "category": "slang",
+    "register": "slang",
+    "flags": [
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "годный",
     "pos": "adj",
     "category": "internet",
@@ -7814,6 +7986,16 @@
     "register": "informal",
     "flags": [
       "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "голосовуха",
+    "pos": "noun",
+    "category": "slang",
+    "register": "slang",
+    "flags": [
+      "is_slang"
     ],
     "inflect": true
   },
@@ -8290,6 +8472,14 @@
     "inflect": true
   },
   {
+    "lemma": "двухфакторный",
+    "pos": "adj",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [],
+    "inflect": true
+  },
+  {
     "lemma": "дду",
     "pos": "noun",
     "category": "borrowing",
@@ -8362,6 +8552,16 @@
     "category": "profanity",
     "register": "informal",
     "flags": [],
+    "inflect": true
+  },
+  {
+    "lemma": "девопс",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
     "inflect": true
   },
   {
@@ -8484,7 +8684,27 @@
     "inflect": true
   },
   {
+    "lemma": "деплоиться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "деплой",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "деплоймент",
     "pos": "noun",
     "category": "tech",
     "register": "neutral",
@@ -8606,7 +8826,7 @@
   },
   {
     "lemma": "дефолтный",
-    "pos": "adjective",
+    "pos": "adj",
     "category": "technical",
     "register": "informal",
     "flags": [
@@ -9618,8 +9838,29 @@
     "flags": [
       "is_obscene"
     ],
-    "inflect": true,
-    "note": "мат; распознавать как валидный токен, не предлагать замену"
+    "inflect": false,
+    "note": "мат; распознавать как валидный токен, не предлагать замену",
+    "forms": [
+      "ебать",
+      "ебу",
+      "ебёшь",
+      "ебёт",
+      "ебём",
+      "ебёте",
+      "ебут",
+      "еби",
+      "ебите",
+      "ебал",
+      "ебала",
+      "ебало",
+      "ебали",
+      "ебя",
+      "ебущий",
+      "ебущая",
+      "ебущее",
+      "ебущие",
+      "ебаный"
+    ]
   },
   {
     "lemma": "ебаться",
@@ -9941,6 +10182,16 @@
     "inflect": true
   },
   {
+    "lemma": "заапрувить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "заапскейлить",
     "pos": "verb",
     "category": "tech",
@@ -10132,6 +10383,16 @@
   },
   {
     "lemma": "задеплоить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "задеплоиться",
     "pos": "verb",
     "category": "tech",
     "register": "neutral",
@@ -10428,6 +10689,16 @@
     "inflect": true
   },
   {
+    "lemma": "залогироваться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "залупа",
     "pos": "noun",
     "category": "profanity",
@@ -10493,6 +10764,16 @@
   },
   {
     "lemma": "замапить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "замержить",
     "pos": "verb",
     "category": "tech",
     "register": "neutral",
@@ -10705,6 +10986,16 @@
     "inflect": true
   },
   {
+    "lemma": "зарелизить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "зарепортить",
     "pos": "verb",
     "category": "internet",
@@ -10755,6 +11046,16 @@
     "inflect": true
   },
   {
+    "lemma": "засинкать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "заскамить",
     "pos": "verb",
     "category": "tech",
@@ -10770,6 +11071,28 @@
     "category": "internet",
     "register": "slang",
     "flags": [
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "заспавнить",
+    "pos": "verb",
+    "category": "gaming",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "заспойлерить",
+    "pos": "verb",
+    "category": "internet",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
       "is_slang"
     ],
     "inflect": true
@@ -10899,6 +11222,16 @@
     "inflect": true
   },
   {
+    "lemma": "зафиксить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "informal",
+    "flags": [
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "зафишить",
     "pos": "verb",
     "category": "tech",
@@ -10925,6 +11258,16 @@
     "register": "slang",
     "flags": [
       "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "зафризить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
     ],
     "inflect": true
   },
@@ -11093,12 +11436,32 @@
     "inflect": true
   },
   {
+    "lemma": "зашквариться",
+    "pos": "verb",
+    "category": "slang",
+    "register": "slang",
+    "flags": [
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "зашкварный",
     "pos": "adj",
     "category": "internet",
     "register": "slang",
     "flags": [
       "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "заюзать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
     ],
     "inflect": true
   },
@@ -11441,6 +11804,26 @@
     "inflect": true
   },
   {
+    "lemma": "инвалидировать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "инвалидироваться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "инвентарь",
     "pos": "noun",
     "category": "gaming",
@@ -11489,6 +11872,16 @@
     "register": "neutral",
     "flags": [
       "is_proper_name"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "инсталлить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
     ],
     "inflect": true
   },
@@ -11743,6 +12136,16 @@
     "inflect": true
   },
   {
+    "lemma": "кайфовый",
+    "pos": "adj",
+    "category": "slang",
+    "register": "informal",
+    "flags": [
+      "is_informal"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "калибровка",
     "pos": "noun",
     "category": "gaming",
@@ -11927,6 +12330,16 @@
     "lemma": "кастомизация",
     "pos": "noun",
     "category": "borrowing",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "кастомизировать",
+    "pos": "verb",
+    "category": "tech",
     "register": "neutral",
     "flags": [
       "is_borrowing"
@@ -12445,6 +12858,26 @@
     "inflect": true
   },
   {
+    "lemma": "кодить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "кодревью",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "Коинбейс",
     "pos": "noun",
     "category": "brand",
@@ -12586,6 +13019,16 @@
   },
   {
     "lemma": "коммитить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "коммититься",
     "pos": "verb",
     "category": "tech",
     "register": "neutral",
@@ -12793,6 +13236,16 @@
     "inflect": true
   },
   {
+    "lemma": "копипастить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "копирайтер",
     "pos": "noun",
     "category": "internet",
@@ -12983,6 +13436,26 @@
     "flags": [
       "is_borrowing",
       "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "крашиться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "крашнуться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
     ],
     "inflect": true
   },
@@ -13197,6 +13670,16 @@
     "inflect": true
   },
   {
+    "lemma": "кронджоб",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "кросс-валидация",
     "pos": "noun",
     "category": "tech",
@@ -13312,6 +13795,16 @@
     "inflect": true
   },
   {
+    "lemma": "кубер",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "кукухнутый",
     "pos": "adj",
     "category": "profanity",
@@ -13394,6 +13887,17 @@
     "lemma": "кэп",
     "pos": "noun",
     "category": "internet",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "кэрить",
+    "pos": "verb",
+    "category": "gaming",
     "register": "slang",
     "flags": [
       "is_borrowing",
@@ -13923,7 +14427,27 @@
     "inflect": true
   },
   {
+    "lemma": "логиниться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "логировать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "логироваться",
     "pos": "verb",
     "category": "tech",
     "register": "neutral",
@@ -14593,6 +15117,16 @@
     "inflect": true
   },
   {
+    "lemma": "мержиться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "мерзавец",
     "pos": "noun",
     "category": "profanity",
@@ -14870,6 +15404,16 @@
     "inflect": true
   },
   {
+    "lemma": "митап",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "ммо",
     "pos": "noun",
     "category": "gaming",
@@ -14990,6 +15534,16 @@
     "register": "slang",
     "flags": [
       "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "мокать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
     ],
     "inflect": true
   },
@@ -15279,6 +15833,27 @@
     "inflect": true
   },
   {
+    "lemma": "мьютить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "мэтчиться",
+    "pos": "verb",
+    "category": "internet",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "наблевать",
     "pos": "verb",
     "category": "profanity",
@@ -15435,6 +16010,16 @@
     "inflect": true
   },
   {
+    "lemma": "накодить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "наколоть",
     "pos": "verb",
     "category": "slang",
@@ -15571,6 +16156,47 @@
       "is_borrowing"
     ],
     "inflect": true
+  },
+  {
+    "lemma": "нафармить",
+    "pos": "verb",
+    "category": "gaming",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "нафига",
+    "pos": "adv",
+    "category": "slang",
+    "register": "informal",
+    "flags": [
+      "is_informal"
+    ],
+    "inflect": false
+  },
+  {
+    "lemma": "нахера",
+    "pos": "adv",
+    "category": "profanity",
+    "register": "informal",
+    "flags": [
+      "is_informal"
+    ],
+    "inflect": false
+  },
+  {
+    "lemma": "нахрена",
+    "pos": "adv",
+    "category": "profanity",
+    "register": "informal",
+    "flags": [
+      "is_informal"
+    ],
+    "inflect": false
   },
   {
     "lemma": "нахуеть",
@@ -16426,6 +17052,16 @@
     "inflect": true
   },
   {
+    "lemma": "онбордить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "опа",
     "pos": "interj",
     "category": "internet",
@@ -16642,6 +17278,16 @@
     "inflect": true
   },
   {
+    "lemma": "отдебажить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "отделка",
     "pos": "noun",
     "category": "borrowing",
@@ -16843,6 +17489,16 @@
     "inflect": true
   },
   {
+    "lemma": "отревьюить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "отрендерить",
     "pos": "verb",
     "category": "tech",
@@ -16854,6 +17510,16 @@
   },
   {
     "lemma": "отреплицировать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "отрефакторить",
     "pos": "verb",
     "category": "tech",
     "register": "neutral",
@@ -16879,6 +17545,16 @@
     "register": "informal",
     "flags": [
       "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "отскейлить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
     ],
     "inflect": true
   },
@@ -16941,6 +17617,17 @@
     "register": "neutral",
     "flags": [
       "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "отхилить",
+    "pos": "verb",
+    "category": "gaming",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
+      "is_slang"
     ],
     "inflect": true
   },
@@ -17398,6 +18085,16 @@
     "inflect": true
   },
   {
+    "lemma": "парситься",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "партия",
     "pos": "noun",
     "category": "borrowing",
@@ -17705,6 +18402,30 @@
     "flags": [
       "is_slang"
     ],
+    "inflect": true
+  },
+  {
+    "lemma": "пересобирать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [],
+    "inflect": true
+  },
+  {
+    "lemma": "пересобрать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [],
+    "inflect": true
+  },
+  {
+    "lemma": "пересобраться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [],
     "inflect": true
   },
   {
@@ -18127,6 +18848,26 @@
     "inflect": true
   },
   {
+    "lemma": "пингануть",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "пинговать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "Пинтерест",
     "pos": "noun",
     "category": "brand",
@@ -18376,6 +19117,27 @@
     "inflect": true
   },
   {
+    "lemma": "подкастер",
+    "pos": "noun",
+    "category": "internet",
+    "register": "informal",
+    "flags": [
+      "is_borrowing",
+      "is_informal"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "подлагивать",
+    "pos": "verb",
+    "category": "gaming",
+    "register": "slang",
+    "flags": [
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "подонок",
     "pos": "noun",
     "category": "profanity",
@@ -18620,6 +19382,17 @@
     "inflect": false
   },
   {
+    "lemma": "понерфить",
+    "pos": "verb",
+    "category": "gaming",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "понтануться",
     "pos": "verb",
     "category": "slang",
@@ -18800,6 +19573,26 @@
     "register": "informal",
     "flags": [],
     "inflect": false
+  },
+  {
+    "lemma": "пофиксить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "informal",
+    "flags": [
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "похавать",
+    "pos": "verb",
+    "category": "slang",
+    "register": "informal",
+    "flags": [
+      "is_informal"
+    ],
+    "inflect": true
   },
   {
     "lemma": "похмелье",
@@ -19078,6 +19871,26 @@
     "note": "мат; распознавать как валидный токен, не предлагать замену"
   },
   {
+    "lemma": "проапгрейдить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "проапдейтить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "пробник",
     "pos": "noun",
     "category": "borrowing",
@@ -19128,11 +19941,31 @@
     "inflect": true
   },
   {
+    "lemma": "продакшен",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "продакшн",
     "pos": "adj",
     "category": "tech",
     "register": "neutral",
     "flags": [],
+    "inflect": true
+  },
+  {
+    "lemma": "продебажить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
     "inflect": true
   },
   {
@@ -19410,6 +20243,16 @@
     "note": "мат; распознавать как валидный токен, не предлагать замену"
   },
   {
+    "lemma": "протестить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "informal",
+    "flags": [
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "профиль",
     "pos": "noun",
     "category": "internet",
@@ -19541,6 +20384,16 @@
     "pos": "noun",
     "category": "tech",
     "register": "informal",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "пулреквест",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
     "flags": [
       "is_borrowing"
     ],
@@ -19739,6 +20592,16 @@
     "inflect": true
   },
   {
+    "lemma": "размьютить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "разъебай",
     "pos": "noun",
     "category": "profanity",
@@ -19813,6 +20676,17 @@
     "inflect": true
   },
   {
+    "lemma": "рандомный",
+    "pos": "adj",
+    "category": "slang",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "раннер",
     "pos": "noun",
     "category": "tech",
@@ -19823,7 +20697,27 @@
     "inflect": true
   },
   {
+    "lemma": "рантайм",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "распарсить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "распарситься",
     "pos": "verb",
     "category": "tech",
     "register": "neutral",
@@ -19961,6 +20855,16 @@
     "note": "мат; распознавать как валидный токен, не предлагать замену"
   },
   {
+    "lemma": "расшерить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "раш",
     "pos": "noun",
     "category": "gaming",
@@ -20023,6 +20927,36 @@
     "inflect": true
   },
   {
+    "lemma": "ребейзить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "ребутать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "ребутнуть",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "реверсить",
     "pos": "verb",
     "category": "tech",
@@ -20047,6 +20981,16 @@
     "pos": "noun",
     "category": "tech",
     "register": "informal",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "ревьюить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
     "flags": [
       "is_borrowing"
     ],
@@ -20179,6 +21123,16 @@
     "lemma": "релиз",
     "pos": "noun",
     "category": "technical",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "релизить",
+    "pos": "verb",
+    "category": "tech",
     "register": "neutral",
     "flags": [
       "is_borrowing"
@@ -20364,6 +21318,16 @@
     "inflect": true
   },
   {
+    "lemma": "ресинк",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "реснуться",
     "pos": "verb",
     "category": "gaming",
@@ -20391,6 +21355,26 @@
     "flags": [
       "is_borrowing",
       "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "рестартнуть",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "рестартовать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
     ],
     "inflect": true
   },
@@ -20688,6 +21672,26 @@
     "inflect": true
   },
   {
+    "lemma": "ротировать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "ротироваться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "роум",
     "pos": "noun",
     "category": "gaming",
@@ -20705,6 +21709,17 @@
     "register": "neutral",
     "flags": [
       "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "рофельный",
+    "pos": "adj",
+    "category": "slang",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
+      "is_slang"
     ],
     "inflect": true
   },
@@ -20829,10 +21844,30 @@
     "inflect": false
   },
   {
+    "lemma": "сабмитить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "сабмодуль",
     "pos": "noun",
     "category": "tech",
     "register": "informal",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "сабтаска",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
     "flags": [
       "is_borrowing"
     ],
@@ -21026,6 +22061,16 @@
     "register": "neutral",
     "flags": [
       "is_proper_name"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "сбилдиться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
     ],
     "inflect": true
   },
@@ -21398,6 +22443,36 @@
     "inflect": true
   },
   {
+    "lemma": "синк",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "синкаться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "синкнуть",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "синьор",
     "pos": "noun",
     "category": "slang",
@@ -21560,6 +22635,36 @@
     "inflect": true
   },
   {
+    "lemma": "скейлинг",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "скейлить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "скейлиться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "скидон",
     "pos": "noun",
     "category": "borrowing",
@@ -21634,6 +22739,16 @@
   },
   {
     "lemma": "склонировать",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "скопипастить",
     "pos": "verb",
     "category": "tech",
     "register": "neutral",
@@ -21831,6 +22946,16 @@
     "inflect": true
   },
   {
+    "lemma": "смержиться",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "смишинг",
     "pos": "noun",
     "category": "tech",
@@ -21991,6 +23116,16 @@
     "inflect": true
   },
   {
+    "lemma": "сорян",
+    "pos": "interj",
+    "category": "slang",
+    "register": "slang",
+    "flags": [
+      "is_slang"
+    ],
+    "inflect": false
+  },
+  {
     "lemma": "соулслайк",
     "pos": "noun",
     "category": "gaming",
@@ -22053,6 +23188,17 @@
     "inflect": true
   },
   {
+    "lemma": "спавнить",
+    "pos": "verb",
+    "category": "gaming",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "спалить",
     "pos": "verb",
     "category": "internet",
@@ -22087,6 +23233,16 @@
     "pos": "noun",
     "category": "tech",
     "register": "informal",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "спарсить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
     "flags": [
       "is_borrowing"
     ],
@@ -22155,6 +23311,17 @@
     "inflect": true
   },
   {
+    "lemma": "спойлерить",
+    "pos": "verb",
+    "category": "internet",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "Спотифай",
     "pos": "noun",
     "category": "brand",
@@ -22204,6 +23371,16 @@
       "is_slang"
     ],
     "inflect": false
+  },
+  {
+    "lemma": "спулить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
   },
   {
     "lemma": "срака",
@@ -22291,6 +23468,16 @@
     "inflect": true
   },
   {
+    "lemma": "стартануть",
+    "pos": "verb",
+    "category": "slang",
+    "register": "informal",
+    "flags": [
+      "is_informal"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "статистика",
     "pos": "noun",
     "category": "gaming",
@@ -22335,6 +23522,16 @@
     "lemma": "стейблкоин",
     "pos": "noun",
     "category": "finance",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "стейджить",
+    "pos": "verb",
+    "category": "tech",
     "register": "neutral",
     "flags": [
       "is_borrowing"
@@ -22525,6 +23722,17 @@
     "inflect": true
   },
   {
+    "lemma": "стримерский",
+    "pos": "adj",
+    "category": "internet",
+    "register": "informal",
+    "flags": [
+      "is_borrowing",
+      "is_informal"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "стримерша",
     "pos": "noun",
     "category": "internet",
@@ -22692,6 +23900,16 @@
       "is_abbreviation"
     ],
     "inflect": false
+  },
+  {
+    "lemma": "схавать",
+    "pos": "verb",
+    "category": "slang",
+    "register": "informal",
+    "flags": [
+      "is_informal"
+    ],
+    "inflect": true
   },
   {
     "lemma": "схуяриться",
@@ -23105,12 +24323,32 @@
     "inflect": true
   },
   {
+    "lemma": "тестить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "informal",
+    "flags": [
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "Тетрис",
     "pos": "noun",
     "category": "brand",
     "register": "neutral",
     "flags": [
       "is_proper_name"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "техлид",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
     ],
     "inflect": true
   },
@@ -23370,6 +24608,16 @@
     "register": "slang",
     "flags": [
       "is_borrowing",
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "токсичить",
+    "pos": "verb",
+    "category": "slang",
+    "register": "slang",
+    "flags": [
       "is_slang"
     ],
     "inflect": true
@@ -23724,6 +24972,17 @@
     "category": "gaming",
     "register": "slang",
     "flags": [
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "трушный",
+    "pos": "adj",
+    "category": "slang",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
       "is_slang"
     ],
     "inflect": true
@@ -24477,6 +25736,16 @@
     "inflect": true
   },
   {
+    "lemma": "фидбек",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "фидбэк",
     "pos": "noun",
     "category": "business",
@@ -24508,12 +25777,43 @@
     "inflect": true
   },
   {
+    "lemma": "фиксить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "informal",
+    "flags": [
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "Филипс",
     "pos": "noun",
     "category": "brand",
     "register": "neutral",
     "flags": [
       "is_proper_name"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "фича-флаг",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "фичастый",
+    "pos": "adj",
+    "category": "slang",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
+      "is_slang"
     ],
     "inflect": true
   },
@@ -24690,6 +25990,17 @@
     "inflect": true
   },
   {
+    "lemma": "фолловер",
+    "pos": "noun",
+    "category": "internet",
+    "register": "informal",
+    "flags": [
+      "is_borrowing",
+      "is_informal"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "фолловить",
     "pos": "verb",
     "category": "internet",
@@ -24743,6 +26054,16 @@
     "lemma": "форкаст",
     "pos": "noun",
     "category": "business",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "форкать",
+    "pos": "verb",
+    "category": "tech",
     "register": "neutral",
     "flags": [
       "is_borrowing"
@@ -24822,6 +26143,16 @@
     "inflect": true
   },
   {
+    "lemma": "фризить",
+    "pos": "verb",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "фриланс",
     "pos": "noun",
     "category": "slang",
@@ -24843,6 +26174,16 @@
   },
   {
     "lemma": "фронтенд",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "фронтендер",
     "pos": "noun",
     "category": "tech",
     "register": "neutral",
@@ -24922,12 +26263,32 @@
     "inflect": true
   },
   {
+    "lemma": "хавать",
+    "pos": "verb",
+    "category": "slang",
+    "register": "informal",
+    "flags": [
+      "is_informal"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "Хаггингфейс",
     "pos": "noun",
     "category": "brand",
     "register": "neutral",
     "flags": [
       "is_proper_name"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "хайлоад",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
     ],
     "inflect": true
   },
@@ -24958,6 +26319,17 @@
     "category": "internet",
     "register": "slang",
     "flags": [
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "хайповать",
+    "pos": "verb",
+    "category": "internet",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
       "is_slang"
     ],
     "inflect": true
@@ -25221,6 +26593,16 @@
     "inflect": false
   },
   {
+    "lemma": "хикикомори",
+    "pos": "noun",
+    "category": "borrowing",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": false
+  },
+  {
     "lemma": "хил",
     "pos": "noun",
     "category": "gaming",
@@ -25234,6 +26616,17 @@
   {
     "lemma": "хилер",
     "pos": "noun",
+    "category": "gaming",
+    "register": "slang",
+    "flags": [
+      "is_borrowing",
+      "is_slang"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "хилить",
+    "pos": "verb",
     "category": "gaming",
     "register": "slang",
     "flags": [
@@ -26800,6 +28193,16 @@
     "inflect": true
   },
   {
+    "lemma": "юзкейс",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
+    ],
+    "inflect": true
+  },
+  {
     "lemma": "Юла",
     "pos": "noun",
     "category": "brand",
@@ -26826,6 +28229,16 @@
     "register": "neutral",
     "flags": [
       "is_proper_name"
+    ],
+    "inflect": true
+  },
+  {
+    "lemma": "юнит",
+    "pos": "noun",
+    "category": "tech",
+    "register": "neutral",
+    "flags": [
+      "is_borrowing"
     ],
     "inflect": true
   },

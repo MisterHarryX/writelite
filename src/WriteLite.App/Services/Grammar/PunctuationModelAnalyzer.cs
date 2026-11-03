@@ -32,19 +32,34 @@ namespace WriteLite.Services.Grammar;
 public sealed class PunctuationModelAnalyzer : IDisposable
 {
     private readonly PunctuationDecisionModel _model;
+    private readonly RussianClauseCommaAnalyzer? _structure;
     private bool _disposed;
 
-    private PunctuationModelAnalyzer(PunctuationDecisionModel model, double threshold)
+    private PunctuationModelAnalyzer(PunctuationDecisionModel model, double threshold, RussianClauseCommaAnalyzer? structure)
     {
         _model = model;
         Threshold = threshold;
+        _structure = structure;
     }
 
     /// <summary>Loads the analyzer, or returns null when no punctuation model is deployed.</summary>
-    public static PunctuationModelAnalyzer? TryLoad(string? modelDirectory = null, double? threshold = null)
+    /// <param name="formIndex">
+    /// When given, a boundary the model accepts is still refused where the clause structure
+    /// says no comma goes — two predicates of one subject joined by «и». Without it the model's
+    /// judgement stands alone, as it did before.
+    /// </param>
+    public static PunctuationModelAnalyzer? TryLoad(
+        string? modelDirectory = null,
+        double? threshold = null,
+        WriteLite.Language.Russian.RussianFormIndex? formIndex = null)
     {
         var model = PunctuationDecisionModel.TryLoad(modelDirectory);
-        return model is null ? null : new PunctuationModelAnalyzer(model, threshold ?? model.AcceptanceThreshold);
+        return model is null
+            ? null
+            : new PunctuationModelAnalyzer(
+                model,
+                threshold ?? model.AcceptanceThreshold,
+                RussianClauseCommaAnalyzer.TryCreate(formIndex));
     }
 
     /// <summary>The COMMA probability at or above which a boundary becomes a finding.</summary>
@@ -104,6 +119,7 @@ public sealed class PunctuationModelAnalyzer : IDisposable
             foreach (var decision in _model.Score(sentence, boundaries, cancellationToken))
             {
                 if (!decision.Accepted(Threshold)) continue;
+                if (_structure?.SplitsHomogeneousPredicates(sentence, decision.Position) == true) continue;
 
                 // Reported as an insertion at the end of the preceding word — the same shape
                 // the word-aware diff gives a missing comma, and the shape that keeps

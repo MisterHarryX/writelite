@@ -39,11 +39,17 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
         ILexicalLanguageDetector? languages = null,
         ISyntacticRoleAnalyzer? syntax = null,
         IOzhegovDictionaryProvider? ozhegov = null,
-        IHistoricalDictionaryProvider? historical = null)
+        IHistoricalDictionaryProvider? historical = null,
+        Func<WriteLite.Language.Russian.RussianMorphology?>? russianMorphology = null)
     {
         _ranker = ranker ?? new ContextualLexicalRanker();
         _languages = languages ?? new LexicalLanguageDetector();
-        _morphology = morphology ?? new WordMorphologyService(LookupEntry);
+        // With the form index available the card reports what the index records about a word;
+        // without it, only the ending heuristics remain.
+        _morphology = morphology
+                      ?? (russianMorphology is not null
+                          ? new FormIndexWordMorphologyService(russianMorphology, LookupEntry)
+                          : new WordMorphologyService(LookupEntry));
         _syntax = syntax ?? new SyntacticRoleAnalyzer();
         _ozhegov = ozhegov ?? new LicensedOzhegovDictionaryProvider();
         _historical = historical ?? new HistoricalDictionaryProvider();
@@ -340,7 +346,7 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
                 request.Word, lemma, lang, pos, [], [], [],
                 request.RequestId, IsEmpty: true, StatusMessage: status, PackVersion: PackVersion,
                 Morphology: morphology, Syntax: syntax, Antonyms: [], Relations: syntax.Relations,
-                SurfaceFormNote: BuildSurfaceNote(request.Word, lemma, morphology),
+                SurfaceFormNote: BuildSurfaceNote(request.Word, lemma),
                 PackLicense: License, PackSource: _manifest?.Source);
             Remember(cacheKey, empty);
             return Task.FromResult(empty);
@@ -367,7 +373,7 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
             Syntax: syntax,
             Antonyms: antonyms,
             Relations: syntax.Relations,
-            SurfaceFormNote: BuildSurfaceNote(request.Word, lemma, morphology),
+            SurfaceFormNote: BuildSurfaceNote(request.Word, lemma),
             PackLicense: License,
             PackSource: _manifest?.Source);
 
@@ -547,15 +553,15 @@ public sealed class OfflineLexicalKnowledgeService : ILexicalKnowledgeService, I
             stem.Length > 2 && stem[^1] == stem[^2] ? stem[..^1] : stem;
     }
 
-    private static string BuildSurfaceNote(string word, string lemma, MorphologicalFeatures morphology)
-    {
-        var feats = string.Join(", ", morphology.ToDisplayList());
-        if (string.Equals(word, lemma, StringComparison.OrdinalIgnoreCase))
-            return string.IsNullOrEmpty(feats) ? "Начальная форма." : $"Начальная форма. {feats}";
-        return string.IsNullOrEmpty(feats)
-            ? $"Форма слова; лемма: {lemma}."
-            : $"Форма слова; лемма: {lemma}. {feats}";
-    }
+    /// <summary>Which word the selected form belongs to, or null when it is that word.</summary>
+    /// <remarks>
+    /// The grammatical features are shown by the card and the dictionary page in their own
+    /// block. Repeating them here printed every feature twice, one line apart.
+    /// </remarks>
+    private static string? BuildSurfaceNote(string word, string lemma)
+        => string.IsNullOrWhiteSpace(lemma) || string.Equals(word, lemma, StringComparison.OrdinalIgnoreCase)
+            ? null
+            : $"Форма слова «{lemma}».";
 
     private void Remember(string key, LexicalLookupResult result)
     {

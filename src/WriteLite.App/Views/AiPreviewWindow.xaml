@@ -96,11 +96,16 @@
                 <StackPanel>
                     <TextBlock Style="{DynamicResource WlPanelLabel}"
                                controls:Type.Tracked="{x:Static res:Strings.AiPreview_OriginalLabel}" />
+                    <!-- Capped: for a whole note the original is the note itself, and it
+                         must not push the suggestion — the thing being decided — off screen. -->
                     <Border Style="{DynamicResource WlInsetPanel}" Padding="14,12">
-                        <TextBlock x:Name="OriginalText"
-                                   Style="{DynamicResource WlBody}"
-                                   Foreground="{DynamicResource WlTextSecondary}"
-                                   TextWrapping="Wrap" />
+                        <ScrollViewer Style="{DynamicResource WlScrollViewer}" MaxHeight="190"
+                                      VerticalScrollBarVisibility="Auto">
+                            <TextBlock x:Name="OriginalText"
+                                       Style="{DynamicResource WlBody}"
+                                       Foreground="{DynamicResource WlTextSecondary}"
+                                       TextWrapping="Wrap" />
+                        </ScrollViewer>
                     </Border>
 
                     <TextBlock Style="{DynamicResource WlPanelLabel}"

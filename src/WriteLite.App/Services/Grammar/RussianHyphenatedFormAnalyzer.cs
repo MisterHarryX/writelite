@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using WriteLite.Language.Russian;
 using WriteLite.Models;
 
@@ -99,6 +99,8 @@ public sealed partial class RussianHyphenatedFormAnalyzer : GrammarAnalyzerBase
             if (before >= 0 && text[before] == ',') continue;
 
             var following = RussianTokens.Split(text, match.Index + match.Length).FirstOrDefault();
+            // «Что то есть, что нет»: «то есть» is a conjunction, and «что» stands on its own.
+            if (following.Value?.Equals("есть", StringComparison.OrdinalIgnoreCase) == true) continue;
             if (!string.IsNullOrEmpty(following.Value))
             {
                 var onlySpacesBetween = true;

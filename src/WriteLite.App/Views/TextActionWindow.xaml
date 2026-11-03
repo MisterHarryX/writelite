@@ -1,0 +1,90 @@
+<Window x:Class="WriteLite.Views.TextActionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WriteLite"
+        Width="420"
+        SizeToContent="Height"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        Topmost="True"
+        Background="Transparent"
+        AllowsTransparency="True"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Ideal"
+        AutomationProperties.AutomationId="WriteLiteTextActionCard"
+        FontFamily="{DynamicResource WlFont}">
+    <!--
+        The pen's actions on text in another application: translate, shorten, improve.
+        A proposal card, never an editor — nothing reaches the field until «Заменить».
+    -->
+    <Border Margin="10"
+            Background="{DynamicResource WlBgBase}"
+            BorderBrush="{DynamicResource WlLineStrong}"
+            BorderThickness="1"
+            CornerRadius="12"
+            Effect="{DynamicResource WlShadowPopover}">
+        <StackPanel Margin="16,14,16,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock x:Name="TitleText" Text="Перевод" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource WlText}" />
+                    <TextBlock x:Name="ScopeText" Style="{DynamicResource WlMonoLabel}" Margin="0,4,0,0"
+                               Text="ВЕСЬ ТЕКСТ" />
+                </StackPanel>
+                <Button Grid.Column="1" Style="{DynamicResource WlIconButton}" VerticalAlignment="Top"
+                        Focusable="False" Click="Close_Click" ToolTip="Закрыть"
+                        AutomationProperties.Name="Закрыть">
+                    <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconClose}"
+                          Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                </Button>
+            </Grid>
+
+            <WrapPanel x:Name="ActionChips" Margin="0,12,0,0" />
+
+            <TextBlock Style="{DynamicResource WlMonoLabel}" Text="БЫЛО" Margin="0,14,0,4" />
+            <TextBlock x:Name="OriginalText" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                       MaxHeight="64" FontSize="13" LineHeight="19"
+                       Foreground="{DynamicResource WlTextMuted}" />
+
+            <TextBlock Style="{DynamicResource WlMonoLabel}" Text="СТАЛО" Margin="0,14,0,4" />
+            <Border Background="{DynamicResource WlSurface}" CornerRadius="8" Padding="12,10"
+                    BorderBrush="{DynamicResource WlLine}" BorderThickness="1">
+                <Grid MinHeight="40">
+                    <ScrollViewer MaxHeight="230" VerticalScrollBarVisibility="Auto"
+                                  Style="{DynamicResource WlScrollViewer}">
+                        <TextBlock x:Name="ResultText" TextWrapping="Wrap" FontSize="14" LineHeight="21"
+                                   Foreground="{DynamicResource WlText}" />
+                    </ScrollViewer>
+                    <StackPanel x:Name="BusyPanel" Orientation="Horizontal" VerticalAlignment="Center"
+                                Visibility="Collapsed">
+                        <ProgressBar Width="80" Height="2" IsIndeterminate="True" BorderThickness="0"
+                                     Foreground="{DynamicResource WlBrand}" Background="{DynamicResource WlLine}" />
+                        <TextBlock x:Name="BusyText" Margin="10,0,0,0" Style="{DynamicResource WlCaption}"
+                                   Text="Готовим вариант…" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <TextBlock x:Name="NoticeText" Style="{DynamicResource WlCaption}" TextWrapping="Wrap"
+                       Margin="0,8,0,0" Visibility="Collapsed" />
+
+            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                <Button x:Name="ReplaceButton" Style="{DynamicResource WlPrimaryButton}" Focusable="False"
+                        Content="Заменить" MinHeight="30" Padding="16,0" Click="Replace_Click"
+                        AutomationProperties.AutomationId="WriteLiteTextActionReplace" />
+                <Button x:Name="CopyButton" Style="{DynamicResource WlSecondaryButton}" Focusable="False"
+                        Content="Копировать" MinHeight="30" Padding="14,0" Margin="8,0,0,0" Click="Copy_Click" />
+                <Button x:Name="RetryButton" Style="{DynamicResource WlTextButton}" Focusable="False"
+                        Content="Другой вариант" Margin="8,0,0,0" Click="Retry_Click" />
+            </StackPanel>
+            <TextBlock x:Name="FeedbackText" Style="{DynamicResource WlCaption}" Margin="0,8,0,0"
+                       TextWrapping="Wrap" Visibility="Collapsed" />
+        </StackPanel>
+    </Border>
+</Window>

@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Threading;
 using WriteLite.Language.Core;
 using WriteLite.Models;
@@ -102,8 +102,22 @@ public sealed class CorrectionUiCoordinator
         _correctionPopup = new CorrectionPopupWindow();
         _correctionPopup.ApplyRequested += async (_, issue) => await ApplyIssueAsync(issue);
         _correctionPopup.IgnoreRequested += (_, issue) => IgnoreIssue(issue);
+        _correctionPopup.DisableKindRequested += (_, kindId) =>
+        {
+            _correctionPopup.Dismiss();
+            CompatibilityLogger.Technical("issue-kind-disabled-from-card", $"kind={kindId}");
+            DisableKindRequested?.Invoke(kindId);
+        };
         _correctionPopup.AddToDictionaryRequested += (_, issue) => AddToDictionary(issue);
         _correctionPopup.CopyRequested += (_, issue) => CopyReplacementToClipboard(issue.Replacement);
+        _correctionPopup.RuleReferenceRequested += (_, ruleId) =>
+        {
+            // The card closes first: the reference opens in the main window, and a card left
+            // floating over it would describe a field the user has just left.
+            _correctionPopup.Dismiss();
+            CompatibilityLogger.Technical("correction-card-open-rule", $"rule={ruleId}");
+            RuleReferenceRequested?.Invoke(ruleId);
+        };
         _correctionPopup.IsVisibleChanged += (_, _) =>
         {
             if (!_correctionPopup.IsVisible)
@@ -115,6 +129,15 @@ public sealed class CorrectionUiCoordinator
     }
 
     private WriteLiteAppSettings Settings => _settingsProvider();
+
+    /// <summary>Raised with a rule id when the user opens a card's rule in the reference.</summary>
+    public event Action<string>? RuleReferenceRequested;
+
+    /// <summary>The user switched a kind of remark off from the card.</summary>
+    public event Action<string>? DisableKindRequested;
+
+    /// <summary>A single correction was written to the field and verified. Dispatcher thread.</summary>
+    public event Action<TextIssue>? CorrectionApplied;
 
     /// <summary>The snapshot the corrections surface was last given, for the application shell.</summary>
     public TextSnapshot? LatestSnapshot => _latestSnapshot;
@@ -171,6 +194,10 @@ public sealed class CorrectionUiCoordinator
     public void HandleSnapshotChanged(TextSnapshot? snapshot)
     {
         _latestSnapshot = snapshot;
+        if (snapshot is not null)
+        {
+            ReleaseSnapshotWaiters(snapshot);
+        }
 
         // §39/§81: the field path runs the same writing-assistance service the editor runs,
         // through the same bounded context and the same never-insert-without-acceptance rule.
@@ -465,7 +492,159 @@ public sealed class CorrectionUiCoordinator
         var outcome = await _correctionApplication.ApplyAsync(
             normalized, snapshot, _monitor, _correctionGate, _applicationLifetimeCts.Token);
 
-        await _dispatcher.InvokeAsync(() => HandleCorrectionOutcome(outcome, normalized.Replacement, token));
+        await _dispatcher.InvokeAsync(() =>
+        {
+            HandleCorrectionOutcome(outcome, normalized.Replacement, token);
+            if (outcome.Succeeded) CorrectionApplied?.Invoke(normalized);
+        });
+    }
+
+    private readonly List<TaskCompletionSource<TextSnapshot>> _snapshotWaiters = [];
+
+    private void ReleaseSnapshotWaiters(TextSnapshot snapshot)
+    {
+        TaskCompletionSource<TextSnapshot>[] waiters;
+        lock (_snapshotWaiters)
+        {
+            if (_snapshotWaiters.Count == 0) return;
+            waiters = [.. _snapshotWaiters];
+            _snapshotWaiters.Clear();
+        }
+
+        foreach (var waiter in waiters) waiter.TrySetResult(snapshot);
+    }
+
+    /// <summary>Waits for the monitor to publish any snapshot other than <paramref name="after"/>.</summary>
+    private async Task<TextSnapshot?> WaitForNextSnapshotAsync(TextSnapshot after, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            var current = _latestSnapshot;
+            if (current is not null && !ReferenceEquals(current, after))
+            {
+                return current;
+            }
+
+            var waiter = new TaskCompletionSource<TextSnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
+            lock (_snapshotWaiters) _snapshotWaiters.Add(waiter);
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero) break;
+            await Task.WhenAny(waiter.Task, Task.Delay(remaining)).ConfigureAwait(true);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// The same finding in a newer snapshot: same words, same fix, same rule, nearest position.
+    /// </summary>
+    /// <remarks>
+    /// A finding is a value tied to offsets in one version of the text. After the panel fixes
+    /// the first of three mistakes the other two move; this is how the second click still
+    /// means the word the user is looking at.
+    /// </remarks>
+    private static TextIssue? FindEquivalent(TextSnapshot snapshot, TextIssue issue)
+    {
+        TextIssue? best = null;
+        var bestDistance = int.MaxValue;
+        foreach (var raw in snapshot.Issues)
+        {
+            // The panel holds findings in their apply-normalised form; compare like with like.
+            var candidate = CorrectionPresentation.NormalizeForApply(raw);
+            if (!string.Equals(candidate.Original, issue.Original, StringComparison.Ordinal)) continue;
+            if (!string.Equals(candidate.Replacement, issue.Replacement, StringComparison.Ordinal)) continue;
+            if (!string.Equals(candidate.RuleId, issue.RuleId, StringComparison.Ordinal)
+                && candidate.Category != issue.Category) continue;
+            var distance = Math.Abs(candidate.Start - issue.Start);
+            if (distance < bestDistance)
+            {
+                best = candidate;
+                bestDistance = distance;
+            }
+        }
+
+        if (best is null && TextCorrectionService.IsRangeValid(snapshot.Text, issue.Start, issue.Length)
+            && string.Equals(snapshot.Text.Substring(issue.Start, issue.Length), issue.Original, StringComparison.Ordinal))
+        {
+            return issue;
+        }
+
+        return best;
+    }
+
+    /// <summary>
+    /// One-click correction from the panel the indicator opens.
+    /// </summary>
+    /// <remarks>
+    /// <para>The panel is a list, and a list is worked through: fix, fix, fix. The card path
+    /// assumes one correction per open card and refuses anything written against text that has
+    /// since changed, which is right for the card and made the panel useless after the first
+    /// click — the second fix was always «Текст изменился». Here a finding that no longer
+    /// matches the field waits (briefly) for the monitor's re-read of the corrected text and
+    /// is found again in it; the write itself is the same verified path as the card's.</para>
+    ///
+    /// <para>The panel stays open: it removes the row on success and closes itself when the
+    /// list is empty.</para>
+    /// </remarks>
+    public async Task<bool> ApplyIssueFromPanelAsync(TextIssue issue)
+    {
+        CompatibilityLogger.State("apply-issue-from-panel");
+        if (_monitor is null || _correctionApplication is null) return false;
+        var normalized = CorrectionPresentation.NormalizeForApply(issue);
+
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            var snapshot = _latestSnapshot;
+            if (snapshot is null)
+            {
+                _suggestions?.ShowApplyFeedback("Нет активного текстового поля.", null);
+                return false;
+            }
+
+            var current = FindEquivalent(snapshot, normalized);
+            CompatibilityLogger.Technical("panel-apply-attempt",
+                $"attempt={attempt} found={(current is null ? 0 : 1)} rule={normalized.RuleId} start={normalized.Start} " +
+                $"snapshotIssues={snapshot.Issues.Count} rules={string.Join(',', snapshot.Issues.Select(i => i.RuleId + "@" + i.Start))}");
+            if (current is null)
+            {
+                var fresh = await WaitForNextSnapshotAsync(snapshot, TimeSpan.FromSeconds(3));
+                if (fresh is null) break;
+                continue;
+            }
+
+            var outcome = await _correctionApplication.ApplyAsync(
+                current, snapshot, _monitor, _correctionGate, _applicationLifetimeCts.Token);
+            if (outcome.Succeeded)
+            {
+                CorrectionApplied?.Invoke(current);
+                CompatibilityLogger.Technical("correction-ui-success", $"path={outcome.WritePath ?? "n/a"} source=panel");
+                return true;
+            }
+
+            if (IsStaleTextOutcome(outcome.Status) || outcome.Status == CorrectionApplicationStatus.Blocked)
+            {
+                // The previous click's write or its re-read is still in flight.
+                if (outcome.Status == CorrectionApplicationStatus.Blocked)
+                {
+                    await Task.Delay(150);
+                    continue;
+                }
+
+                var fresh = await WaitForNextSnapshotAsync(snapshot, TimeSpan.FromSeconds(3));
+                CompatibilityLogger.Technical("panel-apply-waited", $"fresh={(fresh is null ? 0 : 1)} status={outcome.Status}");
+                if (fresh is null) break;
+                continue;
+            }
+
+            var canCopy = outcome.OfferCopy && !string.IsNullOrEmpty(normalized.Replacement);
+            _suggestions?.ShowApplyFeedback(outcome.UserMessage, canCopy ? normalized.Replacement : null);
+            return false;
+        }
+
+        _suggestions?.ShowApplyFeedback("Текст изменился — список обновится через мгновение.", null);
+        _ = _monitor.RefreshOnceAfterSuppressionAsync();
+        return false;
     }
 
     /// <summary>Applies all safe corrections in the current snapshot in one verified edit.</summary>

@@ -1,4 +1,4 @@
-<Window x:Class="WriteLite.Views.BubbleWindow"
+﻿<Window x:Class="WriteLite.Views.BubbleWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:res="clr-namespace:WriteLite.Resources"
@@ -36,6 +36,57 @@
                 Click="PenButton_Click">
             <Button.ContextMenu>
                 <ContextMenu x:Name="PenMenu" Style="{DynamicResource WlContextMenu}">
+                    <MenuItem Style="{DynamicResource WlMenuItem}"
+                              Header="Перевести" Tag="Translate"
+                              Click="TextActionMenuItem_Click">
+                        <MenuItem.Icon>
+                            <Path Style="{DynamicResource WlIconSm}"
+                                  Width="15" Height="15"
+                                  Data="{DynamicResource WlIconLanguage}"
+                                  Stroke="{DynamicResource WlTextSecondary}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Style="{DynamicResource WlMenuItem}"
+                              Header="Сократить" Tag="Shorten"
+                              Click="TextActionMenuItem_Click">
+                        <MenuItem.Icon>
+                            <Path Style="{DynamicResource WlIconSm}"
+                                  Width="15" Height="15"
+                                  Data="{DynamicResource WlIconConvert}"
+                                  Stroke="{DynamicResource WlTextSecondary}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Style="{DynamicResource WlMenuItem}"
+                              Header="Улучшить" Tag="Improve"
+                              Click="TextActionMenuItem_Click">
+                        <MenuItem.Icon>
+                            <Path Style="{DynamicResource WlIconSm}"
+                                  Width="15" Height="15"
+                                  Data="{DynamicResource WlIconAi}"
+                                  Stroke="{DynamicResource WlTextSecondary}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Style="{DynamicResource WlMenuItem}"
+                              Header="Официальнее" Tag="Formal"
+                              Click="TextActionMenuItem_Click">
+                        <MenuItem.Icon>
+                            <Path Style="{DynamicResource WlIconSm}"
+                                  Width="15" Height="15"
+                                  Data="{DynamicResource WlIconEditor}"
+                                  Stroke="{DynamicResource WlTextSecondary}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Style="{DynamicResource WlMenuItem}"
+                              Header="Проще" Tag="Simplify"
+                              Click="TextActionMenuItem_Click">
+                        <MenuItem.Icon>
+                            <Path Style="{DynamicResource WlIconSm}"
+                                  Width="15" Height="15"
+                                  Data="{DynamicResource WlIconWords}"
+                                  Stroke="{DynamicResource WlTextSecondary}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator Style="{DynamicResource WlMenuSeparator}" />
                     <MenuItem Style="{DynamicResource WlMenuItem}"
                               Header="{x:Static res:Strings.Bubble_ApplyAllSafe}"
                               Click="ApplyAllMenuItem_Click">

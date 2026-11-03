@@ -144,6 +144,17 @@ public sealed record CorrectionCardState
         && Category == IssueCategory.Orthography
         && DictionaryWord is not null;
 
+    /// <summary>
+    /// The rule behind the finding, stated in general and with a way into the reference.
+    /// </summary>
+    /// <remarks>
+    /// The explanation above it says what is wrong with <em>this</em> text; the rule note says
+    /// what the rule is, so the next sentence does not need the card. Only on a finished
+    /// analysis — a card in flight or a failed write is about something else.
+    /// </remarks>
+    public bool ShowRuleNote => Issue is not null
+        && Phase is CorrectionCardPhase.Result or CorrectionCardPhase.NoSuggestion;
+
     public bool ShowIgnore => Phase is CorrectionCardPhase.Result
         or CorrectionCardPhase.NoSuggestion
         or CorrectionCardPhase.Failed;

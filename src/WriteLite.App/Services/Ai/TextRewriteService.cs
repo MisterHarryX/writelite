@@ -44,6 +44,9 @@ public sealed class TextRewriteService : IEditorAiService
 
     public bool IsModelAvailable => _backend.IsAvailable;
 
+    /// <summary>The runtime this service talks to, shared with the AI actions so there is one model process.</summary>
+    public QwenModelBackend Backend => _backend;
+
     public async Task<RewriteResult> RewriteAsync(
         RewriteRequest request,
         CancellationToken cancellationToken = default)

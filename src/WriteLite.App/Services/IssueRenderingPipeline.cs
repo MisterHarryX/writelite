@@ -1,4 +1,4 @@
-using WriteLite.Language.Core;
+﻿using WriteLite.Language.Core;
 using WriteLite.Models;
 
 namespace WriteLite.Services;
@@ -54,12 +54,72 @@ public sealed class IssueConfidencePolicy
 /// <summary>Collapses exact and semantic duplicates before geometry creation.</summary>
 public sealed class IssueDeduplicationService
 {
-    public IReadOnlyList<TextIssue> Deduplicate(IEnumerable<TextIssue> issues) => issues
+    public IReadOnlyList<TextIssue> Deduplicate(IEnumerable<TextIssue> issues) => OneSpellingCardPerWord(issues
         .GroupBy(IssueKey.Create)
-        .Select(group => group.OrderByDescending(Score).ThenBy(i => i.RuleId, StringComparer.Ordinal).First())
+        .Select(group => group.OrderByDescending(Score).ThenBy(i => i.RuleId, StringComparer.Ordinal).First()))
         .OrderBy(i => i.Start)
         .ThenBy(i => i.Length)
         .ToList();
+
+    /// <summary>
+    /// One spelling card per misspelled word.
+    /// </summary>
+    /// <remarks>
+    /// The dictionary and the language engine both have an opinion about «Сечас», and they
+    /// used to reach the panel as two cards for one word — «Сечас → Сеч ас» first, because
+    /// nothing ranked them, and «Сечас → Сейчас» second. A word has one correct spelling; the
+    /// card keeps the most trusted source's (WriteLite's own dictionary over the engine's
+    /// generic speller) and the rest are noise. Different categories on one span are left
+    /// alone — a spelling fix and a punctuation fix are both real.
+    /// </remarks>
+    public static IEnumerable<TextIssue> OneSpellingCardPerWord(IEnumerable<TextIssue> issues)
+    {
+        var list = issues.ToList();
+        var spelling = list
+            .Where(i => i.Category == IssueCategory.Orthography && i.Length > 0 && !string.IsNullOrEmpty(i.Replacement))
+            .GroupBy(i => (i.Start, i.Length))
+            .Where(g => g.Count() > 1)
+            .ToList();
+        if (spelling.Count == 0) return list;
+
+        var losers = new HashSet<TextIssue>(ReferenceEqualityComparer.Instance);
+        foreach (var group in spelling)
+        {
+            var winner = group
+                .OrderByDescending(SpellingScore)
+                .ThenBy(i => i.RuleId, StringComparer.Ordinal)
+                .First();
+            foreach (var other in group)
+            {
+                if (!ReferenceEquals(other, winner)) losers.Add(other);
+            }
+        }
+
+        return list.Where(i => !losers.Contains(i));
+    }
+
+    private static double SpellingScore(TextIssue issue)
+    {
+        var score = Score(issue);
+
+        // For English words the language engine's speller is the better judge: it ranks by
+        // context and frequency, Hunspell by edit distance alone.
+        if (SourcePriority(issue) == 2 && issue.Original.All(c => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z'))
+        {
+            score += 150;
+        }
+
+        // A generic speller splitting one word in two («Сеч ас») is almost never what was meant.
+        if (SourcePriority(issue) < 3
+            && issue.Replacement is { } replacement
+            && replacement.Contains(' ')
+            && !issue.Original.Contains(' '))
+        {
+            score -= 150;
+        }
+
+        return score;
+    }
 
     private static double Score(TextIssue issue) =>
         SourcePriority(issue) * 100 + CategoryPriority(issue.Category) * 10 + issue.Confidence
@@ -106,6 +166,7 @@ public sealed class IssueRenderingPipeline
     {
         var exact = _rangeFilter.Filter(text, candidates)
             .Where(_confidence.Allows)
+            .Where(WriteLite.Services.Rules.IssuePreferences.Allows)
             .Where(issue =>
                 issue.Replacement is null
                 || (!CorrectionCandidateValidityPolicy.IsIdenticalCorrection(issue.Original, issue.Replacement)

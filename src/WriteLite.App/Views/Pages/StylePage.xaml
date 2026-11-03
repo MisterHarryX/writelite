@@ -1,0 +1,300 @@
+<UserControl x:Class="WriteLite.Views.Pages.StylePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WriteLite.Controls"
+             xmlns:res="clr-namespace:WriteLite.Resources"
+             Background="{DynamicResource WlBgBase}"
+             FontFamily="{DynamicResource WlFont}">
+    <!--
+        «Мой стиль письма». Two states share the page: the overview of what WriteLite has
+        learned, and the calibration — a few texts written by hand. The calibration replaces
+        the overview rather than opening a window, so it is never hidden behind the shell and
+        the rail stays a way out of it.
+    -->
+    <Grid>
+        <!-- ═══ Overview ═══════════════════════════════════════════════════════ -->
+        <ScrollViewer x:Name="OverviewView" Style="{DynamicResource WlScrollViewer}" Padding="0">
+            <StackPanel MaxWidth="860" HorizontalAlignment="Left" Margin="36,30,36,40">
+
+                <controls:SectionHeader Index="09"
+                                        Title="{x:Static res:Strings.Style_Title}"
+                                        Description="{x:Static res:Strings.Style_Description}" />
+
+                <!-- Calibration call to action. Prominent until the calibration is done. -->
+                <Border x:Name="CalibrationCard" Style="{DynamicResource WlCard}" Margin="0,22,0,0" Padding="18,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                            <TextBlock x:Name="CalibrationCardTitle" Style="{DynamicResource WlCardTitle}"
+                                       Text="{x:Static res:Strings.Style_CalibrationTitle}" />
+                            <TextBlock x:Name="CalibrationCardBody" Style="{DynamicResource WlSecondary}"
+                                       Text="{x:Static res:Strings.Style_CalibrationBody}"
+                                       TextWrapping="Wrap" Margin="0,6,0,0" />
+                            <TextBlock x:Name="CalibrationProgressText" Style="{DynamicResource WlCaption}"
+                                       Margin="0,8,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <Button x:Name="StartCalibrationButton" Style="{DynamicResource WlPrimaryButton}"
+                                    MinHeight="34" Content="{x:Static res:Strings.Style_StartCalibration}"
+                                    Click="StartCalibration_Click" />
+                            <Button Style="{DynamicResource WlSecondaryButton}" MinHeight="34" Margin="0,8,0,0"
+                                    Content="{x:Static res:Strings.Style_ImportTexts}"
+                                    ToolTip="{x:Static res:Strings.Style_ImportTextsTooltip}"
+                                    Click="ImportTexts_Click" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <TextBlock x:Name="ImportStatusText" Style="{DynamicResource WlCaption}" Margin="0,8,0,0"
+                           Visibility="Collapsed" />
+
+                <!-- ═══ 01 Режим ═══════════════════════════════════════════════ -->
+                <controls:SectionHeader Index="01" Title="{x:Static res:Strings.Style_SectionMode}" Margin="0,36,0,0" />
+
+                <Border Style="{DynamicResource WlGroup}" Margin="0,10,0,0">
+                    <StackPanel>
+                        <controls:SettingRow Label="{x:Static res:Strings.Style_ModeLabel}"
+                                             Description="{x:Static res:Strings.Style_ModeDesc}">
+                            <controls:SettingRow.Control>
+                                <CheckBox x:Name="ChkMode" Style="{DynamicResource WlToggleSwitch}"
+                                          AutomationProperties.Name="{x:Static res:Strings.Style_ModeLabel}"
+                                          Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                            </controls:SettingRow.Control>
+                        </controls:SettingRow>
+                        <controls:SettingRow Label="{x:Static res:Strings.Style_PredictionLabel}"
+                                             Description="{x:Static res:Strings.Style_PredictionDesc}">
+                            <controls:SettingRow.Control>
+                                <CheckBox x:Name="ChkPrediction" Style="{DynamicResource WlToggleSwitch}"
+                                          AutomationProperties.Name="{x:Static res:Strings.Style_PredictionLabel}"
+                                          Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                            </controls:SettingRow.Control>
+                        </controls:SettingRow>
+                        <controls:SettingRow Label="{x:Static res:Strings.Style_LearningLabel}"
+                                             Description="{x:Static res:Strings.Style_LearningDesc}">
+                            <controls:SettingRow.Control>
+                                <CheckBox x:Name="ChkLearning" Style="{DynamicResource WlToggleSwitch}"
+                                          AutomationProperties.Name="{x:Static res:Strings.Style_LearningLabel}"
+                                          Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                            </controls:SettingRow.Control>
+                        </controls:SettingRow>
+                        <controls:SettingRow Label="{x:Static res:Strings.Style_OtherAppsLabel}"
+                                             Description="{x:Static res:Strings.Style_OtherAppsDesc}">
+                            <controls:SettingRow.Control>
+                                <CheckBox x:Name="ChkOtherApps" Style="{DynamicResource WlToggleSwitch}"
+                                          AutomationProperties.Name="{x:Static res:Strings.Style_OtherAppsLabel}"
+                                          Checked="Setting_Changed" Unchecked="Setting_Changed" />
+                            </controls:SettingRow.Control>
+                        </controls:SettingRow>
+                    </StackPanel>
+                </Border>
+
+                <!-- ═══ 02 Что WriteLite знает ═════════════════════════════════ -->
+                <controls:SectionHeader Index="02" Title="{x:Static res:Strings.Style_SectionProfile}" Margin="0,36,0,0" />
+
+                <UniformGrid Columns="3" Margin="0,18,0,0">
+                    <StackPanel Margin="0,0,20,18">
+                        <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="{x:Static res:Strings.Style_StatWords}" />
+                        <TextBlock x:Name="StatWords" Style="{DynamicResource WlSectionTitle}" Margin="0,8,0,0" />
+                        <TextBlock x:Name="StatWordsDesc" Style="{DynamicResource WlCaption}" Margin="0,5,0,0" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,20,18">
+                        <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="{x:Static res:Strings.Style_StatSentence}" />
+                        <TextBlock x:Name="StatSentence" Style="{DynamicResource WlSectionTitle}" Margin="0,8,0,0" />
+                        <TextBlock x:Name="StatSentenceDesc" Style="{DynamicResource WlCaption}" Margin="0,5,0,0" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,0,18">
+                        <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="{x:Static res:Strings.Style_StatLevel}" />
+                        <TextBlock x:Name="StatLevel" Style="{DynamicResource WlSectionTitle}" Margin="0,8,0,0" />
+                        <TextBlock x:Name="StatLevelDesc" Style="{DynamicResource WlCaption}" Margin="0,5,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,20,0">
+                        <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="{x:Static res:Strings.Style_StatYo}" />
+                        <TextBlock x:Name="StatYo" Style="{DynamicResource WlSectionTitle}" Margin="0,8,0,0" />
+                        <TextBlock x:Name="StatYoDesc" Style="{DynamicResource WlCaption}" Margin="0,5,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,20,0">
+                        <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="{x:Static res:Strings.Style_StatQuotes}" />
+                        <TextBlock x:Name="StatQuotes" Style="{DynamicResource WlSectionTitle}" Margin="0,8,0,0" />
+                        <TextBlock x:Name="StatQuotesDesc" Style="{DynamicResource WlCaption}" Margin="0,5,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Style="{DynamicResource WlMonoLabel}" controls:Type.Tracked="{x:Static res:Strings.Style_StatPredictions}" />
+                        <TextBlock x:Name="StatPredictions" Style="{DynamicResource WlSectionTitle}" Margin="0,8,0,0" />
+                        <TextBlock Style="{DynamicResource WlCaption}" Text="{x:Static res:Strings.Style_StatPredictionsDesc}"
+                                   Margin="0,5,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </UniformGrid>
+
+                <!-- ═══ 03 Ваши слова ═══════════════════════════════════════════ -->
+                <controls:SectionHeader Index="03" Title="{x:Static res:Strings.Style_SectionWords}"
+                                        Description="{x:Static res:Strings.Style_SectionWordsDesc}" Margin="0,36,0,0" />
+
+                <ItemsControl x:Name="TopWordsList" Margin="0,14,0,0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{DynamicResource WlStatusChip}" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Word}" Style="{DynamicResource WlBody}" />
+                                    <TextBlock Text="{Binding Count}" Style="{DynamicResource WlCaption}"
+                                               Margin="6,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock x:Name="TopWordsEmpty" Style="{DynamicResource WlSecondary}"
+                           Text="{x:Static res:Strings.Style_WordsEmpty}" Margin="0,14,0,0" TextWrapping="Wrap" />
+
+                <!-- ═══ 04 Незнакомые слова ═════════════════════════════════════ -->
+                <controls:SectionHeader Index="04" Title="{x:Static res:Strings.Style_SectionUnknown}"
+                                        Description="{x:Static res:Strings.Style_SectionUnknownDesc}" Margin="0,36,0,0" />
+
+                <ItemsControl x:Name="UnknownList" Margin="0,12,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{DynamicResource WlGroup}" Padding="0,8">
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Style="{DynamicResource WlTextButton}"
+                                            Content="{x:Static res:Strings.Style_UnknownDismiss}"
+                                            Margin="8,0,0,0" Click="DismissUnknown_Click" Tag="{Binding Word}" />
+                                    <Button DockPanel.Dock="Right" Style="{DynamicResource WlSecondaryButton}"
+                                            MinHeight="28" Content="{x:Static res:Strings.Style_UnknownAdd}"
+                                            Click="AddUnknown_Click" Tag="{Binding Word}" />
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Word}" Style="{DynamicResource WlBody}" />
+                                        <TextBlock Text="{Binding Summary}" Style="{DynamicResource WlCaption}"
+                                                   Margin="10,0,0,0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock x:Name="UnknownEmpty" Style="{DynamicResource WlSecondary}"
+                           Text="{x:Static res:Strings.Style_UnknownEmpty}" Margin="0,12,0,0" TextWrapping="Wrap" />
+
+                <!-- ═══ 05 Ваши исправления ═════════════════════════════════════ -->
+                <controls:SectionHeader Index="05" Title="{x:Static res:Strings.Style_SectionCorrections}"
+                                        Description="{x:Static res:Strings.Style_SectionCorrectionsDesc}" Margin="0,36,0,0" />
+
+                <ItemsControl x:Name="CorrectionsList" Margin="0,12,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{DynamicResource WlGroup}" Padding="0,8">
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Style="{DynamicResource WlIconButton}"
+                                            Width="24" Height="24"
+                                            ToolTip="{x:Static res:Strings.Style_CorrectionForget}"
+                                            Click="ForgetCorrection_Click" Tag="{Binding}">
+                                        <Path Style="{DynamicResource WlIconSm}" Width="12" Height="12"
+                                              Data="{DynamicResource WlIconClose}"
+                                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                    </Button>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Typed}" Style="{DynamicResource WlBody}"
+                                                   Foreground="{DynamicResource WlTextSecondary}" />
+                                        <TextBlock Text="→" Style="{DynamicResource WlBody}" Margin="8,0" />
+                                        <TextBlock Text="{Binding Intended}" Style="{DynamicResource WlBody}" />
+                                        <TextBlock Text="{Binding Summary}" Style="{DynamicResource WlCaption}"
+                                                   Margin="10,0,0,0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock x:Name="CorrectionsEmpty" Style="{DynamicResource WlSecondary}"
+                           Text="{x:Static res:Strings.Style_CorrectionsEmpty}" Margin="0,12,0,0" TextWrapping="Wrap" />
+
+                <!-- ═══ Privacy + reset ═════════════════════════════════════════ -->
+                <Border Style="{DynamicResource WlCard}" Margin="0,40,0,0" Padding="16,14">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Path Grid.Column="0" Style="{DynamicResource WlIcon}"
+                              Data="{DynamicResource WlIconPrivacy}"
+                              Stroke="{DynamicResource WlTextSubtle}"
+                              VerticalAlignment="Top" Margin="0,1,0,0" />
+                        <StackPanel Grid.Column="1" Margin="13,0,16,0">
+                            <TextBlock Style="{DynamicResource WlCardTitle}" Text="{x:Static res:Strings.Style_PrivacyTitle}" />
+                            <TextBlock Style="{DynamicResource WlSecondary}" Text="{x:Static res:Strings.Style_PrivacyBody}"
+                                       TextWrapping="Wrap" Margin="0,5,0,0" />
+                        </StackPanel>
+                        <Button Grid.Column="2" Style="{DynamicResource WlDangerButton}" MinHeight="32"
+                                VerticalAlignment="Center"
+                                Content="{x:Static res:Strings.Style_Reset}" Click="Reset_Click" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ═══ Calibration ════════════════════════════════════════════════════ -->
+        <Grid x:Name="CalibrationView" Margin="36,30,36,28" MaxWidth="860" HorizontalAlignment="Left"
+              Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0">
+                <TextBlock x:Name="CalibrationStepText" Style="{DynamicResource WlMonoLabel}"
+                           Foreground="{DynamicResource WlBrand}" />
+                <TextBlock x:Name="CalibrationPromptTitle" Style="{DynamicResource WlPageTitle}" Margin="0,10,0,0" />
+                <TextBlock x:Name="CalibrationPromptHint" Style="{DynamicResource WlSecondary}"
+                           TextWrapping="Wrap" Margin="0,8,0,0" MaxWidth="640" HorizontalAlignment="Left" />
+            </StackPanel>
+
+            <TextBlock Grid.Row="1" Style="{DynamicResource WlCaption}" Margin="0,14,0,8"
+                       Text="{x:Static res:Strings.Style_CalibrationHandwrittenHint}" TextWrapping="Wrap" />
+
+            <TextBox x:Name="CalibrationInput" Grid.Row="2"
+                     Style="{DynamicResource WlTextInput}"
+                     AcceptsReturn="True" TextWrapping="Wrap"
+                     VerticalContentAlignment="Top"
+                     VerticalScrollBarVisibility="Auto"
+                     Padding="12,10" FontSize="15" MinHeight="220"
+                     SpellCheck.IsEnabled="False"
+                     AutomationProperties.Name="{x:Static res:Strings.Style_CalibrationInputAutomation}"
+                     TextChanged="CalibrationInput_TextChanged" />
+
+            <Grid Grid.Row="3" Margin="0,14,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,20,0">
+                    <TextBlock x:Name="CalibrationCounter" Style="{DynamicResource WlCaption}" />
+                    <Border Style="{DynamicResource WlProgressTrack}" Margin="0,8,0,0" MaxWidth="320" HorizontalAlignment="Left" Width="320">
+                        <Border x:Name="CalibrationProgressFill" Style="{DynamicResource WlProgressFill}" Width="0" />
+                    </Border>
+                    <TextBlock x:Name="CalibrationPasteHint" Style="{DynamicResource WlCaption}"
+                               Foreground="{DynamicResource WlBrand}" Margin="0,8,0,0"
+                               Text="{x:Static res:Strings.Style_CalibrationPasteBlocked}" Visibility="Collapsed" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{DynamicResource WlTextButton}" Content="{x:Static res:Strings.Style_CalibrationCancel}"
+                            Margin="0,0,8,0" Click="CancelCalibration_Click" />
+                    <Button Style="{DynamicResource WlSecondaryButton}" MinHeight="34"
+                            Content="{x:Static res:Strings.Style_CalibrationSkip}"
+                            Margin="0,0,8,0" Click="SkipPrompt_Click" />
+                    <Button x:Name="CalibrationNextButton" Style="{DynamicResource WlPrimaryButton}" MinHeight="34"
+                            Content="{x:Static res:Strings.Style_CalibrationNext}" IsEnabled="False"
+                            Click="NextPrompt_Click" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

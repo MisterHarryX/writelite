@@ -172,6 +172,133 @@ public sealed class RussianMorphology
     public bool IsProperName(string word)
         => (_index.GetInfo(Normalise(word)).Flags & RussianFormFlags.ProperName) != 0;
 
+    // ---- description ---------------------------------------------------------
+
+    /// <summary>
+    /// Everything the index can say about <paramref name="word"/> for display, or null when it
+    /// does not know the word.
+    /// </summary>
+    public RuWordProfile? Describe(string word)
+    {
+        var lower = Normalise(word);
+        if (lower.Length == 0 || !_index.Contains(lower)) return null;
+
+        var info = _index.GetInfo(lower);
+        var tag = Tag(info);
+        var pos = PartOfSpeech(lower);
+        var lemma = RussianPronounParadigm.LemmaOf(lower) ?? info.Lemma ?? string.Empty;
+
+        var verbal = pos is RussianPartOfSpeech.Verb or RussianPartOfSpeech.Infinitive
+            or RussianPartOfSpeech.Gerund or RussianPartOfSpeech.ParticipleFull
+            or RussianPartOfSpeech.ParticipleShort;
+
+        var aspect = !verbal ? RuAspect.None
+            : HasGrammeme(tag, "perf") ? RuAspect.Perfective
+            : HasGrammeme(tag, "impf") ? RuAspect.Imperfective
+            : RuAspect.None;
+
+        bool? transitive = !verbal ? null
+            : HasGrammeme(tag, "tran") ? true
+            : HasGrammeme(tag, "intr") ? false
+            : null;
+
+        var tense = HasGrammeme(tag, "past") ? RuTense.Past
+            : HasGrammeme(tag, "pres") ? RuTense.Present
+            : HasGrammeme(tag, "futr") ? RuTense.Future
+            : RuTense.None;
+
+        var person = HasGrammeme(tag, "1per") ? RuPerson.First
+            : HasGrammeme(tag, "2per") ? RuPerson.Second
+            : HasGrammeme(tag, "3per") ? RuPerson.Third
+            : RuPerson.None;
+
+        // Case and number of a nominal come from the derived reading set, never from the one
+        // analysis the index happened to store for the spelling.
+        var readings = new List<RuReading>();
+        RuNumber? number = null;
+        var gender = RuGender.None;
+        bool? animate = null;
+        var nominal = pos is RussianPartOfSpeech.Noun or RussianPartOfSpeech.AdjectiveFull
+            or RussianPartOfSpeech.ParticipleFull or RussianPartOfSpeech.Pronoun
+            or RussianPartOfSpeech.Numeral;
+        if (nominal)
+        {
+            var analysis = Nominal(lower);
+            var numbers = new HashSet<RuNumber>();
+            foreach (var reading in analysis.Readings)
+            {
+                // Gender is reported once for the word, so readings differing only in it collapse.
+                var slot = reading with { Gender = RuGender.None };
+                if (!readings.Contains(slot)) readings.Add(slot);
+                numbers.Add(reading.Number);
+            }
+
+            readings.Sort((a, b) => a.Number != b.Number ? a.Number.CompareTo(b.Number) : a.Case.CompareTo(b.Case));
+            if (numbers.Count == 1) number = numbers.First();
+
+            if (pos == RussianPartOfSpeech.Noun)
+            {
+                gender = analysis.LexicalGender != RuGender.None ? analysis.LexicalGender : GenderFromTag(tag);
+                if (HasGrammeme(tag, "anim")) animate = true;
+                else if (HasGrammeme(tag, "inan")) animate = false;
+            }
+            else if (number == RuNumber.Sing)
+            {
+                // An adjective's gender is a property of the form, and only meaningful when every
+                // reading agrees on it: «красивой» is feminine in all four of its slots.
+                var genders = new HashSet<RuGender>();
+                foreach (var reading in analysis.Readings) genders.Add(reading.Gender);
+                if (genders.Count == 1) gender = genders.First();
+            }
+        }
+        else
+        {
+            if (HasGrammeme(tag, "plur")) number = RuNumber.Plur;
+            else if (HasGrammeme(tag, "sing")) number = RuNumber.Sing;
+            gender = number == RuNumber.Plur ? RuGender.None : GenderFromTag(tag);
+        }
+
+        var reflexive = verbal && (lemma.EndsWith("ся", StringComparison.Ordinal)
+                                   || lemma.EndsWith("сь", StringComparison.Ordinal));
+
+        return new RuWordProfile(
+            lemma,
+            pos,
+            aspect,
+            transitive,
+            tense,
+            person,
+            number,
+            gender,
+            animate,
+            Imperative: HasGrammeme(tag, "impr"),
+            Reflexive: reflexive,
+            Readings: readings,
+            Flags: info.Flags);
+    }
+
+    /// <summary>True when the OpenCorpora tag carries this grammeme as a whole token.</summary>
+    /// <remarks>A token match rather than a substring test, so a grammeme never matches inside
+    /// a longer one the way «loc» would match inside «loc2».</remarks>
+    private static bool HasGrammeme(string tag, string grammeme)
+    {
+        var start = 0;
+        while (start < tag.Length)
+        {
+            var end = start;
+            while (end < tag.Length && tag[end] is not (',' or ' ')) end++;
+            if (end - start == grammeme.Length
+                && string.CompareOrdinal(tag, start, grammeme, 0, grammeme.Length) == 0)
+            {
+                return true;
+            }
+
+            start = end + 1;
+        }
+
+        return false;
+    }
+
     // ---- nominals ------------------------------------------------------------
 
     /// <summary>

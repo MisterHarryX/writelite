@@ -16,6 +16,8 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
     private readonly RussianAgreementAnalyzer? _agreement;
     private readonly RussianClauseCommaAnalyzer? _clauseCommas;
     private readonly RussianComparativeAnalyzer? _comparative;
+    private readonly RussianNeSpellingAnalyzer? _neSpelling;
+    private readonly RussianCompoundSpellingAnalyzer? _compound;
 
     public RuleBasedAnalyzer()
         : this(RuleCatalog.LoadDefault())
@@ -58,6 +60,10 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
         // Owning this span deterministically is what stops the model being asked about it,
         // which is where every historical destructive correction in this repository began.
         _comparative = RussianComparativeAnalyzer.TryCreate(formIndex);
+        // «не далеко» → «недалеко» needs to know the merged word exists, so it needs the index.
+        _neSpelling = RussianNeSpellingAnalyzer.TryCreate(formIndex);
+        // Слитно / раздельно / через дефис, decided by whether the other spelling is a word.
+        _compound = RussianCompoundSpellingAnalyzer.TryCreate(formIndex);
     }
 
     public IReadOnlyList<TextIssue> Analyze(string text)
@@ -133,6 +139,8 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
         _agreement?.Collect(text, protectedSpans, issues);
         _clauseCommas?.Collect(text, protectedSpans, issues);
         _comparative?.Collect(text, protectedSpans, issues);
+        _neSpelling?.Collect(text, protectedSpans, issues);
+        _compound?.Collect(text, protectedSpans, issues);
         _hyphenated.Collect(text, protectedSpans, issues);
         _clauseBoundary.Collect(text, protectedSpans, issues);
         // Soft heuristics — never auto-apply; suppressed when reliable rules already cover zone.
@@ -217,12 +225,33 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
 
     private static void SuppressControversialAndSoftDuplicates(List<TextIssue> issues)
     {
-        // Drop soft subordinate hints that overlap reliable chtoby/comma rules.
+        // A misspelt «-тся/-ться» is one error with one repair. In «Мы должны встретится» the
+        // reflexive rule restores the infinitive «встретиться», and the agreement rule — reading
+        // the misspelling as a finite verb disagreeing with «мы» — offered «встретимся». Both
+        // were marked safe, so "fix all" could apply whichever came first.
         issues.RemoveAll(i =>
-            i.RuleId.Contains("subordinate-comma.info", StringComparison.OrdinalIgnoreCase)
+            i.RuleId == "ru.grammar.agreement"
+            && issues.Any(r =>
+                r.RuleId is "ru.grammar.reflexive-infinitive" or "ru.grammar.reflexive-finite"
+                && RangesOverlap(i, r)));
+
+        // Drop subordinate-comma findings that overlap reliable chtoby/comma rules. The firm
+        // variant is included: on «пришла что бы помочь» it proposed «, что», which next to the
+        // «чтобы» repair produces «, что бы».
+        issues.RemoveAll(i =>
+            i.RuleId.StartsWith("ru.punctuation.subordinate-comma", StringComparison.OrdinalIgnoreCase)
             && issues.Any(r =>
                 r.RuleId is "ru.punctuation.comma-before-chtoby" or "ru.grammar.chtoby-solid"
                 && RangesOverlap(i, r)));
+
+        // The indirect-question rule puts the comma after the verb («спросил,» + «когда»), so
+        // the soft hint on the same «когда» would be a second card about the same comma.
+        issues.RemoveAll(i =>
+            i.RuleId.Contains("subordinate-comma.info", StringComparison.OrdinalIgnoreCase)
+            && issues.Any(r =>
+                r.RuleId == "ru.punctuation.indirect-question"
+                && i.Start >= r.Start + r.Length
+                && i.Start - (r.Start + r.Length) <= 2));
 
         // «Несмотря на то, что» — do not auto-apply any punctuation toggle; drop auto flags.
         for (var n = 0; n < issues.Count; n++)
@@ -505,6 +534,30 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
                 continue;
             }
 
+            // «что-нибудь», «что-либо», «когда-то»: the word boundary falls at the hyphen, so the
+            // pattern found a conjunction inside an indefinite pronoun and asked for «посмотрим,
+            // что-нибудь». A hyphen after the match means it is not a conjunction at all.
+            var after = match.Index + match.Length;
+            if (after < text.Length && text[after] is '-' or '‑')
+            {
+                continue;
+            }
+
+            // «если что» is a colloquial set phrase — «если что, пиши» — and the «что» in it opens
+            // nothing. After «если» the word can only be that phrase.
+            if (match.Value.Equals("что", StringComparison.OrdinalIgnoreCase)
+                && PrecededByWord(text, match.Index, "если"))
+            {
+                continue;
+            }
+
+            // «кое что», «что то», «кто нибудь»: an indefinite pronoun written apart. It opens
+            // no clause; the hyphen rule restores «кое-что», and a comma here would cement the error.
+            if (PrecededByWord(text, match.Index, "кое") || FollowedByParticle(text, after))
+            {
+                continue;
+            }
+
             if (match.Index < 2)
             {
                 continue;
@@ -513,6 +566,36 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
             var previous = RussianTokens.PreviousNonWhitespace(text, match.Index - 1);
             if (previous is ',' or ';' or ':' or '—' or '-' or '.' or '!' or '?' or '…' or '\0')
             {
+                continue;
+            }
+
+            // «тема о которой»: the relative clause opens at the preposition, so the comma goes
+            // before «о», not between «о» and «которой». The rule used to treat the preposition
+            // as the word before the clause and offered «тема о, которой»; on «тема, о которой»,
+            // already correct, it offered the same broken comma a second time.
+            if (match.Value.StartsWith("котор", StringComparison.OrdinalIgnoreCase)
+                && PrepositionBefore(text, match.Index) is { } preposition)
+            {
+                var before = RussianTokens.PreviousNonWhitespace(text, preposition.Start - 1);
+                if (!char.IsLetter(before)) continue;
+
+                var anchor = RussianTokens.PreviousNonWhitespaceIndex(text, preposition.Start - 1) + 1;
+                var span = text[anchor..(match.Index + match.Length)];
+                if (ProtectedTextSpans.Overlaps(anchor, span.Length, protectedSpans)) continue;
+
+                issues.Add(new TextIssue(
+                    anchor,
+                    span.Length,
+                    span,
+                    ", " + span.TrimStart(),
+                    "Нужна запятая",
+                    $"Придаточная часть начинается с предлога: запятая ставится перед «{preposition.Word}», "
+                    + $"а не между ним и «{match.Value}».",
+                    IssueCategory.Punctuation,
+                    IssueSeverity.Error,
+                    CanApplyAutomatically: true,
+                    RuleId: "ru.punctuation.subordinate-comma",
+                    LinguisticCategory: LinguisticIssueCategory.PunctuationRecommendation));
                 continue;
             }
 
@@ -594,14 +677,51 @@ public sealed partial class RuleBasedAnalyzer : ITextAnalyzer
     /// «Он ушёл не потому, что устал» places the comma after «потому», not before it. The
     /// negation is the whole signal, and it has to be the adjacent word.
     /// </remarks>
-    private static bool PrecededByNegation(string text, int index)
+    private static bool PrecededByNegation(string text, int index) => PrecededByWord(text, index, "не");
+
+    /// <summary>The preposition immediately before <paramref name="index"/>, if the word there is one.</summary>
+    private static (int Start, string Word)? PrepositionBefore(string text, int index)
+    {
+        var end = index;
+        while (end > 0 && char.IsWhiteSpace(text[end - 1])) end--;
+        var start = end;
+        while (start > 0 && char.IsLetter(text[start - 1])) start--;
+        if (end == start) return null;
+
+        var word = text[start..end];
+        return RelativePrepositions.Contains(word) ? (start, word) : null;
+    }
+
+    private static readonly HashSet<string> RelativePrepositions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "о", "об", "обо", "в", "во", "на", "с", "со", "у", "к", "ко", "по", "за", "из", "от", "до",
+        "для", "без", "при", "про", "через", "над", "под", "перед", "между", "среди", "около",
+        "вокруг", "после", "благодаря", "согласно", "вместо", "кроме", "против", "ради",
+    };
+
+    /// <summary>True when <paramref name="word"/> is the word immediately before <paramref name="index"/>.</summary>
+    private static bool FollowedByParticle(string text, int after)
+    {
+        var next = RussianTokens.Split(text, after).FirstOrDefault();
+        if (string.IsNullOrEmpty(next.Value)) return false;
+        for (var k = after; k < next.Start; k++)
+        {
+            if (text[k] != ' ') return false;
+        }
+
+        return next.Value.ToLowerInvariant() is "то" or "нибудь" or "либо"
+               && !(next.Value.Equals("то", StringComparison.OrdinalIgnoreCase)
+                    && RussianTokens.Split(text, next.End).FirstOrDefault().Value?.ToLowerInvariant() is "есть" or "ли");
+    }
+
+    private static bool PrecededByWord(string text, int index, string word)
     {
         var end = index;
         while (end > 0 && char.IsWhiteSpace(text[end - 1])) end--;
         var start = end;
         while (start > 0 && char.IsLetter(text[start - 1])) start--;
         return end > start
-            && text[start..end].Equals("не", StringComparison.OrdinalIgnoreCase);
+            && text[start..end].Equals(word, StringComparison.OrdinalIgnoreCase);
     }
 
     private static void AddLongSentenceHints(

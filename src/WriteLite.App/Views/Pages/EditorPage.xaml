@@ -314,6 +314,21 @@
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                         </Button>
                     </StackPanel>
+
+                    <Border Style="{DynamicResource WlToolbarRule}" />
+
+                    <!-- The corrector: the same actions as in notes, on the selection or the whole document. -->
+                    <Button x:Name="AiMenuButton"
+                            Style="{DynamicResource WlToolbarButton}"
+                            Click="AiMenu_Click"
+                            ToolTip="{x:Static res:Strings.AiAction_ButtonTooltip}"
+                            AutomationProperties.Name="{x:Static res:Strings.AiAction_ButtonTooltip}">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconAi}"
+                                  Stroke="{DynamicResource WlBrand}" VerticalAlignment="Center" />
+                            <TextBlock Text="{x:Static res:Strings.AiAction_Button}" Margin="6,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </ScrollViewer>
         </Border>
