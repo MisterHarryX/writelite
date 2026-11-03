@@ -82,7 +82,9 @@ public sealed record MorphologicalFeatures(
     string? Mood = null,
     string? Animacy = null,
     string? Degree = null,
-    string? Voice = null)
+    string? Voice = null,
+    string? Transitivity = null,
+    string? Register = null)
 {
     public IReadOnlyList<string> ToDisplayList()
     {
@@ -92,16 +94,19 @@ public sealed record MorphologicalFeatures(
             if (!string.IsNullOrWhiteSpace(value)) list.Add($"{label}: {value}");
         }
 
-        Add("падеж", Case);
-        Add("число", Number);
+        // Lexical properties first — they describe the word — then the slot this form fills.
+        Add("вид", Aspect);
+        Add("переходность", Transitivity);
         Add("род", Gender);
+        Add("одушевлённость", Animacy);
+        Add("число", Number);
+        Add("падеж", Case);
         Add("время", Tense);
         Add("лицо", Person);
-        Add("вид", Aspect);
         Add("наклонение", Mood);
-        Add("одуш.", Animacy);
         Add("степень", Degree);
         Add("залог", Voice);
+        Add("помета", Register);
         return list;
     }
 }

@@ -1,4 +1,4 @@
-using WriteLite.Language.Core;
+﻿using WriteLite.Language.Core;
 using WriteLite.Models;
 using WriteLite.Resources;
 using WriteLite.Services.Writing;
@@ -180,6 +180,7 @@ public sealed class CorrectionApplicationService : ICorrectionApplicationService
         {
             cancellationToken.ThrowIfCancellationRequested();
             var snapshotStatus = _snapshotValidator(snapshot, monitor);
+            CompatibilityLogger.Technical("correction-step", $"step=snapshot status={snapshotStatus}");
             if (snapshotStatus != CorrectionApplicationStatus.CorrectionApplied)
             {
                 return CorrectionApplicationOutcome.FromStatus(snapshotStatus);
@@ -194,6 +195,7 @@ public sealed class CorrectionApplicationService : ICorrectionApplicationService
             var verdict = await snapshot.Target
                 .TryEvaluateWriteAsync(cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
+            CompatibilityLogger.Technical("correction-step", $"step=verdict value={verdict}");
             if (StatusFor(verdict) is { } refusal)
             {
                 return CorrectionApplicationOutcome.FromStatus(refusal);
@@ -224,6 +226,7 @@ public sealed class CorrectionApplicationService : ICorrectionApplicationService
             }
 
             var live = read.Text;
+            CompatibilityLogger.Technical("correction-step", $"step=read same={(string.Equals(live, snapshot.Text, StringComparison.Ordinal) ? 1 : 0)}");
             if (!string.Equals(live, snapshot.Text, StringComparison.Ordinal))
             {
                 return CorrectionApplicationOutcome.FromStatus(CorrectionApplicationStatus.CorrectionStale);

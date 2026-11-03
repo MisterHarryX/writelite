@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using WriteLite.Models;
 
 namespace WriteLite.Services.LanguageEngine;
@@ -473,6 +473,32 @@ public sealed class WriteLiteLanguageEngine : ITextAnalyzer, ITextAnalysisProgre
         string text,
         CancellationToken cancellationToken)
     {
+        // English sentences go to the engine as English: checked as Russian they produced
+        // nothing at all, which is why WriteLite was silent on English text.
+        var segments = WriteLite.Services.Translation.LanguageSegmenter.Split(text);
+        if (segments.Any(s => s.Language == "en"))
+        {
+            var all = new List<WriteLiteLanguageMatchDto>();
+            using var client = new WriteLiteLanguageClient(_options, _host.BaseAddress ?? _options.BaseUrl);
+            foreach (var segment in segments)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var segmentText = text.Substring(segment.Start, segment.Length);
+                if (string.IsNullOrWhiteSpace(segmentText)) continue;
+                var language = segment.Language == "en" ? "en-US" : _options.Language;
+                var dto = await client.CheckAsync(segmentText, language, cancellationToken).ConfigureAwait(false);
+                foreach (var match in dto.Matches ?? [])
+                {
+                    match.Offset += segment.Start;
+                    match.CheckedLanguage = segment.Language;
+                    all.Add(match);
+                }
+            }
+
+            ReportProgress(TextAnalysisProgress.Complete(text));
+            return all.OrderBy(m => m.Offset).ToList();
+        }
+
         var max = Math.Max(500, _options.MaxTextLength);
         if (text.Length <= max)
         {

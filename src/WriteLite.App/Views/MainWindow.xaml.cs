@@ -15,6 +15,7 @@ using WriteLite.Services.Reading;
 using WriteLite.Services.Settings;
 using WriteLite.Services.Shell;
 using WriteLite.Services.Spelling;
+using WriteLite.Services.Personal;
 using WriteLite.Views.Pages;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
@@ -31,12 +32,15 @@ public partial class MainWindow : Window
     private readonly HomePage _homePage = new();
     private readonly SettingsPage _settingsPage = new();
     private readonly DictionaryPage _dictionaryPage = new();
+    private readonly RulesPage _rulesPage = new();
     private readonly WordManagerPage _wordManagerPage = new();
+    private readonly StylePage _stylePage = new();
     private readonly DiagnosticsPage _diagnosticsPage = new();
     private readonly EditorPage _editorPage = new();
     private readonly ConverterPage _converterPage = new();
     private readonly LocalEnginePage _localEnginePage = new();
     private readonly NotesPage _notesPage = new();
+    private readonly MusicPage _musicPage = new();
     private readonly ReadingPage _readingPage = new();
     private readonly PlaceholderPage _aboutPage = new();
     private readonly PlaceholderPage _appsPage = new();
@@ -44,6 +48,9 @@ public partial class MainWindow : Window
     private bool _minimizeToTray = true;
     private bool _isCompactRail;
     private AmbiencePlayer? _ambiencePlayer;
+
+    /// <summary>The shared settings instance, once the shell has bound it.</summary>
+    private WriteLiteAppSettings? _settings;
 
     public MainWindow()
     {
@@ -101,6 +108,18 @@ public partial class MainWindow : Window
             body: Strings.Main_CompatBody);
 
         _homePage.NavigationRequested += OpenSection;
+        _homePage.StyleCalibrationRequested += () => OpenPersonalStyle(startCalibration: true);
+        _homePage.StyleOfferDismissed += DismissStyleOffer;
+        _stylePage.SettingsChanged += s =>
+        {
+            UpdateStyleOffer();
+            SettingsChanged?.Invoke(s);
+        };
+        _stylePage.DictionaryChanged += () =>
+        {
+            _wordManagerPage.Reload();
+            DictionaryChanged?.Invoke();
+        };
         _localEnginePage.NavigationRequested += OpenSection;
         _wordManagerPage.NavigationRequested += OpenSection;
         _editorPage.NavigationRequested += OpenSection;
@@ -158,8 +177,10 @@ public partial class MainWindow : Window
 
         _ = Dispatcher.InvokeAsync(async () =>
         {
-            await Task.Run(() => player.LoadTracks());
+            await Task.Run(() => player.LoadTracks(library: MusicLibrary.Load()));
             Ambience.Bind(player, settings.AmbienceVolume, settings.AmbienceEnabled, settings.AmbienceLoop);
+            if (!player.IsPlaying) player.RestoreLastPosition();
+            _musicPage.Bind(player);
         }, System.Windows.Threading.DispatcherPriority.Background);
 
         Ambience.StateChanged += (volume, playing, loop) =>
@@ -190,7 +211,49 @@ public partial class MainWindow : Window
         _wordManagerPage.ExceptionsChanged += () => ExceptionsChanged?.Invoke();
         _diagnosticsPage.Bind(diagnostics, restartEngine);
         _localEnginePage.Bind(settings);
+        _settings = settings;
+        UpdateStyleOffer();
     }
+
+    /// <summary>
+    /// Gives «Мой стиль» and the editor the personal style library.
+    /// </summary>
+    /// <remarks>
+    /// The same instance the field monitor's analyzers use, so what is learned on one path is
+    /// known on the other. Called after <see cref="BindServices"/>, which supplies the settings.
+    /// </remarks>
+    public void BindPersonalStyle(PersonalStyleService style, UserDictionaryService dictionary)
+    {
+        _stylePage.Bind(_settings ?? new WriteLiteAppSettings(), style, dictionary);
+        _editorPage.BindPersonalStyle(style);
+        UpdateStyleOffer();
+    }
+
+    /// <summary>Opens «Мой стиль», optionally straight into the calibration.</summary>
+    public void OpenPersonalStyle(bool startCalibration)
+    {
+        NavStyle.IsChecked = true;
+        if (!startCalibration) return;
+
+        Dispatcher.BeginInvoke(
+            System.Windows.Threading.DispatcherPriority.Loaded,
+            new Action(() => _stylePage.StartCalibration()));
+    }
+
+    /// <summary>The home page offers the calibration until it is done or turned down.</summary>
+    private void UpdateStyleOffer()
+        => _homePage.SetStyleOffer(_settings is { StyleCalibrationCompleted: false, StyleCalibrationDismissed: false });
+
+    private void DismissStyleOffer()
+    {
+        if (_settings is null) return;
+        _settings.StyleCalibrationDismissed = true;
+        UpdateStyleOffer();
+        SettingsChanged?.Invoke(_settings);
+    }
+
+    /// <summary>Re-reads the «Что считать ошибкой» switches after the card changed one.</summary>
+    public void RefreshIssueKinds() => _settingsPage.RefreshIssueKinds();
 
     /// <summary>
     /// Gives the editor its checking stack, its local AI and its dictionary services.
@@ -211,6 +274,17 @@ public partial class MainWindow : Window
         _editorPage.BindAnalyzer(analyzer, fastAnalyzer);
         _editorPage.BindAi(editorAi, lexical);
         _editorPage.BindWritingAssistance(writing);
+
+        // The AI actions — «Узнать главное», «Сократить», «Исправить ошибки» and the rest —
+        // run on the editor's own loopback model and on the full checking stack, so notes
+        // and documents get one corrector, not two that disagree.
+        var textActions = editorAi is WriteLite.Services.Ai.TextRewriteService rewrite
+            ? new WriteLite.Services.Ai.TextActionService(new WriteLite.Services.Ai.QwenTextModel(rewrite.Backend), analyzer ?? fastAnalyzer)
+            : analyzer is not null || fastAnalyzer is not null
+                ? new WriteLite.Services.Ai.TextActionService(null, analyzer ?? fastAnalyzer)
+                : null;
+        _editorPage.BindTextActions(textActions);
+        _notesPage.BindAi(textActions);
 
         // Recovery is offered once the shell is on screen, not when the page is
         // constructed: a modal question must never be a side effect of laying out
@@ -347,6 +421,20 @@ public partial class MainWindow : Window
             new Action(() => _ = _dictionaryPage.ShowWordAsync(normalized)));
     }
 
+    /// <summary>Opens the rules reference on <paramref name="ruleId"/>, from a correction card.</summary>
+    /// <remarks>
+    /// A rule the reference does not know still lands on the reference: the reader asked
+    /// "why", and the list of rules is a better answer than nothing happening.
+    /// </remarks>
+    public void OpenRule(string ruleId)
+    {
+        NavRules.IsChecked = true;
+
+        Dispatcher.BeginInvoke(
+            System.Windows.Threading.DispatcherPriority.Loaded,
+            new Action(() => _rulesPage.ShowRule(ruleId)));
+    }
+
     // ── Fullscreen ───────────────────────────────────────────────────────────
 
     /// <summary>True while the window owns the whole display.</summary>
@@ -479,7 +567,9 @@ public partial class MainWindow : Window
             "notes" => NavNotes,
             "reading" => NavReading,
             "dictionary" => NavDictionary,
+            "rules" => NavRules,
             "words" => NavWords,
+            "style" => NavStyle,
             "engine" => NavLocalAi,
             "settings" => NavSettings,
             "diagnostics" => NavDiagnostics,
@@ -529,6 +619,11 @@ public partial class MainWindow : Window
             _notesPage.Reload();
             page = _notesPage;
         }
+        else if (ReferenceEquals(item, NavMusic))
+        {
+            _musicPage.Reload();
+            page = _musicPage;
+        }
         else if (ReferenceEquals(item, NavReading))
         {
             _readingPage.Reload();
@@ -539,10 +634,19 @@ public partial class MainWindow : Window
             _dictionaryPage.Reload();
             page = _dictionaryPage;
         }
+        else if (ReferenceEquals(item, NavRules))
+        {
+            page = _rulesPage;
+        }
         else if (ReferenceEquals(item, NavWords))
         {
             _wordManagerPage.Reload();
             page = _wordManagerPage;
+        }
+        else if (ReferenceEquals(item, NavStyle))
+        {
+            _stylePage.Refresh();
+            page = _stylePage;
         }
         else if (ReferenceEquals(item, NavLocalAi))
         {
@@ -669,6 +773,7 @@ public partial class MainWindow : Window
         var railVisibility = compact ? Visibility.Collapsed : Visibility.Visible;
         GroupWorkspace.Visibility = railVisibility;
         GroupSystem.Visibility = railVisibility;
+        GroupTools.Visibility = railVisibility;
         ExitButton.Visibility = railVisibility;
         RailFootnote.Visibility = railVisibility;
 

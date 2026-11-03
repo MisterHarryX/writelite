@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using WriteLite.Resources;
 using WriteLite.Services.Ai;
+using WriteLite.Services.Rules;
 using WriteLite.Services.Settings;
 using UserControl = System.Windows.Controls.UserControl;
 using CheckBox = System.Windows.Controls.CheckBox;
@@ -39,15 +40,15 @@ public partial class SettingsPage : UserControl
         ChkPunct.IsChecked = settings.EnablePunctuation;
         ChkGrammar.IsChecked = settings.EnableGrammar;
         ChkStyle.IsChecked = settings.EnableStyle;
-        ChkTypo.IsChecked = settings.EnableTypography;
-        ChkRepeats.IsChecked = settings.EnableRepeats;
         ChkSafeAll.IsChecked = settings.SafeApplyAll;
+        ChkEnglish.IsChecked = settings.EnableEnglish;
         TxtDelay.Text = settings.AnalysisDelayMs.ToString();
         TxtMaxLen.Text = settings.MaxTextLength.ToString();
         ChkGreen.IsChecked = settings.ShowGreenIndicatorWhenClean;
         ChkHidePanel.IsChecked = settings.HidePanelAfterSuccessfulApply;
         ChkOnlyEditing.IsChecked = settings.ShowUiOnlyWhileEditing;
         ChkLexical.IsChecked = settings.LexicalCardEnabled;
+        ChkFieldPrediction.IsChecked = settings.FieldPredictionEnabled;
         ChkMinimizeDup.IsChecked = settings.MinimizeUnderlineDuplication;
         TxtIdleGrace.Text = settings.EditingIdleGraceSeconds.ToString();
         ChkLocalAi.IsChecked = settings.LocalAiEnabled;
@@ -55,7 +56,87 @@ public partial class SettingsPage : UserControl
         SelectProfileItem(settings.LocalAiProfile);
         TxtQwenEndpoint.Text = settings.QwenEndpoint ?? string.Empty;
         UpdateLocalAiHint();
+        BuildIssueKindList();
         _loading = false;
+    }
+
+    /// <summary>
+    /// One switch per <see cref="IssueKindCatalog"/> entry, grouped under small captions.
+    /// </summary>
+    /// <remarks>
+    /// Generated rather than written out in XAML so a new kind needs one catalog line and no
+    /// page change. A switch writes straight into <see cref="WriteLiteAppSettings.DisabledIssueKinds"/>
+    /// and raises the same SettingsChanged as every other row, so the effect is immediate in
+    /// the editor and in other applications.
+    /// </remarks>
+    private void BuildIssueKindList()
+    {
+        IssueKindList.Children.Clear();
+        // Older settings files expressed two of these kinds as category switches.
+        if (!_settings.EnableRepeats && !_settings.DisabledIssueKinds.Contains("repeats"))
+        {
+            _settings.DisabledIssueKinds.Add("repeats");
+            _settings.EnableRepeats = true;
+        }
+
+        if (!_settings.EnableTypography && !_settings.DisabledIssueKinds.Contains("typography"))
+        {
+            _settings.DisabledIssueKinds.Add("typography");
+            _settings.EnableTypography = true;
+        }
+
+        string? group = null;
+        foreach (var kind in IssueKindCatalog.All)
+        {
+            if (!string.Equals(group, kind.Group, StringComparison.Ordinal))
+            {
+                group = kind.Group;
+                IssueKindList.Children.Add(new TextBlock
+                {
+                    Text = group,
+                    Style = (Style)FindResource("WlCaption"),
+                    Foreground = (System.Windows.Media.Brush)FindResource("WlBrand"),
+                    Margin = new Thickness(0, IssueKindList.Children.Count == 0 ? 6 : 18, 0, 2),
+                });
+            }
+
+            var toggle = new CheckBox
+            {
+                Style = (Style)FindResource("WlToggleSwitch"),
+                IsChecked = !_settings.DisabledIssueKinds.Contains(kind.Id),
+                Tag = kind.Id,
+            };
+            System.Windows.Automation.AutomationProperties.SetName(toggle, kind.Title);
+            toggle.Checked += IssueKind_Changed;
+            toggle.Unchecked += IssueKind_Changed;
+            IssueKindList.Children.Add(new WriteLite.Controls.SettingRow
+            {
+                Label = kind.Title,
+                Description = kind.Description,
+                Control = toggle,
+            });
+        }
+    }
+
+    /// <summary>Called by the correction card's «Не показывать такие» so the page stays in step.</summary>
+    public void RefreshIssueKinds()
+    {
+        var wasLoading = _loading;
+        _loading = true;
+        BuildIssueKindList();
+        _loading = wasLoading;
+    }
+
+    private void IssueKind_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_loading || sender is not CheckBox { Tag: string id } toggle) return;
+        _settings.DisabledIssueKinds.RemoveAll(k => string.Equals(k, id, StringComparison.Ordinal));
+        if (toggle.IsChecked != true)
+        {
+            _settings.DisabledIssueKinds.Add(id);
+        }
+
+        SettingsChanged?.Invoke(_settings);
     }
 
     private void SelectProfileItem(string? profile)
@@ -90,13 +171,13 @@ public partial class SettingsPage : UserControl
         _settings.EnablePunctuation = ChkPunct.IsChecked == true;
         _settings.EnableGrammar = ChkGrammar.IsChecked == true;
         _settings.EnableStyle = ChkStyle.IsChecked == true;
-        _settings.EnableTypography = ChkTypo.IsChecked == true;
-        _settings.EnableRepeats = ChkRepeats.IsChecked == true;
         _settings.SafeApplyAll = ChkSafeAll.IsChecked == true;
+        _settings.EnableEnglish = ChkEnglish.IsChecked == true;
         _settings.ShowGreenIndicatorWhenClean = ChkGreen.IsChecked == true;
         _settings.HidePanelAfterSuccessfulApply = ChkHidePanel.IsChecked == true;
         _settings.ShowUiOnlyWhileEditing = ChkOnlyEditing.IsChecked == true;
         _settings.LexicalCardEnabled = ChkLexical.IsChecked == true;
+        _settings.FieldPredictionEnabled = ChkFieldPrediction.IsChecked == true;
         _settings.MinimizeUnderlineDuplication = ChkMinimizeDup.IsChecked == true;
         if (int.TryParse(TxtIdleGrace.Text, out var idleSec))
         {

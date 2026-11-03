@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -38,20 +38,49 @@ public partial class SuggestionsWindow : Window
             }
         };
         SetupSpin();
+        // The panel sits over someone else's text field and must never take its caret: the
+        // card the underline opens has always worked this way, and the panel did not, which is
+        // why fixing from the indicator was the slow path — the field lost focus on the first
+        // click and every write had to fight to get it back.
+        NoActivateWindow.Attach(this);
         _ready = true;
         UpdateEmptyAndFooter();
         CompatibilityLogger.Technical("correction-popup-created", "instance=1");
     }
 
-    public event Func<TextIssue, Task>? ApplyIssueRequested;
+    public event Func<TextIssue, Task<bool>>? ApplyIssueRequested;
     public event Func<Task>? ApplyAllRequested;
     public event EventHandler? PanelHidden;
     public event EventHandler? OpenMainWindowRequested;
     public event Action<TextIssue>? AddToDictionaryRequested;
     public event Action<TextIssue>? IgnoreIssueRequested;
 
+    /// <summary>Texts a fix from this panel has already replaced — any snapshot of them is stale.</summary>
+    private readonly HashSet<string> _supersededTexts = new(StringComparer.Ordinal);
+
     public void ShowSnapshot(TextSnapshot snapshot)
     {
+        // The monitor republishes its last snapshot when interaction state changes, and right
+        // after a fix that snapshot still holds the text before it — with the fixed word in it.
+        // Taking it would put the row the user just fixed back under their pointer.
+        if (IsVisible && _supersededTexts.Contains(snapshot.Text))
+        {
+            CompatibilityLogger.Technical("panel-snapshot-skipped", "reason=superseded");
+            return;
+        }
+
+        // While the field is being re-checked the monitor publishes the new text with no findings
+        // yet. Emptying the list for those few hundred milliseconds made every row blink out and
+        // back after each fix; the rows stay until the check has an answer.
+        if (IsVisible && snapshot.Issues.Count == 0 && _allIssues.Count > 0
+            && snapshot.IndicatorState is AnalysisIndicatorState.FastAnalyzing
+                or AnalysisIndicatorState.DeepAnalyzing
+                or AnalysisIndicatorState.Analyzing
+                or AnalysisIndicatorState.Typing)
+        {
+            return;
+        }
+
         _latestSnapshot = snapshot;
         ReconcileIssues(snapshot);
         CompatibilityLogger.Technical("correction-popup-reused", $"generation={snapshot.GenerationId}");
@@ -64,6 +93,7 @@ public partial class SuggestionsWindow : Window
 
         var dpi = VisualTreeHelper.GetDpi(this);
         var field = OverlayPlacementService.Scale(snapshot.Target.Bounds, dpi.DpiScaleX, dpi.DpiScaleY);
+        if (AvoidBounds is { } avoid && !avoid.IsEmpty) field = Rect.Union(field, avoid);
         var placement = OverlayPlacementService.PlacePanel(
             field,
             SystemParameters.WorkArea,
@@ -92,25 +122,60 @@ public partial class SuggestionsWindow : Window
         }
 
         base.Hide();
+        _supersededTexts.Clear();
         CompatibilityLogger.Technical("suggestions-panel-hidden", "instance=retained");
         PanelHidden?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Brings the rows in line with a snapshot without rebuilding the ones that did not change.
+    /// </summary>
+    /// <remarks>
+    /// The panel now follows the field while it is open, so snapshots arrive every time the
+    /// user types or a fix lands. Clearing and refilling the list on each one made every row
+    /// flicker and re-created the button under the user's pointer mid-click.
+    /// </remarks>
     private void ReconcileIssues(TextSnapshot snapshot)
     {
-        var wanted = snapshot.Issues.ToHashSet();
+        // Rows are keyed by what the user sees — the words, the fix, the place — not by the
+        // whole finding: the fast and the deep lane describe the same mistake with slightly
+        // different explanations, and treating those as different rows re-created the row
+        // (and its button) under the user's pointer on every lane switch.
+        var wanted = snapshot.Issues
+            .Select(CorrectionPresentation.NormalizeForApply)
+            .ToList();
+        var wantedKeys = wanted.Select(RowKey).ToHashSet();
         for (var i = _allIssues.Count - 1; i >= 0; i--)
         {
-            if (!wanted.Contains(_allIssues[i].Issue)) _allIssues.RemoveAt(i);
+            if (!wantedKeys.Contains(RowKey(_allIssues[i].Issue))) _allIssues.RemoveAt(i);
         }
-        foreach (var issue in snapshot.Issues)
+
+        for (var index = 0; index < wanted.Count; index++)
         {
-            if (!_allIssues.Any(card => card.Issue == issue))
+            var key = RowKey(wanted[index]);
+            var existing = -1;
+            for (var j = 0; j < _allIssues.Count; j++)
             {
-                _allIssues.Add(new IssueCard(issue, snapshot.Text, snapshot.Target.SupportsDirectWrite));
+                if (RowKey(_allIssues[j].Issue) == key) { existing = j; break; }
+            }
+
+            if (existing < 0)
+            {
+                _allIssues.Insert(Math.Min(index, _allIssues.Count),
+                    new IssueCard(wanted[index], snapshot.Text, snapshot.Target.SupportsDirectWrite));
+            }
+            else if (existing != index && index < _allIssues.Count)
+            {
+                _allIssues.Move(existing, index);
             }
         }
     }
+
+    private static (int, int, string, string, IssueCategory) RowKey(TextIssue issue) =>
+        (issue.Start, issue.Length, issue.Original, issue.Replacement ?? string.Empty, issue.Category);
+
+    /// <summary>Rect (in DIPs) the panel must not cover — the indicator with its pen.</summary>
+    public Rect? AvoidBounds { get; set; }
 
     private void UpdateHeader(TextSnapshot snapshot)
     {
@@ -190,13 +255,17 @@ public partial class SuggestionsWindow : Window
 
     private void ApplyFilter()
     {
-        _visibleIssues.Clear();
-        foreach (var card in _allIssues)
+        var desired = _allIssues.Where(card => MatchesTab(card.Issue, _tabFilter)).ToList();
+        for (var i = _visibleIssues.Count - 1; i >= 0; i--)
         {
-            if (MatchesTab(card.Issue, _tabFilter))
-            {
-                _visibleIssues.Add(card);
-            }
+            if (!desired.Contains(_visibleIssues[i])) _visibleIssues.RemoveAt(i);
+        }
+
+        for (var i = 0; i < desired.Count; i++)
+        {
+            var at = _visibleIssues.IndexOf(desired[i]);
+            if (at < 0) _visibleIssues.Insert(i, desired[i]);
+            else if (at != i) _visibleIssues.Move(at, i);
         }
     }
 
@@ -289,14 +358,70 @@ public partial class SuggestionsWindow : Window
         }
     }
 
+    private readonly SemaphoreSlim _applyQueue = new(1, 1);
+
+    /// <summary>
+    /// Fixes one row without freezing the others.
+    /// </summary>
+    /// <remarks>
+    /// Clicks queue: the user can press «Исправить» on three rows in a row and they are written
+    /// one after another, each against the text the previous one left. The row disappears as
+    /// soon as its write is verified, and the panel closes itself once nothing is left.
+    /// </remarks>
     private async void ApplyIssueButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_isBusy || sender is not Button { Tag: TextIssue issue } || ApplyIssueRequested is null)
+        if (sender is not Button { Tag: TextIssue issue } button || ApplyIssueRequested is null)
         {
             return;
         }
 
-        await RunBusyAsync(() => ApplyIssueRequested.Invoke(issue));
+        button.IsEnabled = false;
+        button.Content = Strings.Suggestions_Applying;
+        var textBefore = _latestSnapshot?.Text;
+        var succeeded = false;
+        await _applyQueue.WaitAsync();
+        try
+        {
+            succeeded = await ApplyIssueRequested.Invoke(issue);
+        }
+        catch (Exception ex)
+        {
+            CompatibilityLogger.Technical("panel-apply-failed", $"type={ex.GetType().Name}");
+        }
+        finally
+        {
+            _applyQueue.Release();
+        }
+
+        if (!succeeded)
+        {
+            button.IsEnabled = true;
+            button.Content = Strings.Common_Fix;
+            return;
+        }
+
+        if (textBefore is not null) _supersededTexts.Add(textBefore);
+        // The row may have moved since the click (an earlier fix shifted the text); match by
+        // what it says and take the nearest.
+        var card = _allIssues
+            .Where(c => c.Issue.Original == issue.Original && c.Issue.Replacement == issue.Replacement
+                        && c.Issue.Category == issue.Category)
+            .OrderBy(c => Math.Abs(c.Issue.Start - issue.Start))
+            .FirstOrDefault();
+        if (card is not null)
+        {
+            _allIssues.Remove(card);
+            _visibleIssues.Remove(card);
+        }
+
+        CompatibilityLogger.Technical("panel-row-removed",
+            $"found={(card is null ? 0 : 1)} remaining={_allIssues.Count} visible={_visibleIssues.Count} superseded={_supersededTexts.Count}");
+        UpdateEmptyAndFooter();
+        if (_allIssues.Count == 0)
+        {
+            await Task.Delay(700);
+            if (_allIssues.Count == 0) Hide();
+        }
     }
 
     private async void ApplyAllButton_Click(object sender, RoutedEventArgs e)

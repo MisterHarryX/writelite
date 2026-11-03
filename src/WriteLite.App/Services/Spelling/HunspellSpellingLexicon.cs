@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Text;
 using WeCantSpell.Hunspell;
@@ -49,6 +49,15 @@ public sealed class HunspellSpellingLexicon : ISpellingLexicon, IDisposable
             "ru_RU",
             "LibreOffice ru_RU Hunspell; copyright 1997-2008 Alexander I. Lebedev",
             "BSD-like ru_RU license with notice retention and modified-version marking",
+            baseDirectory);
+
+    /// <summary>The bundled en_US dictionary (SCOWL-based, see NOTICE.en_US.txt).</summary>
+    public static HunspellSpellingLexicon LoadEnglish(string? baseDirectory = null)
+        => Load(
+            LanguageCode.English,
+            "en_US",
+            "SCOWL / Hunspell en_US (Kevin Atkinson et al.)",
+            "SCOWL license with notice retention",
             baseDirectory);
 
     private static HunspellSpellingLexicon Load(

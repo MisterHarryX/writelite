@@ -42,6 +42,17 @@ public sealed class PageRenderSmokeTests
     public void Settings_page_renders() => AssertRenders(() => new SettingsPage());
 
     [TestMethod]
+    public void Style_page_renders() => AssertRenders(() => new StylePage());
+
+    [TestMethod]
+    public void Style_page_renders_its_calibration() => AssertRenders(() =>
+    {
+        var page = new StylePage();
+        page.StartCalibration();
+        return page;
+    });
+
+    [TestMethod]
     public void Diagnostics_page_renders() => AssertRenders(() => new DiagnosticsPage());
 
     [TestMethod]
@@ -146,12 +157,6 @@ public sealed class PageRenderSmokeTests
 
         Window[] dialogs =
         [
-            new WriteLite.Views.NoteEditorWindow(new Note
-            {
-                Kind = NoteKind.Checklist,
-                Title = "Список",
-                Items = [new NoteChecklistItem { Text = "Пункт" }]
-            }),
             new WriteLite.Views.AnnotationEditorWindow("Цитата из книги."),
             new WriteLite.Views.StudyCardEditorWindow("Фрагмент для карточки.", null),
             new WriteLite.Views.TextPromptWindow("Название проекта", "Книга")

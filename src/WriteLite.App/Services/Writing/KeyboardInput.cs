@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace WriteLite.Services.Writing;
 
@@ -43,6 +43,58 @@ internal static class KeyboardInput
         var release = new[] { Key(VkV, down: false), Key(VkControl, down: false) };
         _ = SendInput((uint)release.Length, release, Marshal.SizeOf<Input>());
     }
+
+    /// <summary>
+    /// Types a word completion the user accepted with Tab, as Unicode characters.
+    /// </summary>
+    /// <remarks>
+    /// The second and last gesture. It carries letters, digits, spaces and ordinary punctuation
+    /// only: control characters — Enter, Tab, Backspace — are refused outright, so a completion
+    /// can never send a message, move focus or delete anything. Typing (rather than writing the
+    /// field's value) is what keeps the caret after the inserted text and the host's own undo
+    /// working, in every kind of control.
+    /// </remarks>
+    public static bool TypeText(string text)
+    {
+        if (string.IsNullOrEmpty(text) || text.Any(char.IsControl)) return false;
+
+        var inputs = new List<Input>(text.Length * 2);
+        foreach (var c in text)
+        {
+            inputs.Add(Unicode(c, down: true));
+            inputs.Add(Unicode(c, down: false));
+        }
+
+        var sent = SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf<Input>());
+        if (sent != inputs.Count)
+        {
+            CompatibilityLogger.Technical("send-input-partial", $"sent={sent} expected={inputs.Count} kind=unicode");
+            return false;
+        }
+
+        return true;
+    }
+
+    private static Input Unicode(char c, bool down) => new()
+    {
+        Type = InputKeyboard,
+        Data = new InputUnion
+        {
+            Keyboard = new KeyboardInputData
+            {
+                VirtualKey = 0,
+                ScanCode = c,
+                Flags = KeyEventUnicode | (down ? 0 : KeyEventKeyUp),
+                Time = 0,
+                ExtraInfo = WriteLiteInputMarker,
+            },
+        },
+    };
+
+    private const uint KeyEventUnicode = 0x0004;
+
+    /// <summary>Marks keystrokes WriteLite typed itself, so its own keyboard watch can tell them apart.</summary>
+    public static readonly IntPtr WriteLiteInputMarker = new(0x57524C54);
 
     private static Input Key(ushort virtualKey, bool down) => new()
     {

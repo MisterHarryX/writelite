@@ -1,0 +1,14 @@
+{
+  "source": "Helsinki-NLP/opus-mt-en-ru",
+  "license": "CC-BY-4.0",
+  "pad_id": 62517,
+  "eos_id": 0,
+  "unk_id": 1,
+  "decoder_start_id": 62517,
+  "vocab_size": 62518,
+  "max_length": 256,
+  "probe": {
+    "input": "Hello, how are you?",
+    "greedy": "Привет, как дела?"
+  }
+}

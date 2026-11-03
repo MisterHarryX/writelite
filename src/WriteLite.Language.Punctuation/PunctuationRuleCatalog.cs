@@ -15,6 +15,7 @@ public static class PunctuationRuleCatalog
         new("ru.spacing.repeated-space", RussianLanguageProfile.IsoCode, true),
         new("ru.punctuation.space-before-mark", RussianLanguageProfile.IsoCode, true),
         new("ru.punctuation.space-after-mark", RussianLanguageProfile.IsoCode, true),
+        new("ru.punctuation.space-after-period", RussianLanguageProfile.IsoCode, true),
         new("ru.punctuation.repeated-mark", RussianLanguageProfile.IsoCode, false),
         new("ru.typography.ellipsis", RussianLanguageProfile.IsoCode, false),
         new("ru.typography.double-hyphen", RussianLanguageProfile.IsoCode, false),

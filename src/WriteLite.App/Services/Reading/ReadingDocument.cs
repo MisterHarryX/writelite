@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
 using WriteLite.Documents;
@@ -415,6 +415,29 @@ public sealed class ReadingDocument
     // ── Offsets ↔ pointers ───────────────────────────────────────────────────
 
     /// <summary>The position in the rendered document for a character offset.</summary>
+    /// <summary>The book's headings in reading order, for the table of contents.</summary>
+    public IReadOnlyList<(int Offset, int Level, string Title)> Headings
+    {
+        get
+        {
+            if (_headings is not null) return _headings;
+            var list = new List<(int, int, string)>();
+            foreach (var target in _typography)
+            {
+                if (target.HeadingLevel <= 0 || target.Paragraph is not { } paragraph) continue;
+                var title = new TextRange(paragraph.ContentStart, paragraph.ContentEnd).Text.Trim();
+                if (title.Length == 0) continue;
+                if (title.Length > 80) title = title[..80] + "…";
+                list.Add((OffsetOf(paragraph.ContentStart), target.HeadingLevel, title));
+            }
+
+            _headings = list;
+            return list;
+        }
+    }
+
+    private IReadOnlyList<(int Offset, int Level, string Title)>? _headings;
+
     public TextPointer PointerAt(int offset)
     {
         if (_spans.Count == 0)

@@ -32,11 +32,22 @@ public enum AiPreviewOutcome
 /// </remarks>
 public partial class AiPreviewWindow : Window
 {
-    private readonly Func<CancellationToken, Task<RewriteResult>> _generate;
+    private readonly Func<IProgress<TextActionProgress>, CancellationToken, Task<RewriteResult>> _generate;
     private CancellationTokenSource? _generation;
     private RewriteResult? _result;
 
     public AiPreviewWindow(string operationLabel, Func<CancellationToken, Task<RewriteResult>> generate)
+        : this(operationLabel, (_, token) => generate(token))
+    {
+    }
+
+    /// <summary>
+    /// A preview for an action that reports progress — one model call per piece of a long
+    /// text — so the busy line can say how far it has got instead of only that it is busy.
+    /// </summary>
+    public AiPreviewWindow(
+        string operationLabel,
+        Func<IProgress<TextActionProgress>, CancellationToken, Task<RewriteResult>> generate)
     {
         InitializeComponent();
         _generate = generate;
@@ -61,10 +72,23 @@ public partial class AiPreviewWindow : Window
 
         SetBusy(true);
         SetNotice(null);
+        BusyText.Text = Strings.AiPreview_ProcessingText;
+
+        // Progress<T> captures the dispatcher here, so reports from the worker land on it.
+        var progress = new Progress<TextActionProgress>(step =>
+        {
+            if (ReferenceEquals(_generation, generation) && step.Total > 1)
+            {
+                BusyText.Text = string.Format(
+                    Strings.AiPreview_ProgressFormat,
+                    Math.Min(step.Done + 1, step.Total),
+                    step.Total);
+            }
+        });
 
         try
         {
-            var result = await _generate(token);
+            var result = await _generate(progress, token);
             if (token.IsCancellationRequested)
             {
                 return;
@@ -130,11 +154,18 @@ public partial class AiPreviewWindow : Window
         BackendText.Text = result.Backend switch
         {
             "writelite-qwen" => Strings.AiPreview_BackendQwen,
+            "writelite-rules" => Strings.AiPreview_BackendChecker,
             "offline-rules" => Strings.AiPreview_BackendOfflineRules,
             _ => Strings.AiPreview_BackendDefault
         };
 
-        if (result.IsNoOp)
+        if (!string.IsNullOrWhiteSpace(result.Notice))
+        {
+            // The producer knows more than this window about what happened — which part
+            // was left alone, or that the model may have added detail — so its words win.
+            SetNotice(result.Notice);
+        }
+        else if (result.IsNoOp)
         {
             SetNotice(Strings.AiPreview_NoOpNotice);
         }
@@ -151,8 +182,8 @@ public partial class AiPreviewWindow : Window
 
         // Insertion only makes sense for text that stands on its own; replacing a
         // selection with an explanation of itself would be a bug, not a feature.
-        ReplaceButton.IsEnabled = !result.IsAdvisory;
-        InsertButton.IsEnabled = true;
+        ReplaceButton.IsEnabled = !result.IsAdvisory && !result.IsNoOp;
+        InsertButton.IsEnabled = !result.IsNoOp;
         Motion.Reveal(SuggestionText, offset: 6);
     }
 
@@ -181,8 +212,8 @@ public partial class AiPreviewWindow : Window
     {
         BusyBar.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
         RetryButton.IsEnabled = !busy;
-        ReplaceButton.IsEnabled = !busy && _result is { IsAdvisory: false };
-        InsertButton.IsEnabled = !busy && _result is not null;
+        ReplaceButton.IsEnabled = !busy && _result is { IsAdvisory: false, IsNoOp: false };
+        InsertButton.IsEnabled = !busy && _result is { IsNoOp: false };
     }
 
     private void SetNotice(string? message)

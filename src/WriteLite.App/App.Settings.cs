@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Threading;
 using System.Windows.Automation;
@@ -65,8 +65,11 @@ public partial class App : System.Windows.Application
 
     private void ApplyRuntimeSettings(WriteLiteAppSettings settings)
     {
+        WriteLite.Services.Rules.IssuePreferences.Apply(settings);
+        if (!settings.FieldPredictionEnabled) HidePrediction();
         _orchestrator?.ApplySettings(settings);
         _hybrid?.ApplySettings(settings);
+        _personalStyle?.ApplySettings(settings);
         // Rebuild the local provider when its endpoint/profile changes.
         RebuildAiProvider(settings);
         _mainWindow?.SetMinimizeToTray(settings.MinimizeToTrayOnClose);

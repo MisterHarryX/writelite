@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
 using WriteLite.Models;
 using WriteLite.Services.Grammar;
@@ -145,6 +145,15 @@ public sealed class WriteLiteOrchestratingAnalyzer : ITextAnalyzer, ITextAnalysi
             return false;
         }
 
+        // English findings come from the engine's English rules. The lexical signals below are
+        // a Russian register and lexicon model: asked about «dont» or «Its» they answer that
+        // the word exists (it does, in the English pack) and silently dropped every English
+        // typo and grammar fix that touched a real word.
+        if (original.All(c => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or ' ' or '\'' or '’' or '-'))
+        {
+            return true;
+        }
+
         var signals = SignalsForSpan(original);
 
         // Obscenity is recognised vocabulary, never a correction target. Sanitising what
@@ -245,6 +254,12 @@ public sealed class WriteLiteOrchestratingAnalyzer : ITextAnalyzer, ITextAnalysi
                 : TextAnalysisProgress.Pending(text ?? string.Empty);
         }
     }
+
+    /// <summary>
+    /// The user's personal style library, or null. Its «Мой стиль» findings join the stylistic
+    /// observations; it decides itself whether the mode is on.
+    /// </summary>
+    public Personal.PersonalStyleService? PersonalStyle { get; set; }
 
     public void ApplySettings(WriteLiteAppSettings settings)
     {
@@ -366,7 +381,10 @@ public sealed class WriteLiteOrchestratingAnalyzer : ITextAnalyzer, ITextAnalysi
             var analyzer = new RussianStyleAnalyzer(
                 StyleProfiles.Parse(_settings.StyleProfile),
                 _signals);
-            return analyzer.Analyze(text, ProtectedTextSpans.Find(text));
+            var findings = analyzer.Analyze(text, ProtectedTextSpans.Find(text));
+
+            var personal = PersonalStyle?.FindStyleIssues(text) ?? [];
+            return personal.Count == 0 ? findings : [.. findings, .. personal];
         }
         catch (RegexMatchTimeoutException)
         {
@@ -489,29 +507,5 @@ public sealed class WriteLiteOrchestratingAnalyzer : ITextAnalyzer, ITextAnalysi
         return issue with { Replacement = replacement, CanApplyAutomatically = safe };
     }
 
-    private bool IsCategoryEnabled(TextIssue issue)
-    {
-        // Repeats
-        if (issue.LinguisticCategory == LinguisticIssueCategory.RepeatedWord)
-        {
-            return _settings.EnableRepeats;
-        }
-
-        // Typography (spaces / readability formatting)
-        if (issue.Category == IssueCategory.Readability
-            || issue.LinguisticCategory is LinguisticIssueCategory.ExtraSpace
-                or LinguisticIssueCategory.MissingSpace)
-        {
-            return _settings.EnableTypography || _settings.EnableStyle;
-        }
-
-        return issue.Category switch
-        {
-            IssueCategory.Orthography => _settings.EnableOrthography,
-            IssueCategory.Punctuation => _settings.EnablePunctuation,
-            IssueCategory.Grammar => _settings.EnableGrammar,
-            IssueCategory.Style => _settings.EnableStyle,
-            _ => true
-        };
-    }
+    private bool IsCategoryEnabled(TextIssue issue) => Rules.IssuePreferences.Allows(issue, _settings);
 }

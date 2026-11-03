@@ -1,4 +1,4 @@
-using System.Windows.Automation;
+﻿using System.Windows.Automation;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Windows.Threading;
@@ -300,12 +300,6 @@ public sealed class TextFieldMonitor : IDisposable
     public void SetSuggestionsWindowOpen(bool isOpen)
     {
         IsSuggestionsWindowOpen = isOpen;
-        if (isOpen)
-        {
-            CompatibilityLogger.State("monitoring-suppressed");
-            _fastAnalysisRunner.Cancel();
-            _deepAnalysisRunner?.Cancel();
-        }
     }
 
     public void BeginApplyingCorrection()
@@ -488,11 +482,17 @@ public sealed class TextFieldMonitor : IDisposable
         }
     }
 
+    /// <remarks>
+    /// The suggestions panel no longer suppresses monitoring. It used to, because it was an
+    /// ordinary window that took the keyboard and the monitor would have chased the focus into
+    /// it; since the panel carries <c>WS_EX_NOACTIVATE</c> the field keeps focus, and the panel
+    /// has to see the field change — after a fix, or while the user keeps typing — or every
+    /// second click on it acts on a list that no longer matches the text.
+    /// </remarks>
     private bool IsMonitoringSuppressed()
     {
         return IsShuttingDown ||
                IsApplyingCorrection ||
-               IsSuggestionsWindowOpen ||
                DateTimeOffset.Now < _suppressedUntil;
     }
 
@@ -715,7 +715,10 @@ public sealed class TextFieldMonitor : IDisposable
             }
 
             // Deep is supplementary: it must never erase a fast spelling/rule hit.
-            var mergedIssues = _issueMerger.Merge(fastIssues, [], analysis.Issues).Issues
+            // ...but where both lanes spelled the same word differently («dont» → «font» from the
+            // dictionary, «don't» from the engine) the card shows one, the better-sourced.
+            var mergedIssues = IssueDeduplicationService.OneSpellingCardPerWord(
+                    _issueMerger.Merge(fastIssues, [], analysis.Issues).Issues)
                 .Where(i => i.Start >= 0 && i.Start + i.Length <= text.Length
                             && string.Equals(text.Substring(i.Start, i.Length), i.Original, StringComparison.Ordinal))
                 .ToList();

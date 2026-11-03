@@ -1,4 +1,4 @@
-using WriteLite.Language.Russian;
+﻿using WriteLite.Language.Russian;
 using WriteLite.Models;
 
 namespace WriteLite.Services.Grammar;
@@ -109,8 +109,22 @@ public sealed class RussianAgreementAnalyzer : GrammarAnalyzerBase
                 // «Это отличная идея» is a predicative sentence whose subject is «это», not a
                 // noun phrase whose attribute it is. The demonstratives that can head such a
                 // sentence are excluded at a clause opening, where that reading is available.
-                if (PredicativeDemonstratives.Contains(modifier.Value.ToLowerInvariant())
+                var demonstrative = modifier.Value.ToLowerInvariant();
+                if (PredicativeDemonstratives.Contains(demonstrative)
                     && OpensClause(text, tokens, m))
+                {
+                    continue;
+                }
+
+                // Uninflected «это», «то», «всё» before a noun that can be nominative is the
+                // predicative construction wherever it stands, not only at a clause opening:
+                // «указывать, почему это ошибка», «не знаю, где то место», «и всё это зря».
+                // Read as an attribute, «это ошибка» was "corrected" to «эта ошибка», which
+                // turns a correct sentence into a different and wrong one. The attributive
+                // reading survives only where the noun is unambiguously oblique — «прочитал
+                // это книгу» — and that is still caught.
+                if (demonstrative is "это" or "то" or "всё"
+                    && nounAnalysis.CanBe(RuCase.Nom))
                 {
                     continue;
                 }
@@ -411,6 +425,10 @@ public sealed class RussianAgreementAnalyzer : GrammarAnalyzerBase
         var word = tokens[index].Value.ToLowerInvariant();
         if (!Prepositions.TryGetValue(word, out var cases)) return [];
 
+        // «из за дождя», «из под дивана»: a compound preposition written apart (the hyphen rule
+        // restores it). Its halves govern nothing on their own — «за» does not want «дождь».
+        if (IsHalfOfCompoundPreposition(tokens, index)) return [];
+
         // «о» governs the accusative only after a small closed set of verbs of impact —
         // «ударился о стену». Everywhere else it is prepositional, and admitting the
         // accusative everywhere would exempt «думаю о поездку» from the rule that catches it.
@@ -535,6 +553,15 @@ public sealed class RussianAgreementAnalyzer : GrammarAnalyzerBase
 
             var subject = FindSubject(text, tokens, i);
             if (subject is null) continue;
+
+            // A short-adjective reading is only the predicate if the clause has no other one:
+            // «Мы купили пол лимона» already has «купили», and «пол» is «half», not «полый».
+            if (_morphology.PartOfSpeech(tokens[i].Value)
+                    is RussianPartOfSpeech.AdjectiveShort or RussianPartOfSpeech.ParticipleShort
+                && HasFiniteVerbBetween(tokens, subject.Value.Index, i))
+            {
+                continue;
+            }
 
             var (number, gender, person) = subject.Value.Features;
             if (Agrees(verb.Value, number, gender, person)) continue;
@@ -743,9 +770,53 @@ public sealed class RussianAgreementAnalyzer : GrammarAnalyzerBase
     /// for the other reason: «тише» is filed as a noun and does not decline, so «стал тише»
     /// was reported as a government error against the instrumental.
     /// </remarks>
+    private bool HasFiniteVerbBetween(List<RussianToken> tokens, int a, int b)
+    {
+        var from = Math.Min(a, b) + 1;
+        var to = Math.Max(a, b);
+        for (var k = from; k < to; k++)
+        {
+            if (_morphology.PartOfSpeech(tokens[k].Value) == RussianPartOfSpeech.Verb
+                && _morphology.Verb(tokens[k].Value) is { IsInfinitive: false })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsHalfOfCompoundPreposition(List<RussianToken> tokens, int index)
+    {
+        var word = tokens[index].Value.ToLowerInvariant();
+        if (word == "из" && index + 1 < tokens.Count
+            && tokens[index + 1].Value.ToLowerInvariant() is "за" or "под")
+        {
+            return true;
+        }
+
+        if (word is "за" or "под" && index > 0 && tokens[index - 1].Value.Equals("из", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return word == "над" && index > 0 && tokens[index - 1].Value.Equals("по", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Personal pronouns: never the noun a preposition or verb is claimed to misgovern.</summary>
+    private static readonly HashSet<string> PersonalPronounForms = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "я", "меня", "мне", "мной", "мною", "ты", "тебя", "тебе", "тобой", "тобою",
+        "он", "его", "него", "ему", "нему", "им", "ним", "нём", "нем",
+        "она", "её", "ее", "неё", "нее", "ей", "ней", "ею", "нею", "оно",
+        "мы", "нас", "нам", "нами", "вы", "вас", "вам", "вами",
+        "они", "их", "них", "ими", "ними", "себя", "себе", "собой", "собою",
+    };
+
     private bool IsContentNoun(string word)
     {
         if (word.Length <= 1) return false;
+        if (PersonalPronounForms.Contains(word)) return false;
         if (Prepositions.ContainsKey(word)) return false;
         if (RussianMorphology.IsComparativeShaped(word)) return false;
         return _morphology.IsNoun(word);

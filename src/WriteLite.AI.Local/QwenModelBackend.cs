@@ -768,14 +768,32 @@ public sealed class QwenModelBackend : IAsyncDisposable
     /// Returns null on any failure so the caller can fall back rather than surface
     /// an error, exactly like the correction path.
     /// </remarks>
-    public async Task<string?> CompleteAsync(
+    public Task<string?> CompleteAsync(
         string systemPrompt,
         string userPrompt,
         int maxTokens,
         double temperature,
+        CancellationToken cancellationToken = default) =>
+        string.IsNullOrWhiteSpace(userPrompt)
+            ? Task.FromResult<string?>(null)
+            : CompleteAsync(
+                [("system", systemPrompt), ("user", userPrompt)],
+                maxTokens,
+                temperature,
+                cancellationToken);
+
+    /// <summary>
+    /// The same instruction path with a whole conversation: a worked example before the
+    /// real request is what turns a small model from echoing the text into doing the task.
+    /// </summary>
+    /// <param name="messages">Role and content pairs; roles are <c>system</c>, <c>user</c> and <c>assistant</c>.</param>
+    public async Task<string?> CompleteAsync(
+        IReadOnlyList<(string Role, string Content)> messages,
+        int maxTokens,
+        double temperature,
         CancellationToken cancellationToken = default)
     {
-        if (!IsAvailable || string.IsNullOrWhiteSpace(userPrompt))
+        if (!IsAvailable || messages.Count == 0 || string.IsNullOrWhiteSpace(messages[^1].Content))
         {
             LocalAiDiagnostics.Technical("qwen-instruction-skipped", "reason=not-available");
             return null;
@@ -792,7 +810,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
         // Deliberately *without* supersession — a Smart Action is something the user asked
         // for explicitly, and dropping it because a background analysis arrived behind it
         // would make the feature randomly do nothing.
-        var work = RunSerialisedCompletionAsync(systemPrompt, userPrompt, maxTokens, temperature);
+        var work = RunSerialisedCompletionAsync(messages, maxTokens, temperature);
 
         var abandoned = await Task.WhenAny(work, WhenCancelled(cancellationToken)).ConfigureAwait(false);
         if (abandoned != work)
@@ -817,8 +835,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
     }
 
     private async Task<string?> RunSerialisedCompletionAsync(
-        string systemPrompt,
-        string userPrompt,
+        IReadOnlyList<(string Role, string Content)> messages,
         int maxTokens,
         double temperature)
     {
@@ -826,7 +843,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
         Interlocked.Increment(ref _activeRequests);
         try
         {
-            var completion = await SendCompletionAsync(systemPrompt, userPrompt, maxTokens, temperature)
+            var completion = await SendCompletionAsync(messages, maxTokens, temperature)
                 .ConfigureAwait(false);
             if (completion is not null)
             {
@@ -843,8 +860,7 @@ public sealed class QwenModelBackend : IAsyncDisposable
     }
 
     private async Task<string?> SendCompletionAsync(
-        string systemPrompt,
-        string userPrompt,
+        IReadOnlyList<(string Role, string Content)> messages,
         int maxTokens,
         double temperature)
     {
@@ -869,11 +885,9 @@ public sealed class QwenModelBackend : IAsyncDisposable
                 top_p = 0.9,
                 max_tokens = Math.Clamp(maxTokens, 16, 2048),
                 stream = false,
-                messages = new object[]
-                {
-                    new { role = "system", content = systemPrompt },
-                    new { role = "user", content = userPrompt }
-                }
+                messages = messages
+                    .Select(message => (object)new { role = message.Role, content = message.Content })
+                    .ToArray()
             };
 
             using var request = new HttpRequestMessage(HttpMethod.Post, ChatCompletionsPath)
@@ -1197,6 +1211,13 @@ public sealed class QwenModelBackend : IAsyncDisposable
                 return null;
             }
 
+            // The streams are redirected so the console window never appears, and so they
+            // must be read. llama-server logs several lines per request; an unread pipe
+            // fills after a few dozen requests and the server then blocks on its next log
+            // write — mid-request, with /health still answering from another thread. That
+            // looked exactly like a wedge and was treated as one.
+            DrainServerOutput(proc);
+
             try
             {
                 // Local inference must never compete with the foreground editor.
@@ -1309,6 +1330,45 @@ public sealed class QwenModelBackend : IAsyncDisposable
         {
             // best-effort process containment
         }
+    }
+
+    private readonly Queue<string> _serverTail = new();
+
+    /// <summary>The last lines the bundled server printed, for diagnostics. Never contains user text: the server does not log prompts.</summary>
+    public IReadOnlyList<string> ServerLogTail
+    {
+        get
+        {
+            lock (_serverTail)
+            {
+                return _serverTail.ToArray();
+            }
+        }
+    }
+
+    private void DrainServerOutput(Process process)
+    {
+        void Keep(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data is null)
+            {
+                return;
+            }
+
+            lock (_serverTail)
+            {
+                _serverTail.Enqueue(e.Data);
+                while (_serverTail.Count > 40)
+                {
+                    _serverTail.Dequeue();
+                }
+            }
+        }
+
+        process.OutputDataReceived += Keep;
+        process.ErrorDataReceived += Keep;
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
     }
 
     public static string CreateLlamaServerArguments(string ggufPath)

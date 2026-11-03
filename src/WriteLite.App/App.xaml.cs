@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Threading;
 using System.Windows.Automation;
@@ -17,6 +17,7 @@ using WriteLite.Language.Core;
 using WriteLite.Language.Packs;
 using WriteLite.Services.Settings;
 using WriteLite.Services.Spelling;
+using WriteLite.Services.Personal;
 using WriteLite.Views;
 using MessageBox = System.Windows.MessageBox;
 
@@ -65,6 +66,12 @@ public partial class App : System.Windows.Application
 
     private bool _servicesBound;
 
+    /// <summary>The personal style library, shared by both analysis paths and the editor.</summary>
+    private PersonalStyleService? _personalStyle;
+
+    /// <summary>Feeds text typed in other applications to <see cref="_personalStyle"/>.</summary>
+    private FieldLearningTracker? _fieldLearning;
+
     private int _shutdownRequested;
 
     // async void is deliberate here: it is the one WPF-sanctioned place for it
@@ -110,6 +117,7 @@ public partial class App : System.Windows.Application
         // Asked before Load, which cannot distinguish "no file" from "file full of defaults".
         var hadPersistedSettings = _settingsStore.HasPersistedSettings;
         _settings = _settingsStore.Load();
+        WriteLite.Services.Rules.IssuePreferences.Apply(_settings);
         CompatibilityLogger.Technical(
             "settings-loaded",
             $"localAi={(_settings.LocalAiEnabled ? 1 : 0)} preferQwen={(_settings.PreferQwen ? 1 : 0)} " +
@@ -192,6 +200,16 @@ public partial class App : System.Windows.Application
 
         var dictionary = UserDictionaryService.LoadDefault();
         var ignore = WriteLiteIgnoreService.LoadDefault();
+
+        // «Мой стиль письма». Loading reads one JSON file of word counts; it is small enough to
+        // stay inline, and everything it does afterwards happens on its own worker.
+        _personalStyle = new PersonalStyleService(
+            PersonalStyleDocument.DefaultPath,
+            word => dictionary.Contains(word) || spellChecker.CheckWord(word, SpellingLanguage.Russian).IsKnown);
+        _personalStyle.ApplySettings(_settings);
+        var personalStyle = _personalStyle;
+        _fieldLearning = new FieldLearningTracker((text, final) =>
+            personalStyle.Observe(text, StyleLearningSource.OtherApp, includeTrailingSentence: final));
         var engineOptions = new WriteLiteLanguageOptions
         {
             EnableEngine = _settings.ExtendedChecking,
@@ -203,7 +221,7 @@ public partial class App : System.Windows.Application
         _languageEngine = new WriteLiteLanguageEngine(engineOptions);
         _orchestrator = new WriteLiteOrchestratingAnalyzer(
             new RuleBasedAnalyzer(ruleCatalog, spellChecker.RussianFormIndex),
-            new SpellTextAnalyzer(spellChecker),
+            new SpellTextAnalyzer(spellChecker) { PersonalStyle = personalStyle },
             _languageEngine,
             dictionary,
             ignore,
@@ -212,8 +230,9 @@ public partial class App : System.Windows.Application
             // Loaded on first orchestrated analysis, not now: 400 ms of ONNX session
             // construction has no business on the path to the first window, and nothing
             // consults this layer until at least one debounce interval after typing starts.
-            punctuationModelFactory: () => PunctuationModelAnalyzer.TryLoad());
+            punctuationModelFactory: () => PunctuationModelAnalyzer.TryLoad(formIndex: spellChecker.RussianFormIndex));
         _orchestrator.ApplySettings(_settings);
+        _orchestrator.PersonalStyle = personalStyle;
 
         // Hybrid: rules+spell+LanguageTool + local offline AI (Lite/Qwen).
         _localAiProvider = CreateLocalAiProvider(_settings);
@@ -269,7 +288,10 @@ public partial class App : System.Windows.Application
         // session on the typing hot path to publish the same result twice.
         var fastAnalyzer = new CompositeTextAnalyzer(
             new RuleBasedAnalyzer(ruleCatalog, spellChecker.RussianFormIndex),
-            new SpellTextAnalyzer(spellChecker) { ContextualRefinementEnabled = false });
+            new SpellTextAnalyzer(spellChecker) { ContextualRefinementEnabled = false, PersonalStyle = personalStyle },
+            // The same «Мой стиль» findings the orchestrated lane adds, so a lane that replaces
+            // this one's answer does not make them flicker.
+            new PersonalStyleAnalyzer(personalStyle, () => _settings));
         _fastAnalyzer = fastAnalyzer;
         _monitor = new TextFieldMonitor(
             Dispatcher,
@@ -285,7 +307,10 @@ public partial class App : System.Windows.Application
         _monitor.SetIdleGrace(UiInteractionStateMachine.FromSecondsClamped(_settings.EditingIdleGraceSeconds));
         _suggestions = new SuggestionsWindow();
         _lexicalPopup = new LexicalPopupWindow();
-        _lexicalKnowledge = new OfflineLexicalKnowledgeService();
+        // The card describes a word from the same form index the checker reasons with, so it
+        // can no longer call a perfective verb imperfective while the agreement rules know better.
+        var lexicalMorphology = WriteLite.Language.Russian.RussianMorphology.TryCreate(spellChecker.RussianFormIndex);
+        _lexicalKnowledge = new OfflineLexicalKnowledgeService(russianMorphology: () => lexicalMorphology);
         // Bootstrap parses the bundled lexical packs from disk. Inline it was
         // the LAST measured startup stall (3.4 s, dump-confirmed at
         // LexicalPackLoader.LoadFromBytes under OnStartup). Off the dispatcher
@@ -357,6 +382,19 @@ public partial class App : System.Windows.Application
             () => Volatile.Read(ref _shutdownRequested) != 0);
 
         _monitor.SnapshotChanged += (_, snapshot) => _corrections?.HandleSnapshotChanged(snapshot);
+
+        // What the user types elsewhere teaches the personal style library. Only once the
+        // monitor has confirmed they are editing (ShowMainUi), never from a field they merely
+        // focused; password fields never reach a snapshot at all.
+        _monitor.SnapshotChanged += (_, snapshot) => _fieldLearning?.Update(
+            snapshot?.Target.Identity.RuntimeId,
+            snapshot?.Text,
+            snapshot?.ShowMainUi == true);
+        _corrections.RuleReferenceRequested += ruleId =>
+        {
+            OpenMainWindow();
+            _mainWindow?.OpenRule(ruleId);
+        };
         _bubble.OpenRequested += OpenSuggestions;
         _bubble.ApplyAllRequested += async (_, _) =>
         {
@@ -364,7 +402,15 @@ public partial class App : System.Windows.Application
         };
         _bubble.OpenMainWindowRequested += (_, _) => OpenMainWindow();
         _bubble.HideIndicatorRequested += (_, _) => CompatibilityLogger.State("indicator-hidden-by-user");
-        _suggestions.ApplyIssueRequested += issue => _corrections?.ApplyIssueAsync(issue) ?? Task.CompletedTask;
+        _suggestions.ApplyIssueRequested += issue => _corrections?.ApplyIssueFromPanelAsync(issue) ?? Task.FromResult(false);
+        _corrections.CorrectionApplied += LearnFromCorrection;
+        _corrections.DisableKindRequested += kindId =>
+        {
+            if (!_settings.DisabledIssueKinds.Contains(kindId)) _settings.DisabledIssueKinds.Add(kindId);
+            OnSettingsChanged(_settings);
+            _mainWindow?.RefreshIssueKinds();
+            _ = _monitor?.RefreshOnceAfterSuppressionAsync();
+        };
         _suggestions.ApplyAllRequested += () => _corrections?.ApplyAllAsync() ?? Task.CompletedTask;
         _suggestions.PanelHidden += (_, _) =>
         {
@@ -415,6 +461,8 @@ public partial class App : System.Windows.Application
             OpenMainWindow();
         }
 
+        OfferStyleCalibrationOnce();
+
         if (e.Args.Contains("--show-main-window", StringComparer.OrdinalIgnoreCase))
         {
             OpenMainWindow();
@@ -448,6 +496,7 @@ public partial class App : System.Windows.Application
                 _lexicalLookupCts?.Cancel();
                 (_lexicalKnowledge as IDisposable)?.Dispose();
                 _translations?.Dispose();
+                _ambience?.SaveLibrary();
                 _ambience?.Dispose();
                 _languageEngine?.Dispose();
             }
@@ -508,6 +557,7 @@ public partial class App : System.Windows.Application
         // uses, and the lexical packs the dictionary page reads. Nothing new is
         // started, and nothing here can reach the network.
         var editorAi = _localAiProvider is null ? null : new TextRewriteService(_localAiProvider.Backend);
+        InitializeFieldActions(editorAi);
 
         // The editor checks with the same stack the field monitor uses: rules and spelling
         // over the shared form index, the language engine, the user dictionary and ignore
@@ -520,6 +570,7 @@ public partial class App : System.Windows.Application
         // model the editor simply never shows a continuation.
         _writingAssistance = new WritingAssistanceService(_localAiProvider?.Backend);
         _writingCoordinator = new WritingAssistanceCoordinator(_writingAssistance);
+        InitializeFieldPrediction();
 
         _mainWindow.BindEditorServices(
             _hybrid,
@@ -542,6 +593,11 @@ public partial class App : System.Windows.Application
         _notes = new NotesService();
         _readingLibrary = new ReadingLibraryService();
         _mainWindow.BindWorkspaces(_notes, _readingLibrary, new StudyCardDraftService(editorAi));
+
+        if (_personalStyle is not null)
+        {
+            _mainWindow.BindPersonalStyle(_personalStyle, _orchestrator.Dictionary);
+        }
 
         _mainWindow.SettingsChanged += OnSettingsChanged;
         _mainWindow.ShortcutsChanged += OnShortcutsChanged;
@@ -681,6 +737,19 @@ public partial class App : System.Windows.Application
 
         _monitor?.BeginShutdown();
         _monitor?.Dispose();
+
+        // After the monitor, so no snapshot arrives behind the final flush. The draft in the
+        // field the user was typing in is theirs too.
+        try
+        {
+            _fieldLearning?.FlushDraft();
+            _personalStyle?.Dispose();
+            _personalStyle = null;
+        }
+        catch (Exception exception)
+        {
+            CompatibilityLogger.Technical("personal-style-flush-failed", $"type={exception.GetType().Name}");
+        }
 
         // Silence the ambience before anything slower: leaving audio playing through
         // a multi-second teardown is the one part of shutdown a user can hear.

@@ -1,4 +1,4 @@
-using WriteLite.Models;
+﻿using WriteLite.Models;
 
 namespace WriteLite.Services;
 
@@ -33,7 +33,8 @@ public sealed class CompositeTextAnalyzer(params ITextAnalyzer[] analyzers) : IT
 
     private static IReadOnlyList<TextIssue> SortIssues(IEnumerable<TextIssue> issues)
     {
-        return issues
+        return IssueDeduplicationService.OneSpellingCardPerWord(issues)
+            .Where(WriteLite.Services.Rules.IssuePreferences.Allows)
             .OrderBy(issue => issue.Start)
             .ThenByDescending(issue => issue.Severity)
             .ToList();

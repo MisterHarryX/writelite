@@ -1,4 +1,4 @@
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 
@@ -111,6 +111,17 @@ public sealed class WriteLiteLanguageClient : IWriteLiteLanguageClient, IDisposa
             ["language"] = lang,
             ["text"] = text
         };
+        if (lang.StartsWith("en", StringComparison.OrdinalIgnoreCase))
+        {
+            // Russian speakers writing English: enables the false-friend rules («actual» ≠ «актуальный»).
+            form["motherTongue"] = "ru";
+        }
+
+        var disabledRules = WriteLite.Services.Rules.IssuePreferences.DisabledEngineRules;
+        if (disabledRules.Count > 0)
+        {
+            form["disabledRules"] = string.Join(',', disabledRules);
+        }
 
         using var content = new FormUrlEncodedContent(form);
         // Ensure form encoding Content-Type

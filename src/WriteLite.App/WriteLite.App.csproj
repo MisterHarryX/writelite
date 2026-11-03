@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
@@ -144,6 +144,12 @@
     <!-- Runtime-only WriteLite-Qwen pack. Training checkpoints stay out of Release. -->
     <Content Include="..\..\models\writelight-qwen\**\*" Exclude="..\..\models\writelight-qwen\adapter\**\*;..\..\models\writelight-qwen\merged-hf\**\*" Link="models\writelight-qwen\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('..\..\models\writelight-qwen')" />
 
+    <!-- The llama.cpp server that runs the pack above. QwenModelBackend starts it from
+         runtimes\ on first use; without it WriteAI could only use a server someone had
+         started by hand, and every AI action reported "модель не запущена". Only the
+         server and the libraries it loads: the other llama.cpp tools are not shipped. -->
+    <Content Include="..\..\artifacts\llama-bin\llama-server.exe;..\..\artifacts\llama-bin\llama-server-impl.dll;..\..\artifacts\llama-bin\llama-common.dll;..\..\artifacts\llama-bin\llama.dll;..\..\artifacts\llama-bin\mtmd.dll;..\..\artifacts\llama-bin\ggml*.dll;..\..\artifacts\llama-bin\libomp140.x86_64.dll" Link="runtimes\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('..\..\artifacts\llama-bin\llama-server.exe')" />
+
     <!-- Russian contextual reranker: the quantised graph, its vocabulary and the
          runtime config. The PyTorch checkpoint under hf/ and the fp32 export are
          training artefacts and are deliberately not shipped. -->
@@ -154,6 +160,11 @@
          PUNC-A/B/C training checkpoints sit in the same directory and are 342 MB between
          them, and a recursive include would have shipped every one of them. -->
     <Content Include="..\..\models\writelite-punctuation\model.onnx;..\..\models\writelite-punctuation\vocab.txt;..\..\models\writelite-punctuation\punctuation.json" Link="models\writelite-punctuation\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('..\..\models\writelite-punctuation\model.onnx')" />
+
+    <!-- Offline translator (Helsinki-NLP opus-mt ru-en / en-ru, CC-BY 4.0), int8 ONNX exported by
+         ai/scripts/export_marian_onnx.py. Per direction: encoder, decoder, SentencePiece pieces
+         and the Marian vocabulary. -->
+    <Content Include="..\..\models\writelite-translate\**\*.onnx;..\..\models\writelite-translate\**\*.tsv;..\..\models\writelite-translate\**\config.json" Link="models\writelite-translate\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('..\..\models\writelite-translate')" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WriteLite.AI.Contracts\WriteLite.AI.Contracts.csproj" />

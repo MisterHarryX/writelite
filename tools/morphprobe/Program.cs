@@ -96,6 +96,22 @@ if (args.Length >= 1 && args[0] == "--perf")
     return 0;
 }
 
+if (args.Length >= 1 && args[0] == "--unknown")
+{
+    // Vocabulary coverage: prints only the words the index does not contain, one per line.
+    // Words come from the arguments, or from stdin when there are none, so a candidate list
+    // for the modern-vocabulary pack can be piped through and the gaps read off directly.
+    var candidates = args.Length > 1
+        ? args[1..]
+        : Console.In.ReadToEnd().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+    foreach (var candidate in candidates)
+    {
+        if (!index.Contains(candidate.ToLowerInvariant())) Console.WriteLine(candidate);
+    }
+
+    return 0;
+}
+
 string[] words = args.Length > 0
     ? args
     :

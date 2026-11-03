@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-09-01",
-  "surfaceForms": 3091391,
-  "lemmas": 183351,
-  "distinctTags": 2722,
-  "arcs": 392198,
+  "generatedAt": "2026-10-18",
+  "surfaceForms": 3096295,
+  "lemmas": 183493,
+  "distinctTags": 2741,
+  "arcs": 392488,
   "alphabetSize": 73,
-  "graphNodes": 141133,
+  "graphNodes": 141093,
   "formsBySource": {
     "opencorpora": 3063288,
-    "modern-vocab": 28103
+    "modern-vocab": 33007
   },
   "formsByPos": {
-    "NOUN": 1026004,
-    "PRTF": 827084,
-    "ADJF": 559561,
-    "VERB": 379692,
-    "GRND": 68054,
-    "ADJS": 66135,
-    "COMP": 58144,
-    "PRTS": 56510,
-    "INFN": 45291,
-    "ADVB": 4044,
-    "INTJ": 281,
+    "NOUN": 1022186,
+    "PRTF": 840470,
+    "ADJF": 560617,
+    "VERB": 385265,
+    "GRND": 69031,
+    "ADJS": 66245,
+    "COMP": 58262,
+    "PRTS": 57939,
+    "INFN": 31331,
+    "ADVB": 4059,
+    "INTJ": 299,
     "NUMR": 191,
     "NPRO": 119,
     "CONJ": 112,
@@ -30,20 +30,20 @@
     "PRED": 32
   },
   "formsByFlag": {
-    "is_proper_name": 424665,
-    "is_slang": 23561,
-    "is_borrowing": 13792,
-    "is_informal": 12274,
-    "is_obscene": 7190,
+    "is_proper_name": 424369,
+    "is_slang": 25150,
+    "is_borrowing": 17012,
+    "is_informal": 12572,
+    "is_obscene": 6800,
     "is_abbreviation": 1886,
     "is_archaic": 1194,
     "non_cyrillic": 411
   },
-  "formsWithFrequency": 316161,
+  "formsWithFrequency": 316362,
   "bytes": {
-    "wldawg": 4706554,
-    "meta": 37096692,
-    "strings": 3979861
+    "wldawg": 4710034,
+    "meta": 37155540,
+    "strings": 3983124
   },
-  "buildSeconds": 33.5
+  "buildSeconds": 37.1
 }

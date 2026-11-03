@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -280,7 +280,7 @@ public partial class EditorPage
         }
 
         var brush = hex.Length == 0
-            ? TryFindResource("WlText") as Brush ?? Brushes.White
+            ? CurrentInk
             : FlowDocumentBridge.ParseBrush(hex) ?? Brushes.White;
 
         ColorSwatch.Background = brush;
@@ -771,7 +771,11 @@ public partial class EditorPage
 
     // ── Selection state ──────────────────────────────────────────────────────
 
-    private void Editor_SelectionChanged(object sender, RoutedEventArgs e) => UpdateFormattingState();
+    private void Editor_SelectionChanged(object sender, RoutedEventArgs e)
+    {
+        UpdateFormattingState();
+        InvalidatePredictionOnCaretMove();
+    }
 
     /// <summary>
     /// Reflects the caret's formatting in the toolbar.

@@ -146,10 +146,20 @@
                         <TextBlock x:Name="DueText" Style="{DynamicResource WlNoteMeta}" />
                     </Border>
 
+                    <Border x:Name="ProjectBadge" Style="{DynamicResource WlNoteBadge}" Margin="10,0,0,0" Visibility="Collapsed">
+                        <TextBlock x:Name="ProjectText" Style="{DynamicResource WlNoteMeta}" MaxWidth="140" TextTrimming="CharacterEllipsis" />
+                    </Border>
+
                     <Border x:Name="CategoryBadge" Style="{DynamicResource WlNoteBadge}" Margin="10,0,0,0" Visibility="Collapsed">
                         <TextBlock x:Name="CategoryText" Style="{DynamicResource WlNoteMeta}" />
                     </Border>
                 </StackPanel>
+
+                <DockPanel x:Name="AttachmentBadge" Margin="0,8,0,0" Visibility="Collapsed">
+                    <Path DockPanel.Dock="Left" Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconAnnotation}"
+                          Stroke="{DynamicResource WlTextMuted}" Width="12" Height="12" VerticalAlignment="Top" Margin="0,1,0,0" />
+                    <TextBlock x:Name="AttachmentText" Style="{DynamicResource WlNoteMeta}" Margin="6,0,0,0" VerticalAlignment="Center" TextWrapping="Wrap" />
+                </DockPanel>
 
                 <TextBlock x:Name="ModifiedText"
                            Style="{DynamicResource WlNoteMeta}"

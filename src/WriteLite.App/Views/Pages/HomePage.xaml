@@ -32,6 +32,36 @@
                         MinHeight="44" Margin="10,0,0,0" Click="OpenSettings_Click" />
             </StackPanel>
 
+            <!-- ═══ «Мой стиль» calibration offer ═══════════════════════════
+                 Shown from the first launch until the calibration is done or the user
+                 turns it down. Collapsed by default so a page shown without a shell
+                 (tests, the first frame) never flashes it. -->
+            <Border x:Name="StyleOfferCard" Style="{DynamicResource WlCard}" Margin="0,30,0,0" Padding="18,16"
+                    Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Path Grid.Column="0" Style="{DynamicResource WlIcon}"
+                          Data="{DynamicResource WlIconAnnotation}"
+                          Stroke="{DynamicResource WlBrand}"
+                          VerticalAlignment="Top" Margin="0,2,0,0" />
+                    <StackPanel Grid.Column="1" Margin="13,0,20,0">
+                        <TextBlock Style="{DynamicResource WlCardTitle}" Text="{x:Static res:Strings.Home_StyleOfferTitle}" />
+                        <TextBlock Style="{DynamicResource WlSecondary}" Text="{x:Static res:Strings.Home_StyleOfferBody}"
+                                   TextWrapping="Wrap" Margin="0,5,0,0" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <Button Style="{DynamicResource WlPrimaryButton}" MinHeight="34"
+                                Content="{x:Static res:Strings.Home_StyleOfferStart}" Click="StartStyleCalibration_Click" />
+                        <Button Style="{DynamicResource WlTextButton}" Margin="0,6,0,0"
+                                Content="{x:Static res:Strings.Home_StyleOfferDismiss}" Click="DismissStyleOffer_Click" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
             <!-- ═══ 01 Состояние ════════════════════════════════════════════ -->
             <controls:SectionHeader Index="01" Title="{x:Static res:Strings.Home_SectionStatus}" Margin="0,44,0,0" />
 

@@ -204,7 +204,7 @@ internal sealed class Pipeline : IAsyncDisposable
             isKnownWord: word => spellChecker.CheckWord(word, SpellingLanguage.Russian).IsKnown,
             lexicalSignals: LexicalSignalService.TryCreate(spellChecker),
             punctuationModelFactory: usePunctuationModel
-                ? () => PunctuationModelAnalyzer.TryLoad()
+                ? () => PunctuationModelAnalyzer.TryLoad(formIndex: spellChecker.RussianFormIndex)
                 : null);
         orchestrator.ApplySettings(settings);
 

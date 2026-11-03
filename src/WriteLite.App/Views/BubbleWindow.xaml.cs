@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using WriteLite.Models;
@@ -30,13 +30,25 @@ public partial class BubbleWindow : Window
         InitializeComponent();
         AppIconLoader.ApplyTo(this);
         SetupSpinAnimation();
+        // A click on the indicator must leave the caret in the field it sits beside.
+        NoActivateWindow.Attach(this);
+        PenButton.PreviewMouseLeftButtonDown += (_, _) => PenPressed?.Invoke(this, EventArgs.Empty);
         CompatibilityLogger.Technical("indicator-created", "size=76x40");
     }
+
+    /// <summary>Where the indicator is (DIPs), so the panel it opens does not cover the pen.</summary>
+    public Rect? IndicatorBounds => IsVisible ? new Rect(Left, Top, ActualWidth, ActualHeight) : null;
 
     public event EventHandler? OpenRequested;
     public event EventHandler? ApplyAllRequested;
     public event EventHandler? OpenMainWindowRequested;
     public event EventHandler? HideIndicatorRequested;
+
+    /// <summary>The pen was pressed — the moment to read the field's selection, before a menu takes the mouse.</summary>
+    public event EventHandler? PenPressed;
+
+    /// <summary>«Перевести», «Сократить»… from the pen menu.</summary>
+    public event Action<WriteLite.Services.FieldActions.FieldTextAction>? TextActionRequested;
 
     public void ApplyDisplaySettings(bool showIndicator, bool showGreenWhenClean)
     {
@@ -240,6 +252,15 @@ public partial class BubbleWindow : Window
     private void CountButton_Click(object sender, RoutedEventArgs e)
     {
         OpenRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void TextActionMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.MenuItem { Tag: string tag }
+            && Enum.TryParse<WriteLite.Services.FieldActions.FieldTextAction>(tag, out var action))
+        {
+            TextActionRequested?.Invoke(action);
+        }
     }
 
     private void PenButton_Click(object sender, RoutedEventArgs e)

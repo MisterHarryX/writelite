@@ -1,0 +1,21 @@
+# <text>\t<expected corrected text>   ("-" = must stay unchanged)
+This is an test of the system.	This is a test of the system.
+He go to school every day.	He goes to school every day.
+I have recieved your message.	I have received your message.
+She dont know the answer.	She doesn't know the answer.
+We was at home yesterday.	We were at home yesterday.
+Its a beautifull day today.	It's a beautiful day today.
+I am agree with you.	I agree with you.
+Please, send me the documents untill Friday.	Please, send me the documents until Friday.
+There is many problems with this code.	There are many problems with this code.
+He is more smarter than me.	He is smarter than me.
+I will call you tommorow.	I will call you tomorrow.
+The meeting was very usefull for the team.	The meeting was very useful for the team.
+# --- correct English must stay untouched
+The quick brown fox jumps over the lazy dog.	-
+I have been working on this project for three months.	-
+Could you please send me the report by Friday?	-
+Dmitry and Anna use Figma and GitHub every day.	-
+# --- mixed Russian text with English terms must not be "fixed" into English
+Открой GitHub и проверь pull request.	-
+Я купил новый MacBook вчера.	-

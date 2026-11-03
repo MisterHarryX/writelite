@@ -121,3 +121,37 @@ public readonly record struct RuVerbForm(
 {
     public static readonly RuVerbForm None = new(RuNumber.Sing, RuGender.None, RuPerson.None, false, false);
 }
+
+public enum RuAspect : byte { None = 0, Perfective = 1, Imperfective = 2 }
+
+public enum RuTense : byte { None = 0, Past = 1, Present = 2, Future = 3 }
+
+/// <summary>
+/// What the index knows about a word, in a form a reader-facing surface can display.
+/// </summary>
+/// <remarks>
+/// <para>Lexical properties — part of speech, aspect, transitivity, gender of a noun,
+/// animacy, register — come from the recorded tag, because they belong to the lemma and do
+/// not vary with the slot a form fills. Case and number of a nominal do not: the index keeps
+/// one analysis per spelling, so «стол» is recorded only as a nominative although it is just
+/// as much an accusative. Those come from <see cref="RussianMorphology.Nominal"/>, which
+/// derives every slot the spelling can fill.</para>
+///
+/// <para>A field the index does not record is left at its "none" value. Nothing here is a
+/// guess, which is the point of the type: the dictionary card used to show suffix heuristics
+/// such as «вид: несов.?» as though they were facts, and called «заняться» imperfective.</para>
+/// </remarks>
+public sealed record RuWordProfile(
+    string Lemma,
+    RussianPartOfSpeech PartOfSpeech,
+    RuAspect Aspect,
+    bool? Transitive,
+    RuTense Tense,
+    RuPerson Person,
+    RuNumber? Number,
+    RuGender Gender,
+    bool? Animate,
+    bool Imperative,
+    bool Reflexive,
+    IReadOnlyList<RuReading> Readings,
+    RussianFormFlags Flags);

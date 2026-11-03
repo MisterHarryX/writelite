@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Threading;
@@ -12,7 +12,7 @@ using TextBox = System.Windows.Controls.TextBox;
 namespace WriteLite.Tests.Notes;
 
 /// <summary>
-/// The notes board driven through its own controls.
+/// The three-pane notes page driven through its own controls.
 /// </summary>
 /// <remarks>
 /// <see cref="NotesServiceTests"/> proves the rules; this proves they are reachable.
@@ -100,180 +100,182 @@ public sealed class NotesPageFlowTests
         }
     });
 
-    private static NoteCard[] Cards(NotesPage page) =>
-        ((NoteBoard)page.FindName("Board")!).Children.OfType<NoteCard>().ToArray();
+    private static string[] Rows(NotesPage page, NotesService notes) =>
+        ((System.Windows.Controls.StackPanel)page.FindName("NoteList")!).Children
+            .OfType<System.Windows.Controls.Border>()
+            .Select(row => notes.Find((string)row.Tag)!.DisplayTitle)
+            .ToArray();
 
     [TestMethod]
-    public void Stored_notes_appear_on_the_board_as_cards()
+    public void Stored_notes_appear_in_the_list_newest_first()
     {
         var notes = new NotesService(_path);
         notes.Create(NoteKind.Task, "Первая задача");
-        notes.Create(NoteKind.Goal, "Большая цель");
-        notes.Create(NoteKind.Note, "Просто заметка");
+        Thread.Sleep(20);
+        notes.Create(NoteKind.Note, "Вторая заметка");
 
         WithBoard(notes, (page, _) =>
         {
-            var cards = Cards(page);
-
-            Assert.AreEqual(3, cards.Length, "Every stored note must be drawn.");
-            CollectionAssert.AreEquivalent(
-                new[] { "Первая задача", "Большая цель", "Просто заметка" },
-                cards.Select(card => card.Note!.DisplayTitle).ToArray());
+            CollectionAssert.AreEqual(new[] { "Вторая заметка", "Первая задача" }, Rows(page, notes));
         });
 
         notes.Dispose();
     }
 
     [TestMethod]
-    public void Ticking_a_card_completes_the_note_and_writes_it_to_disk()
+    public void Deleting_moves_a_note_to_the_trash_and_restoring_brings_it_back()
     {
         var notes = new NotesService(_path);
-        var task = notes.Create(NoteKind.Task, "Отправить отчёт");
+        var note = notes.Create(NoteKind.Note, "Удаляемая");
+        notes.Create(NoteKind.Note, "Остаётся");
 
         WithBoard(notes, (page, _) =>
         {
-            var card = Cards(page).Single();
-            var box = (CheckBox)card.FindName("DoneBox")!;
-
-            Assert.AreEqual(Visibility.Visible, box.Visibility,
-                "A task must offer a way to finish it on the card itself.");
-
-            // The gesture: the checkbox on the card, not a service call.
-            box.IsChecked = true;
+            notes.MoveToTrash(note.Id);
             Pump();
+            CollectionAssert.AreEqual(new[] { "Остаётся" }, Rows(page, notes));
 
-            Assert.IsTrue(notes.Find(task.Id)!.IsCompleted);
+            page.SelectFolder(NotesFolderKind.Trash, null);
+            Pump();
+            CollectionAssert.AreEqual(new[] { "Удаляемая" }, Rows(page, notes));
+
+            notes.Restore(note.Id);
+            Pump();
+            Assert.AreEqual(0, Rows(page, notes).Length, "The trash empties when the note is restored.");
         });
 
         notes.Dispose();
-
         var reopened = new NotesService(_path);
-        Assert.IsTrue(reopened.Find(task.Id)!.IsCompleted, "And it survives the restart.");
+        Assert.IsFalse(reopened.Find(note.Id)!.IsDeleted, "Restoring is written to disk.");
         reopened.Dispose();
     }
 
     [TestMethod]
-    public void A_plain_note_offers_no_completion_checkbox()
+    public void Trash_older_than_thirty_days_is_purged()
     {
         var notes = new NotesService(_path);
-        notes.Create(NoteKind.Note, "Мысль");
+        var old = notes.Create(NoteKind.Note, "Старая");
+        var recent = notes.Create(NoteKind.Note, "Свежая");
+        notes.MoveToTrash(old.Id);
+        notes.MoveToTrash(recent.Id);
+
+        var removed = notes.PurgeExpiredTrash(DateTimeOffset.Now.AddDays(31));
+        Assert.AreEqual(2, removed);
+        Assert.IsNull(notes.Find(old.Id));
+        notes.Dispose();
+    }
+
+    [TestMethod]
+    public void Completed_tasks_are_in_their_own_folder()
+    {
+        var notes = new NotesService(_path);
+        var task = notes.Create(NoteKind.Task, "Купить кофе");
+        notes.SetCompleted(task.Id, true);
+        notes.Create(NoteKind.Task, "Открытая задача");
 
         WithBoard(notes, (page, _) =>
         {
-            var box = (CheckBox)Cards(page).Single().FindName("DoneBox")!;
-            Assert.AreEqual(Visibility.Collapsed, box.Visibility,
-                "There is nothing to finish about a note.");
+            page.SelectFolder(NotesFolderKind.Completed, null);
+            Pump();
+            CollectionAssert.AreEqual(new[] { "Купить кофе" }, Rows(page, notes));
+
+            page.SelectFolder(NotesFolderKind.Tasks, null);
+            Pump();
+            CollectionAssert.AreEqual(new[] { "Открытая задача" }, Rows(page, notes));
         });
 
         notes.Dispose();
     }
 
     [TestMethod]
-    public void Completing_a_card_moves_it_to_the_completed_tab()
+    public void Search_filters_the_list()
     {
         var notes = new NotesService(_path);
-        var task = notes.Create(NoteKind.Task, "Уходящая задача");
+        notes.Create(NoteKind.Note, "Купить кофе");
+        notes.Create(NoteKind.Note, "Позвонить маме");
 
         WithBoard(notes, (page, _) =>
         {
-            notes.SetCompleted(task.Id, true);
-            Pump();
-
-            Assert.AreEqual(0, Cards(page).Length, "A finished card leaves the active board …");
-
-            ((RadioButton)page.FindName("TabCompleted")!).IsChecked = true;
-            Pump();
-
-            Assert.AreEqual(1, Cards(page).Length, "… and appears under «Выполненные».");
-        });
-
-        notes.Dispose();
-    }
-
-    [TestMethod]
-    public void Search_filters_the_board()
-    {
-        var notes = new NotesService(_path);
-        notes.Create(NoteKind.Note, "Заметка про кофе");
-        notes.Create(NoteKind.Note, "Заметка про чай");
-
-        WithBoard(notes, (page, _) =>
-        {
-            Assert.AreEqual(2, Cards(page).Length);
-
             ((TextBox)page.FindName("SearchBox")!).Text = "кофе";
             Pump();
-
-            Assert.AreEqual(1, Cards(page).Length);
-            StringAssert.Contains(Cards(page).Single().Note!.DisplayTitle, "кофе");
+            CollectionAssert.AreEqual(new[] { "Купить кофе" }, Rows(page, notes));
         });
 
         notes.Dispose();
     }
 
     [TestMethod]
-    public void Ticking_a_checklist_line_on_the_card_updates_the_store()
+    public void The_empty_list_explains_itself()
     {
         var notes = new NotesService(_path);
-        var list = notes.Create(NoteKind.Checklist, "Сборы");
-        var item = new NoteChecklistItem { Text = "Паспорт" };
-        list.Items.Add(item);
-        notes.Update(list);
-
         WithBoard(notes, (page, _) =>
         {
-            var card = Cards(page).Single();
-
-            var line = Descendants<CheckBox>(card)
-                .FirstOrDefault(box => AutomationProperties.GetName(box) == "Паспорт");
-
-            Assert.IsNotNull(line, "A checklist line must be tickable from the card face.");
-
-            line.IsChecked = true;
-            Pump();
-
-            Assert.IsTrue(notes.Find(list.Id)!.Items.Single().IsDone);
-        });
-
-        notes.Dispose();
-
-        var reopened = new NotesService(_path);
-        Assert.IsTrue(reopened.Find(list.Id)!.Items.Single().IsDone);
-        reopened.Dispose();
-    }
-
-    [TestMethod]
-    public void The_empty_board_explains_itself_rather_than_showing_nothing()
-    {
-        var notes = new NotesService(_path);
-
-        WithBoard(notes, (page, _) =>
-        {
-            var empty = (FrameworkElement)page.FindName("EmptyState")!;
+            var empty = (FrameworkElement)page.FindName("ListEmpty")!;
             Assert.AreEqual(Visibility.Visible, empty.Visibility);
-
-            var title = (System.Windows.Controls.TextBlock)page.FindName("EmptyTitle")!;
-            Assert.IsFalse(string.IsNullOrWhiteSpace(title.Text));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(((System.Windows.Controls.TextBlock)page.FindName("ListEmptyHint")!).Text));
         });
 
         notes.Dispose();
     }
 
-    private static IEnumerable<T> Descendants<T>(DependencyObject root) where T : DependencyObject
+    [TestMethod]
+    public void Leaving_a_new_empty_note_discards_it()
     {
-        var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
-        for (var i = 0; i < count; i++)
-        {
-            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
-            if (child is T match)
-            {
-                yield return match;
-            }
+        var notes = new NotesService(_path);
+        var kept = notes.Create(NoteKind.Note, "Есть текст");
 
-            foreach (var nested in Descendants<T>(child))
-            {
-                yield return nested;
-            }
-        }
+        WithBoard(notes, (page, _) =>
+        {
+            page.CreateNote();
+            Pump();
+            var blank = page.Editor.NoteId;
+            page.Open(notes.Find(kept.Id)!);
+            Pump();
+            Assert.IsNull(notes.Find(blank), "A note created and left without a word in it is withdrawn.");
+        });
+
+        notes.Dispose();
+    }
+
+    [TestMethod]
+    public void Calendar_adds_a_timed_event_on_the_selected_day()
+    {
+        var notes = new NotesService(_path);
+        WithBoard(notes, (page, _) =>
+        {
+            var calendar = (WriteLite.Views.Notes.NotesCalendarView)page.FindName("CalendarView")!;
+            var day = new DateTime(2026, 11, 12);
+            calendar.SelectDay(day);
+            var created = calendar.AddOnSelectedDay("Созвон с командой 15:30", NoteKind.Event)!;
+            Assert.AreEqual("Созвон с командой", created.Title);
+            Assert.AreEqual(day.AddHours(15.5), created.DueDate!.Value.DateTime);
+            Assert.IsFalse(created.IsAllDay);
+            Assert.AreEqual(1, calendar.ItemsOn(day).Count);
+
+            var allDay = calendar.AddOnSelectedDay("День рождения Ани", NoteKind.Event)!;
+            Assert.IsTrue(allDay.IsAllDay);
+            Assert.AreEqual(2, calendar.ItemsOn(day).Count);
+        });
+
+        notes.Dispose();
+    }
+
+    [TestMethod]
+    [DataRow("Созвон 15:30", "Созвон", 15, 30)]
+    [DataRow("Обед в 13", "Обед", 13, 0)]
+    [DataRow("Встреча в 9.15", "Встреча", 9, 15)]
+    public void Typed_times_are_read(string text, string title, int hours, int minutes)
+    {
+        var (t, time) = WriteLite.Views.Notes.NotesCalendarView.SplitTime(text);
+        Assert.AreEqual(title, t);
+        Assert.AreEqual(new TimeSpan(hours, minutes, 0), time);
+    }
+
+    [TestMethod]
+    public void A_title_with_a_number_is_not_mistaken_for_a_time()
+    {
+        var (t, time) = WriteLite.Views.Notes.NotesCalendarView.SplitTime("Купить 2");
+        Assert.AreEqual("Купить 2", t);
+        Assert.IsNull(time);
     }
 }

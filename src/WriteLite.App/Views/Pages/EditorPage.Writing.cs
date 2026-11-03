@@ -60,6 +60,8 @@ public sealed partial class EditorPage
     /// <summary>Cancels any pending request and clears the painted suggestion.</summary>
     private void DismissWritingSuggestion()
     {
+        _prediction = null;
+        _predictionAnchor = null;
         _writingCts?.Cancel();
         _writingCts?.Dispose();
         _writingCts = null;
@@ -110,6 +112,10 @@ public sealed partial class EditorPage
     /// <summary>Paints or clears the ghost text, only where it still describes the document.</summary>
     private void PaintGhost(WritingSuggestion suggestion)
     {
+        // A predicted word from the user's own style is already on screen and answers the
+        // question they are in the middle of; the continuation waits for the next pause.
+        if (suggestion.HasText && _prediction is not null) return;
+
         var layer = AdornerLayer.GetAdornerLayer(Editor);
         if (layer is null) return;
 
@@ -147,11 +153,12 @@ public sealed partial class EditorPage
     /// analysis pipeline sees it as an ordinary edit — a suggestion the user accepted is the
     /// user's text and is checked like the rest of it.
     /// </remarks>
-    private bool AcceptWritingSuggestion()
+    internal bool AcceptWritingSuggestion()
     {
         if (_ghost is not { HasText: true } ghost) return false;
 
         var text = ghost.Text;
+        var predicted = _prediction is not null;
         DismissWritingSuggestion();
 
         BeginUndoBatch();
@@ -165,6 +172,7 @@ public sealed partial class EditorPage
             EndUndoBatch();
         }
 
+        if (predicted) _personalStyle?.RecordPredictionAccepted();
         return true;
     }
 }

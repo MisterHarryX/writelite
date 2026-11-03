@@ -1,0 +1,353 @@
+﻿<UserControl x:Class="WriteLite.Views.Notes.NoteEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WriteLite.Controls"
+             xmlns:res="clr-namespace:WriteLite.Resources"
+             Background="{DynamicResource WlBgBase}"
+             FontFamily="{DynamicResource WlFont}"
+             AutomationProperties.Name="{x:Static res:Strings.NoteEdit_WindowAutomation}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ═══ Top bar: way back, where the note lives, save state ═══════════ -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource WlBg}"
+                BorderBrush="{DynamicResource WlLine}"
+                BorderThickness="0,0,0,1"
+                Padding="20,0,14,0">
+            <Grid Height="48">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="BackButton"
+                        Grid.Column="0"
+                        Style="{DynamicResource WlTextButton}"
+                        Click="Back_Click"
+                        ToolTip="{x:Static res:Strings.NoteEditor_BackTooltip}"
+                        AutomationProperties.Name="{x:Static res:Strings.NoteEditor_BackAutomation}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{DynamicResource WlIconSm}"
+                              Data="{DynamicResource WlIconChevronRight}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                              RenderTransformOrigin="0.5,0.5"
+                              VerticalAlignment="Center">
+                            <Path.RenderTransform>
+                                <ScaleTransform ScaleX="-1" />
+                            </Path.RenderTransform>
+                        </Path>
+                        <TextBlock x:Name="BackText" Margin="6,0,0,0" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" MaxWidth="260" />
+                    </StackPanel>
+                </Button>
+
+                <TextBlock x:Name="KindLabel"
+                           Grid.Column="1"
+                           Style="{DynamicResource WlMonoLabel}"
+                           Foreground="{DynamicResource WlTextMuted}"
+                           Margin="14,0,0,0"
+                           VerticalAlignment="Center" />
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="SaveStateText"
+                               Style="{DynamicResource WlMonoLabel}"
+                               Foreground="{DynamicResource WlTextMuted}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,0" />
+                    <Button x:Name="PinButton"
+                            Style="{DynamicResource WlIconButton}"
+                            Width="30" Height="30"
+                            Click="Pin_Click"
+                            ToolTip="{x:Static res:Strings.NoteEdit_Pin}"
+                            AutomationProperties.Name="{x:Static res:Strings.NoteEdit_PinAutomation}">
+                        <Path x:Name="PinIcon" Style="{DynamicResource WlIconSm}"
+                              Data="{DynamicResource WlIconPin}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </Button>
+                    <Button x:Name="MoreButton"
+                            Style="{DynamicResource WlIconButton}"
+                            Width="30" Height="30"
+                            Margin="2,0,0,0"
+                            Click="More_Click"
+                            ToolTip="{x:Static res:Strings.NoteEditor_MoreTooltip}"
+                            AutomationProperties.Name="{x:Static res:Strings.NoteEditor_MoreTooltip}">
+                        <Path Style="{DynamicResource WlIconSm}"
+                              Data="{DynamicResource WlIconMenu}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══ Formatting toolbar ═══════════════════════════════════════════ -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource WlBgBase}"
+                BorderBrush="{DynamicResource WlLine}"
+                BorderThickness="0,0,0,1"
+                Padding="16,6">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
+                          Style="{DynamicResource WlScrollViewer}">
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox x:Name="BlockStyleBox"
+                              Style="{DynamicResource WlComboBox}"
+                              Width="150"
+                              SelectionChanged="BlockStyle_Changed"
+                              ToolTip="{x:Static res:Strings.Editor_ParagraphStyle}"
+                              AutomationProperties.Name="{x:Static res:Strings.Editor_ParagraphStyle}">
+                        <ComboBoxItem Content="{x:Static res:Strings.NoteEditor_StyleText}" />
+                        <ComboBoxItem Content="{x:Static res:Strings.NoteEditor_StyleHeading1}" />
+                        <ComboBoxItem Content="{x:Static res:Strings.NoteEditor_StyleHeading2}" />
+                        <ComboBoxItem Content="{x:Static res:Strings.NoteEditor_StyleHeading3}" />
+                        <ComboBoxItem Content="{x:Static res:Strings.NoteEditor_StyleQuote}" />
+                    </ComboBox>
+
+                    <Border Style="{DynamicResource WlToolbarRule}" />
+
+                    <ToggleButton x:Name="BoldToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Bold_Click" ToolTip="{x:Static res:Strings.Editor_BoldTooltip}"
+                                  AutomationProperties.Name="{x:Static res:Strings.Editor_Bold}">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconBold}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="ItalicToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Italic_Click" ToolTip="{x:Static res:Strings.Editor_ItalicTooltip}"
+                                  AutomationProperties.Name="{x:Static res:Strings.Editor_Italic}">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconItalic}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="UnderlineToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Underline_Click" ToolTip="{x:Static res:Strings.Editor_UnderlineTooltip}"
+                                  AutomationProperties.Name="{x:Static res:Strings.Editor_Underline}">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconUnderline}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="StrikeToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Strike_Click" ToolTip="{x:Static res:Strings.NoteEditor_StrikeTooltip}"
+                                  AutomationProperties.Name="{x:Static res:Strings.NoteEditor_StrikeTooltip}">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconStrikethrough}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="HighlightToggle" Style="{DynamicResource WlFormatToggle}"
+                                  Click="Highlight_Click" ToolTip="{x:Static res:Strings.NoteEditor_HighlightTooltip}"
+                                  AutomationProperties.Name="{x:Static res:Strings.NoteEditor_HighlightTooltip}">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconHighlight}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                    </ToggleButton>
+
+                    <Border Style="{DynamicResource WlToolbarRule}" />
+
+                    <Button Style="{DynamicResource WlIconButton}" Width="30" Height="28"
+                            Click="Bullets_Click" ToolTip="{x:Static res:Strings.NoteEditor_BulletsTooltip}"
+                            AutomationProperties.Name="{x:Static res:Strings.NoteEditor_BulletsTooltip}">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconListBullet}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </Button>
+                    <Button Style="{DynamicResource WlIconButton}" Width="30" Height="28"
+                            Click="Numbers_Click" ToolTip="{x:Static res:Strings.NoteEditor_NumbersTooltip}"
+                            AutomationProperties.Name="{x:Static res:Strings.NoteEditor_NumbersTooltip}">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconListNumber}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </Button>
+                    <Button Style="{DynamicResource WlIconButton}" Width="30" Height="28"
+                            Click="Checklist_Click" ToolTip="{x:Static res:Strings.NoteEditor_ChecklistTooltip}"
+                            AutomationProperties.Name="{x:Static res:Strings.NoteEditor_ChecklistTooltip}">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconTask}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </Button>
+                    <Button Style="{DynamicResource WlToolbarButton}" Margin="2,0,0,0"
+                            Content="—" FontWeight="SemiBold"
+                            Click="Divider_Click" ToolTip="{x:Static res:Strings.NoteEditor_DividerTooltip}"
+                            AutomationProperties.Name="{x:Static res:Strings.NoteEditor_DividerTooltip}" />
+
+                    <Border Style="{DynamicResource WlToolbarRule}" />
+
+                    <Button Style="{DynamicResource WlToolbarButton}"
+                            Content="{x:Static res:Strings.NoteEditor_InsertImage}"
+                            Click="InsertImage_Click"
+                            ToolTip="{x:Static res:Strings.NoteEditor_InsertImageTooltip}" />
+                    <Button Style="{DynamicResource WlToolbarButton}" Margin="4,0,0,0"
+                            Content="{x:Static res:Strings.NoteEditor_InsertSketch}"
+                            Click="InsertSketch_Click"
+                            ToolTip="{x:Static res:Strings.NoteEditor_InsertSketchTooltip}" />
+                    <Button x:Name="BookmarkButton"
+                            Style="{DynamicResource WlIconButton}" Width="30" Height="28" Margin="4,0,0,0"
+                            Click="Bookmark_Click" ToolTip="{x:Static res:Strings.NoteEditor_BookmarkTooltip}"
+                            AutomationProperties.Name="{x:Static res:Strings.NoteEditor_BookmarkTooltip}">
+                        <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconBookmark}"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </Button>
+
+                    <Border Style="{DynamicResource WlToolbarRule}" />
+
+                    <Button x:Name="AiButton"
+                            Style="{DynamicResource WlSecondaryButton}"
+                            Click="Ai_Click"
+                            ToolTip="{x:Static res:Strings.AiAction_ButtonTooltip}"
+                            AutomationProperties.Name="{x:Static res:Strings.AiAction_ButtonTooltip}">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconAi}"
+                                  Stroke="{DynamicResource WlBrand}" VerticalAlignment="Center" />
+                            <TextBlock Text="{x:Static res:Strings.AiAction_Button}" Margin="7,0,0,0" VerticalAlignment="Center" />
+                            <Path Style="{DynamicResource WlIconSm}" Data="{DynamicResource WlIconChevronDown}"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  Margin="4,0,0,0" Width="12" Height="12" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- ═══ The page: title, details, body; bookmarks beside it ══════════ -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer x:Name="PageScroll" Grid.Column="0" Style="{DynamicResource WlScrollViewer}"
+                          Padding="0,0,8,0">
+                <StackPanel MaxWidth="820" Margin="36,26,36,40" HorizontalAlignment="Stretch">
+                    <Grid>
+                        <TextBlock x:Name="TitlePlaceholder"
+                                   Text="{x:Static res:Strings.NoteEdit_TitlePlaceholder}"
+                                   FontSize="28" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource WlTextSubtle}"
+                                   IsHitTestVisible="False"
+                                   Margin="2,0,0,0" />
+                        <TextBox x:Name="TitleBox"
+                                 FontSize="28" FontWeight="SemiBold"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Padding="0"
+                                 Foreground="{DynamicResource WlText}"
+                                 CaretBrush="{DynamicResource WlBrand}"
+                                 SelectionBrush="{DynamicResource WlBrandDim}"
+                                 TextWrapping="Wrap"
+                                 MaxLength="200"
+                                 FocusVisualStyle="{x:Null}"
+                                 TextChanged="Title_TextChanged"
+                                 PreviewKeyDown="Title_PreviewKeyDown"
+                                 AutomationProperties.Name="{x:Static res:Strings.NoteEdit_TitleAutomation}" />
+                    </Grid>
+
+                    <!-- Details: one wrapping row, so a narrow window stacks them instead of clipping. -->
+                    <WrapPanel Margin="0,14,0,0">
+                        <ComboBox x:Name="KindBox" Style="{DynamicResource WlComboBox}" Width="140" Margin="0,0,8,8"
+                                  SelectionChanged="Kind_Changed"
+                                  AutomationProperties.Name="{x:Static res:Strings.NoteEditor_KindAutomation}">
+                            <ComboBoxItem Content="{x:Static res:Strings.Notes_KindNote}" />
+                            <ComboBoxItem Content="{x:Static res:Strings.Notes_KindTask}" />
+                            <ComboBoxItem Content="{x:Static res:Strings.Notes_KindChecklist}" />
+                            <ComboBoxItem Content="{x:Static res:Strings.Notes_KindGoal}" />
+                            <ComboBoxItem Content="Событие" />
+                        </ComboBox>
+                        <ComboBox x:Name="ProjectBox" Style="{DynamicResource WlComboBox}" Width="190" Margin="0,0,8,8"
+                                  SelectionChanged="Project_Changed"
+                                  ToolTip="{x:Static res:Strings.NoteEditor_ProjectTooltip}"
+                                  AutomationProperties.Name="{x:Static res:Strings.NoteEditor_ProjectTooltip}" />
+                        <TextBox x:Name="DueBox" TextAlignment="Left" Style="{DynamicResource WlSmallInput}" Width="168" Margin="0,0,8,8"
+                                 Tag="{x:Static res:Strings.NoteEditor_DuePlaceholder}"
+                                 LostFocus="Due_LostFocus"
+                                 TextChanged="Detail_TextChanged"
+                                 AutomationProperties.Name="{x:Static res:Strings.NoteEdit_DueAutomation}" />
+                        <TextBox x:Name="CategoryBox" TextAlignment="Left" Style="{DynamicResource WlSmallInput}" Width="150" Margin="0,0,8,8"
+                                 MaxLength="40"
+                                 Tag="{x:Static res:Strings.NoteEdit_CategoryPlaceholder}"
+                                 TextChanged="Detail_TextChanged"
+                                 AutomationProperties.Name="{x:Static res:Strings.NoteEdit_Category}" />
+                        <CheckBox x:Name="CompletedBox" Style="{DynamicResource WlCheckBox}"
+                                  Content="{x:Static res:Strings.NoteEdit_Completed}"
+                                  VerticalAlignment="Center" Margin="4,0,0,8"
+                                  Click="Completed_Click"
+                                  AutomationProperties.Name="{x:Static res:Strings.NoteEdit_CompletedAutomation}" />
+                    </WrapPanel>
+
+                    <!-- ── Checklist / goal steps ─────────────────────────────── -->
+                    <StackPanel x:Name="ChecklistSection" Margin="0,10,0,0" Visibility="Collapsed">
+                        <Grid>
+                            <TextBlock x:Name="ChecklistLabel"
+                                       Style="{DynamicResource WlMonoLabel}"
+                                       Foreground="{DynamicResource WlTextMuted}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock x:Name="ChecklistProgress"
+                                       Style="{DynamicResource WlMonoLabel}"
+                                       Foreground="{DynamicResource WlTextMuted}"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+                        <StackPanel x:Name="ItemsPanel" Margin="0,10,0,0" />
+                        <Grid Margin="0,2,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="NewItemBox" Width="Auto" TextAlignment="Left" HorizontalAlignment="Stretch" Grid.Column="0"
+                                     Style="{DynamicResource WlSmallInput}"
+                                     Tag="{x:Static res:Strings.NoteEdit_NewItemPlaceholder}"
+                                     KeyDown="NewItem_KeyDown"
+                                     AutomationProperties.Name="{x:Static res:Strings.NoteEdit_NewItemAutomation}" />
+                            <Button Grid.Column="1" Style="{DynamicResource WlSecondaryButton}"
+                                    Content="{x:Static res:Strings.Words_AddButton}" Margin="8,0,0,0"
+                                    Click="AddItem_Click" />
+                        </Grid>
+                    </StackPanel>
+
+                    <Border Style="{DynamicResource WlHairline}" Margin="0,14,0,18" />
+
+                    <RichTextBox x:Name="Editor"
+                                 Style="{DynamicResource WlDocumentSurface}"
+                                 IsDocumentEnabled="True"
+                                 MinHeight="320"
+                                 FontSize="15.5"
+                                 AllowDrop="True"
+                                 TextChanged="Editor_TextChanged"
+                                 SelectionChanged="Editor_SelectionChanged"
+                                 PreviewKeyDown="Editor_PreviewKeyDown"
+                                 PreviewTextInput="Editor_PreviewTextInput"
+                                 PreviewDragOver="Editor_PreviewDragOver"
+                                 PreviewDrop="Editor_PreviewDrop"
+                                 ContextMenuOpening="Editor_ContextMenuOpening"
+                                 AutomationProperties.Name="{x:Static res:Strings.NoteEdit_BodyAutomation}">
+                        <FlowDocument PagePadding="0" />
+                    </RichTextBox>
+
+                    <TextBlock x:Name="CreatedText"
+                               Style="{DynamicResource WlMonoLabel}"
+                               Foreground="{DynamicResource WlTextSubtle}"
+                               Margin="0,26,0,0" />
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ═══ Bookmarks ═════════════════════════════════════════════════ -->
+            <Border x:Name="BookmarksPanel"
+                    Grid.Column="1"
+                    Width="230"
+                    Background="{DynamicResource WlBg}"
+                    BorderBrush="{DynamicResource WlLine}"
+                    BorderThickness="1,0,0,0"
+                    Visibility="Collapsed">
+                <DockPanel Margin="18,22,14,16">
+                    <TextBlock DockPanel.Dock="Top"
+                               Style="{DynamicResource WlMonoLabel}"
+                               controls:Type.Tracked="{x:Static res:Strings.NoteEditor_BookmarksLabel}"
+                               Foreground="{DynamicResource WlTextMuted}" />
+                    <TextBlock DockPanel.Dock="Bottom"
+                               Style="{DynamicResource WlCaption}"
+                               Foreground="{DynamicResource WlTextMuted}"
+                               TextWrapping="Wrap"
+                               Margin="0,12,0,0"
+                               Text="{x:Static res:Strings.NoteEditor_BookmarksHint}" />
+                    <ScrollViewer Style="{DynamicResource WlScrollViewer}" Margin="0,10,0,0">
+                        <StackPanel x:Name="BookmarksList" />
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
